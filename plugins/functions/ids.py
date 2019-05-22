@@ -54,6 +54,10 @@ def init_user_id(uid: int) -> bool:
             glovar.banned_ids[uid] = set()
             save("banned_ids")
 
+        if glovar.except_ids["tmp"].get(uid) is None:
+            glovar.except_ids["tmp"][uid] = set()
+            save("except_ids")
+
         return True
     except Exception as e:
         logger.warning(f"Init user id {uid} error: {e}", exc_info=True)
