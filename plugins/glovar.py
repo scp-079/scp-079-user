@@ -22,7 +22,7 @@ from configparser import RawConfigParser
 from os import mkdir
 from os.path import exists
 from shutil import rmtree
-from typing import Dict, List, Set
+from typing import Dict, List, Set, Union
 
 # Enable logging
 logger = logging.getLogger(__name__)
@@ -49,11 +49,21 @@ declared_message_ids: Dict[str, Dict[int, Set[int]]] = {
 #     }
 # }
 
+default_config: Dict[str, Union[bool, int, Dict[str, bool]]] = {
+    "default": True,
+    "lock": 0,
+    "subscribe": True
+}
+
+receivers_declare: List[str] = ["CLEAN", "LANG", "NOFLOOD", "NOPORN", "NOSPAM", "RECHECK", "USER"]
+
 receivers_preview: List[str] = ["CLEAN", "LANG", "NOFLOOD", "NOPORN", "NOSPAM", "RECHECK"]
 
-sender = "USER"
+sender: str = "USER"
 
-version: str = "0.0.1"
+should_hide: bool = False
+
+version: str = "0.0.2"
 
 # Read data from config.ini
 
@@ -164,6 +174,11 @@ for path in ["data", "tmp"]:
 
 # Init ids variables
 
+admin_ids: Dict[int, Set[int]] = {}
+# admin_ids = {
+#     -10012345678: {12345678}
+# }
+
 bad_ids: Dict[str, Set[int]] = {
     "channels": set(),
     "users": set()
@@ -173,17 +188,37 @@ bad_ids: Dict[str, Set[int]] = {
 #     "users": {12345678}
 # }
 
-except_ids: Dict[str, Set[int]] = {
+banned_ids: Dict[int, Set[int]] = {}
+# banned_ids = {
+#     12345678: {-10012345678}
+# }
+
+except_ids: Dict[str, Union[Dict, Set[int]]] = {
     "channels": set(),
+    "tmp": {},
     "users": set()
 }
 # except_ids = {
 #     "channels": {-10012345678},
+#     "tmp": {
+#         12345678: {-10012345678}
+#     },
 #     "users": {12345678}
 # }
 
+# Init data variables
+
+configs: Dict[int, Dict[str, Union[bool, int, Dict[str, bool]]]] = {}
+# configs = {
+#     -10012345678: {
+#         "default": True,
+#         "lock": 0,
+#         "channel": True,
+#         "recheck": False
+# }
+
 # Load data
-file_list: List[str] = ["bad_ids", "except_ids"]
+file_list: List[str] = ["admin_ids", "bad_ids", "banned_ids", "except_ids", "configs"]
 for file in file_list:
     try:
         try:
