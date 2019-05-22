@@ -109,14 +109,11 @@ def delete_all_messages(client: Client, gid: int, uid: int) -> bool:
     try:
         group_id = resolve_peer(client, gid)
         user_id = resolve_peer(client, uid)
-        logger.warning(group_id)
-        logger.warning(user_id)
         if group_id and user_id:
             flood_wait = True
             while flood_wait:
                 flood_wait = False
                 try:
-                    logger.warning("try")
                     client.send(DeleteUserHistory(channel=group_id, user_id=user_id))
                 except FloodWait as e:
                     flood_wait = True
