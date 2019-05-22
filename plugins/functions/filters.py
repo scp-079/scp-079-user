@@ -91,8 +91,7 @@ def is_declared_message(_, message: Message) -> bool:
             gid = message.chat.id
             mid = message.message_id
 
-        if (mid in glovar.declared_message_ids["ban"].get(gid, set())
-                or mid in glovar.declared_message_ids["delete"].get(gid, set())):
+        if mid in glovar.declared_message_ids.get(gid, set()):
             return True
     except Exception as e:
         logger.warning(f"Is declared message error: {e}", exc_info=True)

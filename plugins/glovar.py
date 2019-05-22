@@ -31,22 +31,14 @@ logger = logging.getLogger(__name__)
 
 all_commands: List[str] = [
     "config",
+    "config_user",
     "print",
-    "user_config",
     "version"
 ]
 
-declared_message_ids: Dict[str, Dict[int, Set[int]]] = {
-    "ban": {},
-    "delete": {}
-}
+declared_message_ids: Dict[int, Set[int]] = {}
 # declared_message_ids = {
-#     "ban": {
-#         -10012345678: {123}
-#     },
-#     "delete": {
-#         -10012345678: {124}
-#     }
+#     -10012345678: {123}
 # }
 
 default_config: Dict[str, Union[bool, int, Dict[str, bool]]] = {
@@ -63,7 +55,7 @@ sender: str = "USER"
 
 should_hide: bool = False
 
-version: str = "0.0.2"
+version: str = "0.0.3"
 
 # Read data from config.ini
 

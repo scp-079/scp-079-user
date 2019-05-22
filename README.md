@@ -8,7 +8,7 @@ See [this article](https://scp-079.org/user/).
 
 ## To Do List
 
-- [x] Basic functions
+- [x] Help to delete messages or ban user
 
 ## Requirements
 

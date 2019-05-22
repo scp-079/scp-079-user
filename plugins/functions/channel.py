@@ -32,15 +32,15 @@ from .telegram import get_group_info, send_document, send_message
 logger = logging.getLogger(__name__)
 
 
-def declare_message(client: Client, level: str, gid: int, mid: int) -> bool:
+def declare_message(client: Client, gid: int, mid: int) -> bool:
     # Declare a message
     try:
-        glovar.declared_message_ids[level][gid].add(mid)
+        glovar.declared_message_ids[gid].add(mid)
         share_data(
             client=client,
             receivers=glovar.receivers_declare,
-            action="declare",
-            action_type=level,
+            action="update",
+            action_type="declare",
             data={
                 "group_id": gid,
                 "message_id": mid
