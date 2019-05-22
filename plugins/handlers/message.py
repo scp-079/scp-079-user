@@ -28,7 +28,7 @@ from ..functions.filters import class_c, class_d, class_e, declared_message, exc
 from ..functions.filters import new_group, test_group
 from ..functions.group import delete_messages_globally, leave_group
 from ..functions.ids import init_group_id, init_user_id
-from ..functions.telegram import delete_all_messages, get_admins, send_message, send_report_message
+from ..functions.telegram import delete_all_messages, get_admins, send_message, send_report_message, unban_chat_member
 from ..functions.user import ban_user_globally
 
 # Enable logging
@@ -229,8 +229,15 @@ def process_data(client, message):
                             glovar.bad_ids["channels"].discard(the_id)
                         elif the_type == "user":
                             glovar.bad_ids["users"].discard(the_id)
-                            # Unban user
-                            pass
+                            save("bad_ids")
+                            for gid in glovar.banned_ids[the_id]:
+                                thread(unban_chat_member, (client, gid, the_id))
+
+                            glovar.banned_ids[the_id] = set()
+                            save("banned_ids")
+                            if glovar.except_ids["tmp"].get(the_id):
+                                glovar.except_ids["tmp"].pop(the_id, set())
+                                save("except_ids")
 
                         save("bad_ids")
                     elif action_type == "except":
@@ -242,6 +249,38 @@ def process_data(client, message):
                         save("except_ids")
 
             elif sender == "NOFLOOD":
+
+                if action == "add":
+                    the_id = data["id"]
+                    the_type = data["type"]
+                    if action_type == "bad":
+                        if the_type == "user":
+                            glovar.bad_ids["users"].add(the_id)
+                            save("bad_ids")
+
+                elif action == "help":
+                    group_id = data["group_id"]
+                    user_id = data["user_id"]
+                    if action_type == "ban":
+                        if init_user_id(user_id):
+                            glovar.banned_ids[user_id].add(group_id)
+                            thread(ban_user_globally, (client, user_id))
+                    elif action_type == "delete":
+                        help_type = data["type"]
+                        if help_type == "global":
+                            thread(delete_messages_globally, (client, user_id))
+                        elif help_type == "single":
+                            thread(delete_all_messages, (client, group_id, user_id))
+
+                elif action == "update":
+                    if action_type == "declare":
+                        group_id = data["group_id"]
+                        message_id = data["message_id"]
+                        if glovar.configs.get(group_id):
+                            if init_group_id(group_id):
+                                glovar.declared_message_ids[group_id].add(message_id)
+
+            elif sender == "NOPORN":
 
                 if action == "add":
                     the_id = data["id"]

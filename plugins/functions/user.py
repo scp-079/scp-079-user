@@ -23,6 +23,7 @@ from pyrogram import Client
 from .. import glovar
 from .etc import thread
 from .file import save
+from .ids import init_group_id
 from .telegram import get_common_chats, kick_chat_member
 
 # Enable logging
@@ -60,7 +61,9 @@ def ban_user_globally(client: Client, uid: int) -> bool:
         if chats:
             for chat in chats:
                 gid = int(f"-100{chat.id}")
-                thread(ban_user, (client, gid, uid))
+                if init_group_id(gid):
+                    if glovar.configs[gid]["subscribe"]:
+                        thread(ban_user, (client, gid, uid))
 
         return True
     except Exception as e:
