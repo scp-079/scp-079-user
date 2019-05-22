@@ -345,7 +345,6 @@ def process_data(client, message):
                     if action_type == "delete":
                         help_type = data["type"]
                         if help_type == "single":
-                            logger.warning(f"help")
                             thread(delete_all_messages, (client, group_id, user_id))
     except Exception as e:
         logger.warning(f"Process data error: {e}", exc_info=True)
