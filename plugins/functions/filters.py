@@ -49,6 +49,11 @@ def is_class_d(_, message: Message) -> bool:
         if uid in glovar.bad_ids["users"]:
             return True
 
+        if message.forward_from:
+            fid = message.forward_from.id
+            if fid in glovar.bad_ids["users"]:
+                return True
+
         if message.forward_from_chat:
             cid = message.forward_from_chat.id
             if cid in glovar.bad_ids["channels"]:
@@ -60,6 +65,7 @@ def is_class_d(_, message: Message) -> bool:
 def is_class_e(_, message: Message) -> bool:
     # Check if the user who sent this message is Class E personnel
     try:
+        gid = message.chat.id
         uid = message.from_user.id
         if uid in glovar.except_ids["users"]:
             return True
@@ -68,8 +74,20 @@ def is_class_e(_, message: Message) -> bool:
             if uid in glovar.admin_ids[gid]:
                 return True
 
-        if message.chat.id in glovar.except_ids["tmp"].get(uid, set()):
+        if gid in glovar.except_ids["tmp"].get(uid, set()):
             return True
+
+        if message.forward_from:
+            fid = message.forward_from.id
+            if fid in glovar.except_ids["users"]:
+                return True
+
+            for gid in glovar.admin_ids:
+                if uid in glovar.admin_ids[gid]:
+                    return True
+
+            if gid in glovar.except_ids["tmp"].get(fid, set()):
+                return True
 
         if message.forward_from_chat:
             cid = message.forward_from_chat.id

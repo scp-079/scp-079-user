@@ -25,7 +25,7 @@ from time import sleep
 from typing import Callable, List, Union
 
 from cryptography.fernet import Fernet
-from pyrogram import Message
+from pyrogram import Message, User
 from pyrogram.errors import FloodWait
 
 # Enable logging
@@ -118,6 +118,20 @@ def get_command_context(message: Message) -> str:
         command_context = ""
 
     return command_context
+
+
+def get_full_name(user: User) -> str:
+    # Get user's full name
+    text = ""
+    try:
+        if user and not user.is_deleted:
+            text = user.first_name
+            if user.last_name:
+                text += f" {user.last_name}"
+    except Exception as e:
+        logger.warning(f"Get full name error: {e}", exc_info=True)
+
+    return text
 
 
 def get_text(message: Message) -> str:

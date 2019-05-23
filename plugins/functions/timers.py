@@ -56,6 +56,17 @@ def backup_files(client: Client) -> bool:
     return False
 
 
+def clear_recorded_ids() -> bool:
+    # Clear recorded ids
+    try:
+        glovar.recorded_ids = {}
+        return True
+    except Exception as e:
+        logger.warning(f"Clear recorded ids error: {e}", exc_info=True)
+
+    return False
+
+
 def reset_data() -> bool:
     # Reset user data every month
     glovar.bad_ids = {

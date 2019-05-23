@@ -51,11 +51,16 @@ receivers_declare: List[str] = ["CLEAN", "LANG", "NOFLOOD", "NOPORN", "NOSPAM", 
 
 receivers_preview: List[str] = ["CLEAN", "LANG", "NOFLOOD", "NOPORN", "NOSPAM", "RECHECK"]
 
+recorded_ids: Dict[int, Set[int]] = {}
+# recorded_ids = {
+#     -10012345678: {12345678}
+# }
+
 sender: str = "USER"
 
 should_hide: bool = False
 
-version: str = "0.0.4"
+version: str = "0.0.5"
 
 # Read data from config.ini
 

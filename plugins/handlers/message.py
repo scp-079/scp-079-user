@@ -21,28 +21,64 @@ import logging
 from pyrogram import Client, Filters, InlineKeyboardButton, InlineKeyboardMarkup
 
 from .. import glovar
-from ..functions.channel import get_debug_text
+from ..functions.channel import forward_evidence, get_debug_text, send_debug
 from ..functions.etc import code, receive_data, thread, user_mention
 from ..functions.file import save
 from ..functions.filters import class_c, class_d, class_e, declared_message, exchange_channel, hide_channel
 from ..functions.filters import new_group, test_group
-from ..functions.group import delete_messages_globally, leave_group
+from ..functions.group import delete_message, delete_messages_globally, leave_group
 from ..functions.ids import init_group_id, init_user_id
 from ..functions.telegram import delete_all_messages, get_admins, send_message, send_report_message, unban_chat_member
-from ..functions.user import ban_user_globally
+from ..functions.user import ban_user, ban_user_globally
 
 # Enable logging
 logger = logging.getLogger(__name__)
 
 
-@Client.on_message(Filters.incoming & Filters.group & ~test_group & Filters.media
-                   & ~class_c & ~class_d & ~class_e & ~declared_message)
+@Client.on_message(Filters.incoming & Filters.group & ~test_group & Filters.media & ~Filters.new_chat_members
+                   & ~class_c & class_d & ~class_e & ~declared_message)
 def check(client, message):
     try:
         gid = message.chat.id
-        pass
+        if glovar.configs[gid]["subscribe"]:
+            uid = message.from_user.id
+            mid = message.message_id
+            if message.forward_from or message.forward_from_chat:
+                if uid not in glovar.recorded_ids[gid]:
+                    glovar.recorded_ids[gid].add(uid)
+                    result = forward_evidence(client, message, "自动删除", "订阅列表")
+                    if result:
+                        delete_message(client, gid, mid)
+                        send_debug(client, message.chat, "自动删除", uid, mid, result)
+            else:
+                delete_message(client, gid, mid)
     except Exception as e:
         logger.warning(f"Check error: {e}", exc_info=True)
+
+
+@Client.on_message(Filters.incoming & Filters.group & ~test_group & Filters.media & Filters.new_chat_members
+                   & ~class_c & ~class_e & ~declared_message)
+def check_join(client, message):
+    try:
+        gid = message.chat.id
+        mid = message.message_id
+        if glovar.configs[gid]["subscribe"]:
+            for n in message.new_chat_members:
+                uid = n.id
+                if init_user_id(uid):
+                    if uid in glovar.bad_ids["users"]:
+                        if gid in glovar.banned_ids[uid]:
+                            glovar.except_ids["tmp"][uid].add(gid)
+                            save("except_ids")
+                        else:
+                            glovar.banned_ids[uid].add(gid)
+                            save("banned_ids")
+                            result = forward_evidence(client, message, "自动封禁", "订阅列表")
+                            if result:
+                                ban_user(client, gid, uid)
+                                send_debug(client, message.chat, "自动封禁", uid, mid, result)
+    except Exception as e:
+        logger.warning(f"Check join error: {e}", exc_info=True)
 
 
 @Client.on_message(Filters.incoming & Filters.channel & hide_channel

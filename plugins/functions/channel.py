@@ -24,7 +24,7 @@ from pyrogram import Chat, Client, Message
 from pyrogram.errors import FloodWait
 
 from .. import glovar
-from .etc import code, general_link, format_data, thread, user_mention
+from .etc import code, general_link, get_full_name, format_data, thread, user_mention
 from .file import crypt_file
 from .telegram import get_group_info, send_document, send_message
 
@@ -80,24 +80,33 @@ def forward_evidence(client: Client, message: Message, level: str, rule: str) ->
             return result
 
         uid = message.from_user.id
-        flood_wait = True
-        while flood_wait:
-            flood_wait = False
-            try:
-                result = message.forward(glovar.logging_channel_id)
-            except FloodWait as e:
-                flood_wait = True
-                sleep(e.x + 1)
-            except Exception as e:
-                logger.info(f"Forward evidence message error: {e}", exc_info=True)
-                return False
-
-        result = result.message_id
         text = (f"项目编号：{code(glovar.sender)}\n"
                 f"用户 ID：{code(uid)}\n"
                 f"操作等级：{code(level)}\n"
                 f"规则：{code(rule)}\n")
-        thread(send_message, (client, glovar.logging_channel_id, text, result))
+        if message.service:
+            name = get_full_name(message.from_user)
+            if name:
+                text += f"附加信息：{code(name)}\n"
+
+            result = send_message(client, glovar.logging_channel_id, text)
+            result = result.message_id
+        else:
+            flood_wait = True
+            while flood_wait:
+                flood_wait = False
+                try:
+                    result = message.forward(glovar.logging_channel_id)
+                except FloodWait as e:
+                    flood_wait = True
+                    sleep(e.x + 1)
+                except Exception as e:
+                    logger.info(f"Forward evidence message error: {e}", exc_info=True)
+                    return False
+
+            result = result.message_id
+            result = send_message(client, glovar.logging_channel_id, text, result)
+            result = result.message_id
     except Exception as e:
         logger.warning(f"Forward evidence error: {e}", exc_info=True)
 
