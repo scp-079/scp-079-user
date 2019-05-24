@@ -21,21 +21,22 @@ import logging
 from pyrogram import Client, Filters, InlineKeyboardButton, InlineKeyboardMarkup
 
 from .. import glovar
-from ..functions.channel import forward_evidence, get_debug_text, send_debug
+from ..functions.channel import forward_evidence, get_debug_text, send_debug, share_data
 from ..functions.etc import code, receive_data, thread, user_mention
 from ..functions.file import save
 from ..functions.filters import class_c, class_d, class_e, declared_message, exchange_channel, hide_channel
 from ..functions.filters import new_group, test_group
 from ..functions.group import delete_message, delete_messages_globally, leave_group
 from ..functions.ids import init_group_id, init_user_id
-from ..functions.telegram import delete_all_messages, get_admins, send_message, send_report_message, unban_chat_member
+from ..functions.telegram import delete_all_messages, get_admins, get_preview
+from ..functions.telegram import send_message, send_report_message, unban_chat_member
 from ..functions.user import ban_user, ban_user_globally
 
 # Enable logging
 logger = logging.getLogger(__name__)
 
 
-@Client.on_message(Filters.incoming & Filters.group & ~test_group & Filters.media & ~Filters.new_chat_members
+@Client.on_message(Filters.incoming & Filters.group & ~test_group & ~Filters.new_chat_members
                    & ~class_c & class_d & ~class_e & ~declared_message)
 def check(client, message):
     try:
@@ -56,7 +57,7 @@ def check(client, message):
         logger.warning(f"Check error: {e}", exc_info=True)
 
 
-@Client.on_message(Filters.incoming & Filters.group & ~test_group & Filters.media & Filters.new_chat_members
+@Client.on_message(Filters.incoming & Filters.group & ~test_group & Filters.new_chat_members
                    & ~class_c & ~class_e & ~declared_message)
 def check_join(client, message):
     try:
@@ -425,7 +426,33 @@ def process_data(client, message):
         logger.warning(f"Process data error: {e}", exc_info=True)
 
 
-@Client.on_message(Filters.incoming & Filters.group & test_group & Filters.media
+@Client.on_message(Filters.incoming & Filters.group & ~test_group & ~Filters.service
+                   & ~class_c & ~class_d & ~class_e & ~declared_message)
+def share_preview(client, message):
+    try:
+        preview = get_preview(client, message)
+        if preview["text"] or preview["file_id"]:
+            gid = message.chat.id
+            uid = message.from_user.id
+            mid = message.message_id
+            share_data(
+                client=client,
+                receivers=glovar.receivers_preview,
+                action="update",
+                action_type="preview",
+                data={
+                    "group_id": gid,
+                    "user_id": uid,
+                    "message_id": mid,
+                    "text": preview["text"],
+                    "image": preview["file_id"]
+                }
+            )
+    except Exception as e:
+        logger.warning(f"Share preview error: {e}", exc_info=True)
+
+
+@Client.on_message(Filters.incoming & Filters.group & test_group & ~Filters.service
                    & ~Filters.command(glovar.all_commands, glovar.prefix))
 def test(client, message):
     try:

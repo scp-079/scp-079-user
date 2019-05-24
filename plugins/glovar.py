@@ -60,7 +60,7 @@ sender: str = "USER"
 
 should_hide: bool = False
 
-version: str = "0.0.5"
+version: str = "0.0.6"
 
 # Read data from config.ini
 
@@ -89,6 +89,7 @@ test_group_id: int = 0
 
 # [custom]
 default_group_link: str = ""
+image_size: int = 0
 project_link: str = ""
 project_name: str = ""
 reset_day: str = ""
@@ -121,6 +122,7 @@ try:
     test_group_id = int(config["channels"].get("test_group_id", test_group_id))
     # [custom]
     default_group_link = config["custom"].get("default_group_link", default_group_link)
+    image_size = int(config["custom"].get("image_size", image_size))
     project_link = config["custom"].get("project_link", project_link)
     project_name = config["custom"].get("project_name", project_name)
     reset_day = config["custom"].get("reset_day", reset_day)
@@ -148,6 +150,7 @@ if (prefix == []
         or logging_channel_username in {"", "[DATA EXPUNGED]"}
         or test_group_id == 0
         or default_group_link in {"", "[DATA EXPUNGED]"}
+        or image_size == 0
         or project_link in {"", "[DATA EXPUNGED]"}
         or project_name in {"", "[DATA EXPUNGED]"}
         or reset_day in {"", "[DATA EXPUNGED]"}
