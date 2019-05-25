@@ -102,6 +102,11 @@ def format_data(sender: str, receivers: List[str], action: str, action_type: str
     return code_block(dumps(data, indent=4))
 
 
+def general_link(text: Union[int, str], link: str) -> str:
+    # Get a general markdown link
+    return f"[{text}]({link})"
+
+
 def get_command_context(message: Message) -> str:
     # Get the context "b" in "/command a b"
     text = get_text(message)
@@ -149,11 +154,6 @@ def get_text(message: Message) -> str:
     return text
 
 
-def general_link(text: Union[int, str], link: str) -> str:
-    # Get a general markdown link
-    return f"[{text}]({link})"
-
-
 def message_link(cid: int, mid: int) -> str:
     # Get a message link in a channel
     return f"[{mid}](https://t.me/c/{str(cid)[4:]}/{mid})"
@@ -192,6 +192,7 @@ def user_mention(uid: int) -> str:
 
 
 def wait_flood(e: FloodWait) -> bool:
+    # Wait flood secs
     try:
         sleep(e.x + uniform(0.5, 1.0))
         return True
