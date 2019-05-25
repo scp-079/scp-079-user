@@ -20,7 +20,7 @@ import logging
 
 from pyrogram import Client, Message
 
-from .etc import code, code_block, thread, user_mention
+from .etc import code_block, thread, user_mention
 from .telegram import get_preview, send_message, send_photo
 
 # Enable logging
@@ -37,8 +37,7 @@ def preview_test(client: Client, message: Message) -> bool:
             mid = message.message_id
             text = f"管理员：{user_mention(aid)}\n\n"
             if preview["text"]:
-                text += "预览文字：" + "-" * 24 + "\n\n" + code(preview["text"])
-                logger.warning(code_block(preview["text"]))
+                text += "预览文字：" + "-" * 24 + "\n\n" + code_block(preview["text"])
 
             if preview["file_id"]:
                 thread(send_photo, (client, cid, preview["file_id"], text, mid))
