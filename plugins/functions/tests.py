@@ -37,7 +37,8 @@ def preview_test(client: Client, message: Message) -> bool:
             mid = message.message_id
             text = f"管理员：{user_mention(aid)}\n\n"
             if preview["text"]:
-                text += "预览文字：" + "-" * 16 + "\n\n" + code_block(preview["text"])
+                text += "预览文字：" + "-" * 24 + "\n\n" + code_block(preview["text"])
+                logger.warning(code_block(preview["text"]))
 
             if preview["file_id"]:
                 thread(send_photo, (client, cid, preview["file_id"], text, mid))
