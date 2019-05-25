@@ -30,6 +30,7 @@ from ..functions.group import delete_message, delete_messages_globally, leave_gr
 from ..functions.ids import init_group_id, init_user_id
 from ..functions.telegram import delete_all_messages, get_admins, get_preview
 from ..functions.telegram import send_message, send_report_message, unban_chat_member
+from ..functions.tests import preview_test
 from ..functions.user import ban_user, ban_user_globally
 
 # Enable logging
@@ -456,6 +457,6 @@ def share_preview(client, message):
                    & ~Filters.command(glovar.all_commands, glovar.prefix))
 def test(client, message):
     try:
-        pass
+        preview_test(client, message)
     except Exception as e:
         logger.warning(f"Test error: {e}", exc_info=True)

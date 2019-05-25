@@ -391,6 +391,35 @@ def send_message(client: Client, cid: int, text: str, mid: int = None,
     return result
 
 
+def send_photo(client: Client, cid: int, photo: str, caption: str = None, mid: int = None,
+               markup: InlineKeyboardMarkup = None) -> Optional[Union[bool, Message]]:
+    # Send a photo to a chat
+    result = None
+    try:
+        if photo.strip():
+            flood_wait = True
+            while flood_wait:
+                flood_wait = False
+                try:
+                    result = client.send_photo(
+                        chat_id=cid,
+                        photo=photo,
+                        caption=caption,
+                        parse_mode=ParseMode.MARKDOWN,
+                        reply_to_message_id=mid,
+                        reply_markup=markup
+                    )
+                except FloodWait as e:
+                    flood_wait = True
+                    wait_flood(e)
+                except (PeerIdInvalid, ChannelInvalid, ChannelPrivate):
+                    return False
+    except Exception as e:
+        logger.warning(f"Send photo to {cid} error: {e}", exc_info=True)
+
+    return result
+
+
 def send_report_message(secs: int, client: Client, cid: int, text: str, mid: int = None,
                         markup: InlineKeyboardMarkup = None) -> Optional[Message]:
     # Send a message that will be auto deleted to a chat
