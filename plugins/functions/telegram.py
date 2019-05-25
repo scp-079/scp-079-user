@@ -233,18 +233,18 @@ def get_preview(client: Client, message: Message) -> dict:
                     if isinstance(web_page, WebPage):
                         text = ""
                         if web_page.display_url:
-                            text += web_page.display_url + "\n"
+                            text += web_page.display_url + "\n\n"
 
                         if web_page.site_name:
-                            text += web_page.site_name + "\n"
+                            text += web_page.site_name + "\n\n"
 
                         if web_page.title:
-                            text += web_page.title + "\n"
+                            text += web_page.title + "\n\n"
 
                         if web_page.description:
-                            text += web_page.description + "\n"
+                            text += web_page.description + "\n\n"
 
-                        preview["text"] = text
+                        preview["text"] = text.strip()
                         if web_page.photo:
                             if isinstance(web_page.photo, Photo):
                                 photo = web_page.photo
