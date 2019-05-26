@@ -69,19 +69,22 @@ def clear_recorded_ids() -> bool:
 
 def reset_data() -> bool:
     # Reset user data every month
-    glovar.bad_ids = {
-        "channels": set(),
-        "users": set()
-    }
-    save("bad_ids")
+    try:
+        glovar.bad_ids = {
+            "channels": set(),
+            "users": set()
+        }
+        save("bad_ids")
 
-    glovar.except_ids = {
-        "tmp": set()
-    }
-    save("except_ids")
+        glovar.except_ids = {
+            "tmp": set()
+        }
+        save("except_ids")
 
-    glovar.user_ids = {}
-    save("user_ids")
+        glovar.user_ids = {}
+        save("user_ids")
+    except Exception as e:
+        logger.warning(f"Reset data error: {e}", exc_info=True)
 
     return True
 
