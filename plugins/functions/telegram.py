@@ -22,7 +22,7 @@ from typing import Iterable, List, Optional, Union
 
 from pyrogram import Chat, ChatMember, Client, InlineKeyboardMarkup, Message
 from pyrogram.api.functions.channels import DeleteUserHistory
-from pyrogram.api.functions.messages import GetCommonChats, GetWebPagePreview
+from pyrogram.api.functions.messages import GetCommonChats, GetWebPagePreview, ReadHistory
 from pyrogram.api.types import FileLocation, MessageMediaPhoto, MessageMediaWebPage, Photo, PhotoSize, WebPage
 from pyrogram.api.types import InputPeerUser, InputPeerChannel
 from pyrogram.client.ext.utils import encode
@@ -264,6 +264,27 @@ def leave_chat(client: Client, cid: int) -> bool:
         return True
     except Exception as e:
         logger.warning(f"Leave chat {cid} error: {e}")
+
+    return False
+
+
+def mark_as_read(client: Client, cid: int) -> bool:
+    # Mark a chat as read
+    try:
+        peer = resolve_peer(client, cid)
+        if peer:
+            flood_wait = True
+            while flood_wait:
+                flood_wait = False
+                try:
+                    client.send(ReadHistory(peer=peer, max_id=0))
+                except FloodWait as e:
+                    flood_wait = True
+                    wait_flood(e)
+
+            return True
+    except Exception as e:
+        logger.warning(f"Mark as read error: {e}", exc_info=True)
 
     return False
 
