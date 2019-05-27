@@ -50,8 +50,7 @@ declared_message_ids: Dict[int, Set[int]] = {}
 default_config: Dict[str, Union[bool, int, Dict[str, bool]]] = {
     "default": True,
     "lock": 0,
-    "subscribe": True,
-    "dafm": False
+    "subscribe": True
 }
 
 receivers_declare: List[str] = ["CLEAN", "LANG", "NOFLOOD", "NOPORN", "NOSPAM", "RECHECK", "USER"]
