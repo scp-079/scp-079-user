@@ -24,7 +24,7 @@ from pyrogram import Chat, Client, Message
 from pyrogram.errors import FloodWait
 
 from .. import glovar
-from .etc import code, general_link, get_full_name, format_data, thread, user_mention
+from .etc import code, general_link, get_full_name, format_data, message_link, thread, user_mention
 from .file import crypt_file
 from .telegram import get_group_info, send_document, send_message
 
@@ -72,7 +72,7 @@ def exchange_to_hide(client: Client) -> bool:
     return False
 
 
-def forward_evidence(client: Client, message: Message, level: str, rule: str) -> Optional[Union[bool, int]]:
+def forward_evidence(client: Client, message: Message, level: str, rule: str) -> Optional[Union[bool, Message]]:
     # Forward the message to the logging channel as evidence
     result = None
     try:
@@ -106,8 +106,6 @@ def forward_evidence(client: Client, message: Message, level: str, rule: str) ->
 
             result = result.message_id
             result = send_message(client, glovar.logging_channel_id, text, result)
-
-        result = result.message_id
     except Exception as e:
         logger.warning(f"Forward evidence error: {e}", exc_info=True)
 
@@ -135,13 +133,13 @@ def get_debug_text(client: Client, context: Union[int, Chat]) -> str:
     return text
 
 
-def send_debug(client: Client, chat: Chat, action: str, uid: int, mid: int, eid: int) -> bool:
+def send_debug(client: Client, chat: Chat, action: str, uid: int, mid: int, em: Message) -> bool:
     # Send the debug message
     try:
         text = get_debug_text(client, chat)
         text += (f"用户 ID：{user_mention(uid)}\n"
                  f"执行操作：{code(action)}\n"
-                 f"触发消息：{general_link(mid, f'https://t.me/{glovar.logging_channel_username}/{eid}')}\n")
+                 f"触发消息：{general_link(mid, message_link(em))}\n")
         thread(send_message, (client, glovar.debug_channel_id, text))
         return True
     except Exception as e:

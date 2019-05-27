@@ -67,7 +67,7 @@ sender: str = "USER"
 
 should_hide: bool = False
 
-version: str = "0.0.8"
+version: str = "0.0.9"
 
 # Read data from config.ini
 
@@ -91,7 +91,6 @@ debug_channel_id: int = 0
 exchange_channel_id: int = 0
 hide_channel_id: int = 0
 logging_channel_id: int = 0
-logging_channel_username: str = ""
 test_group_id: int = 0
 
 # [custom]
@@ -125,7 +124,6 @@ try:
     exchange_channel_id = int(config["channels"].get("exchange_channel_id", exchange_channel_id))
     hide_channel_id = int(config["channels"].get("hide_channel_id", hide_channel_id))
     logging_channel_id = int(config["channels"].get("logging_channel_id", logging_channel_id))
-    logging_channel_username = config["channels"].get("logging_channel_username", logging_channel_username)
     test_group_id = int(config["channels"].get("test_group_id", test_group_id))
     # [custom]
     default_group_link = config["custom"].get("default_group_link", default_group_link)
@@ -154,7 +152,6 @@ if (prefix == []
         or exchange_channel_id == 0
         or hide_channel_id == 0
         or logging_channel_id == 0
-        or logging_channel_username in {"", "[DATA EXPUNGED]"}
         or test_group_id == 0
         or default_group_link in {"", "[DATA EXPUNGED]"}
         or image_size == 0
