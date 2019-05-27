@@ -25,7 +25,7 @@ from pyrogram import Client, Filters
 
 from .. import glovar
 from ..functions.channel import forward_evidence, get_debug_text, share_data
-from ..functions.etc import bold, code, get_command_context, thread, user_mention
+from ..functions.etc import bold, code, code_block, get_command_context, thread, user_mention
 from ..functions.file import save
 from ..functions.filters import is_class_c, test_group
 from ..functions.group import delete_message
@@ -194,7 +194,7 @@ def print_message(client, message):
             text = re.sub('"phone_number": ".*?"', '"phone_number": "███████████"', text)
             text = (f"管理员：{user_mention(aid)}\n\n"
                     f"消息结构：" + "-" * 24 + "\n\n"
-                    f"{text}")
+                    f"{code_block(text)}")
             thread(send_message, (client, cid, text, mid))
     except Exception as e:
         logger.warning(f"Print message error: {e}", exc_info=True)
