@@ -24,7 +24,7 @@ from copy import deepcopy
 from pyrogram import Client, Filters
 
 from .. import glovar
-from ..functions.channel import forward_evidence, get_debug_text, share_data
+from ..functions.channel import forward_evidence, get_debug_text, send_debug, share_data
 from ..functions.etc import bold, code, code_block, get_command_context, thread, user_mention
 from ..functions.file import save
 from ..functions.filters import is_class_c, test_group
@@ -176,6 +176,7 @@ def dafm(client, message):
                         if result:
                             glovar.deleted_ids[gid].add(uid)
                             thread(delete_all_messages, (client, gid, uid))
+                            send_debug(client, message.chat, "自助删除", uid, mid, result)
 
         thread(delete_message, (client, gid, mid))
     except Exception as e:
