@@ -50,10 +50,9 @@ def check(client, message):
                     glovar.recorded_ids[gid].add(uid)
                     result = forward_evidence(client, message, "自动删除", "订阅列表")
                     if result:
-                        delete_message(client, gid, mid)
                         send_debug(client, message.chat, "自动删除", uid, mid, result)
-            else:
-                delete_message(client, gid, mid)
+
+            delete_message(client, gid, mid)
     except Exception as e:
         logger.warning(f"Check error: {e}", exc_info=True)
 
