@@ -59,7 +59,7 @@ def backup_files(client: Client) -> bool:
 def interval_ten_min() -> bool:
     # Execute every 10 minutes
     try:
-        glovar.deleted_ids = {}
+        # glovar.deleted_ids = {}
 
         glovar.recorded_ids = {}
 

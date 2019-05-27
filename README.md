@@ -9,6 +9,7 @@ See [this article](https://scp-079.org/user/).
 ## To Do List
 
 - [x] Help to delete messages or ban user
+- [x] Print message function
 
 ## Requirements
 

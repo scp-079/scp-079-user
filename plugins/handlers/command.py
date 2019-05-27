@@ -24,13 +24,12 @@ from copy import deepcopy
 from pyrogram import Client, Filters
 
 from .. import glovar
-from ..functions.channel import forward_evidence, get_debug_text, send_debug, share_data
+from ..functions.channel import get_debug_text, share_data
 from ..functions.etc import bold, code, code_block, get_command_context, thread, user_mention
 from ..functions.file import save
 from ..functions.filters import is_class_c, test_group
 from ..functions.group import delete_message
-from ..functions.ids import init_group_id
-from ..functions.telegram import delete_all_messages, get_group_info, send_message, send_report_message
+from ..functions.telegram import get_group_info, send_message, send_report_message
 
 # Enable logging
 logger = logging.getLogger(__name__)
@@ -159,28 +158,28 @@ def config_user(client, message):
         logger.warning(f"Config error: {e}", exc_info=True)
 
 
-@Client.on_message(Filters.incoming & Filters.group
-                   & Filters.command(["dafm"], glovar.prefix))
-def dafm(client, message):
-    try:
-        gid = message.chat.id
-        mid = message.message_id
-        if init_group_id(gid):
-            if glovar.configs[gid]["dafm"] or is_class_c(None, message):
-                uid = message.from_user.id
-                command_list = list(filter(None, message.command))
-                if len(command_list) == 2 and command_list[1] == "yes":
-                    if uid not in glovar.deleted_ids[gid]:
-                        # Forward the request command message as evidence
-                        result = forward_evidence(client, message, "自助删除", "群组自定义")
-                        if result:
-                            glovar.deleted_ids[gid].add(uid)
-                            thread(delete_all_messages, (client, gid, uid))
-                            send_debug(client, message.chat, "自助删除", uid, mid, result)
-
-        thread(delete_message, (client, gid, mid))
-    except Exception as e:
-        logger.warning(f"DAFM error: {e}", exc_info=True)
+# @Client.on_message(Filters.incoming & Filters.group
+#                    & Filters.command(["dafm"], glovar.prefix))
+# def dafm(client, message):
+#     try:
+#         gid = message.chat.id
+#         mid = message.message_id
+#         if init_group_id(gid):
+#             if glovar.configs[gid]["dafm"] or is_class_c(None, message):
+#                 uid = message.from_user.id
+#                 command_list = list(filter(None, message.command))
+#                 if len(command_list) == 2 and command_list[1] == "yes":
+#                     if uid not in glovar.deleted_ids[gid]:
+#                         # Forward the request command message as evidence
+#                         result = forward_evidence(client, message, "自助删除", "群组自定义")
+#                         if result:
+#                             glovar.deleted_ids[gid].add(uid)
+#                             thread(delete_all_messages, (client, gid, uid))
+#                             send_debug(client, message.chat, "自助删除", uid, mid, result)
+#
+#         thread(delete_message, (client, gid, mid))
+#     except Exception as e:
+#         logger.warning(f"DAFM error: {e}", exc_info=True)
 
 
 @Client.on_message(Filters.incoming & Filters.group & test_group

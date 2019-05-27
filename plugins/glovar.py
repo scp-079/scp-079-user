@@ -42,7 +42,7 @@ declared_message_ids: Dict[int, Set[int]] = {}
 #     -10012345678: {123}
 # }
 
-deleted_ids: Dict[int, Set[int]] = {}
+# deleted_ids: Dict[int, Set[int]] = {}
 # deleted_ids = {
 #     -10012345678: {12345678}
 # }
