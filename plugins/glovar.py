@@ -32,6 +32,7 @@ logger = logging.getLogger(__name__)
 all_commands: List[str] = [
     "config",
     "config_user",
+    "dafm",
     "print",
     "version"
 ]
@@ -39,6 +40,11 @@ all_commands: List[str] = [
 declared_message_ids: Dict[int, Set[int]] = {}
 # declared_message_ids = {
 #     -10012345678: {123}
+# }
+
+deleted_ids: Dict[int, Set[int]] = {}
+# deleted_ids = {
+#     -10012345678: {12345678}
 # }
 
 default_config: Dict[str, Union[bool, int, Dict[str, bool]]] = {
@@ -61,7 +67,7 @@ sender: str = "USER"
 
 should_hide: bool = False
 
-version: str = "0.0.7"
+version: str = "0.0.8"
 
 # Read data from config.ini
 

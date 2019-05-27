@@ -24,12 +24,13 @@ from copy import deepcopy
 from pyrogram import Client, Filters
 
 from .. import glovar
-from ..functions.channel import get_debug_text, share_data
+from ..functions.channel import forward_evidence, get_debug_text, share_data
 from ..functions.etc import bold, code, get_command_context, thread, user_mention
 from ..functions.file import save
 from ..functions.filters import is_class_c, test_group
 from ..functions.group import delete_message
-from ..functions.telegram import get_group_info, send_message, send_report_message
+from ..functions.ids import init_group_id
+from ..functions.telegram import delete_all_messages, get_group_info, send_message, send_report_message
 
 # Enable logging
 logger = logging.getLogger(__name__)
@@ -121,6 +122,14 @@ def config_user(client, message):
                                 else:
                                     success = False
                                     reason = "订阅选项有误"
+                            elif command_type == "dafm":
+                                if command_context == "off":
+                                    new_config["dafm"] = False
+                                elif command_context == "on":
+                                    new_config["dafm"] = True
+                                else:
+                                    success = False
+                                    reason = "自助选项有误"
                             else:
                                 success = False
                                 reason = "命令类别有误"
@@ -148,6 +157,47 @@ def config_user(client, message):
         thread(delete_message, (client, gid, mid))
     except Exception as e:
         logger.warning(f"Config error: {e}", exc_info=True)
+
+
+@Client.on_message(Filters.incoming & Filters.group
+                   & Filters.command(["dafm"], glovar.prefix))
+def dafm(client, message):
+    try:
+        gid = message.chat.id
+        mid = message.message_id
+        if init_group_id(gid):
+            if glovar.configs[gid]["dafm"] or is_class_c(None, message):
+                uid = message.from_user.id
+                command_list = list(filter(None, message.command))
+                if len(command_list) == 2 and command_list[1] == "yes":
+                    if uid not in glovar.deleted_ids[gid]:
+                        # Forward the request command message as evidence
+                        result = forward_evidence(client, message, "自助删除", "群组自定义")
+                        if result:
+                            glovar.deleted_ids[gid].add(uid)
+                            thread(delete_all_messages, (client, gid, uid))
+
+        thread(delete_message, (client, gid, mid))
+    except Exception as e:
+        logger.warning(f"DAFM error: {e}", exc_info=True)
+
+
+@Client.on_message(Filters.incoming & Filters.group & test_group
+                   & Filters.command(["print"], glovar.prefix))
+def print_message(client, message):
+    try:
+        cid = message.chat.id
+        aid = message.from_user.id
+        mid = message.message_id
+        if message.reply_to_message:
+            text = str(message.reply_to_message).replace("pyrogram.", "")
+            text = re.sub('"phone_number": ".*?"', '"phone_number": "███████████"', text)
+            text = (f"管理员：{user_mention(aid)}\n\n"
+                    f"消息结构：" + "-" * 24 + "\n\n"
+                    f"{text}")
+            thread(send_message, (client, cid, text, mid))
+    except Exception as e:
+        logger.warning(f"Print message error: {e}", exc_info=True)
 
 
 @Client.on_message(Filters.incoming & Filters.group & test_group

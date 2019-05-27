@@ -56,10 +56,13 @@ def backup_files(client: Client) -> bool:
     return False
 
 
-def clear_recorded_ids() -> bool:
-    # Clear recorded ids
+def interval_ten_min() -> bool:
+    # Execute every 10 minutes
     try:
+        glovar.deleted_ids = {}
+
         glovar.recorded_ids = {}
+
         return True
     except Exception as e:
         logger.warning(f"Clear recorded ids error: {e}", exc_info=True)
