@@ -184,6 +184,9 @@ def get_preview(client: Client, message: Message) -> dict:
                     web_page = result.webpage
                     if isinstance(web_page, WebPage):
                         text = ""
+                        if web_page.url:
+                            text += web_page.url + "\n\n"
+
                         if web_page.display_url:
                             text += web_page.display_url + "\n\n"
 
