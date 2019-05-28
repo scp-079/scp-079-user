@@ -30,12 +30,15 @@ logger = logging.getLogger(__name__)
 def preview_test(client: Client, message: Message) -> bool:
     # Test preview
     try:
-        preview = get_preview(client, message)
+        preview, url = get_preview(client, message)
         if preview["file_id"] or preview["text"]:
             cid = message.chat.id
             aid = message.from_user.id
             mid = message.message_id
             text = f"管理员：{user_mention(aid)}\n\n"
+            if url:
+                text += "触发链接：" + "-" * 24 + "\n\n" + code_block(url)
+
             if preview["text"]:
                 text += "预览文字：" + "-" * 24 + "\n\n" + code_block(preview["text"])
 

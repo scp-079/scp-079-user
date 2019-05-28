@@ -440,7 +440,7 @@ def process_data(client, message):
                    & ~class_c & ~class_d & ~class_e & ~declared_message)
 def share_preview(client, message):
     try:
-        preview = get_preview(client, message)
+        preview, _ = get_preview(client, message)
         if preview["text"] or preview["file_id"]:
             gid = message.chat.id
             uid = message.from_user.id
