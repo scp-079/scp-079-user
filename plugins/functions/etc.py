@@ -212,9 +212,6 @@ def get_text(message: Message) -> str:
                 for en in entities:
                     if en.url:
                         text += f"\n{en.url}"
-
-                    if en.user:
-                        text += f"\n{get_full_name(en.user)}"
     except Exception as e:
         logger.warning(f"Get text error: {e}", exc_info=True)
 
