@@ -32,7 +32,7 @@ logger = logging.getLogger(__name__)
 all_commands: List[str] = [
     "config",
     "config_user",
-    "dafm",
+    "mention",
     "print",
     "version"
 ]

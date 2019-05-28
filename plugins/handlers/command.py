@@ -25,7 +25,7 @@ from pyrogram import Client, Filters
 
 from .. import glovar
 from ..functions.channel import get_debug_text, share_data
-from ..functions.etc import bold, code, code_block, get_command_context, thread, user_mention
+from ..functions.etc import bold, code, code_block, get_command_context, get_reason, thread, user_mention
 from ..functions.file import save
 from ..functions.filters import is_class_c, test_group
 from ..functions.group import delete_message
@@ -180,6 +180,26 @@ def config_user(client, message):
 #         thread(delete_message, (client, gid, mid))
 #     except Exception as e:
 #         logger.warning(f"DAFM error: {e}", exc_info=True)
+
+
+@Client.on_message(Filters.incoming & Filters.group & test_group
+                   & Filters.command(["mention"], glovar.prefix))
+def mention(client, message):
+    try:
+        cid = message.chat.id
+        aid = message.from_user.id
+        mid = message.message_id
+        text = f"管理员：{user_mention(aid)}\n\n"
+        try:
+            uid = int(get_reason(message))
+            text += f"查询用户：{user_mention(uid)}\n"
+        except Exception as e:
+            text += (f"状态：{code('出现错误')}\n"
+                     f"错误：{code(e)}\n")
+
+        thread(send_message, (client, cid, text, mid))
+    except Exception as e:
+        logger.warning(f"Mention error: {e}", exc_info=True)
 
 
 @Client.on_message(Filters.incoming & Filters.group & test_group
