@@ -194,7 +194,7 @@ def get_reason(message: Message) -> str:
 
 
 def get_text(message: Message) -> str:
-    # Get message's text
+    # Get message's text, including link and mentioned user's name
     text = ""
     try:
         if message.text or message.caption:
@@ -202,6 +202,19 @@ def get_text(message: Message) -> str:
                 text += message.text
             else:
                 text += message.caption
+
+            if message.entities or message.caption_entities:
+                if message.entities:
+                    entities = message.entities
+                else:
+                    entities = message.caption_entities
+
+                for en in entities:
+                    if en.url:
+                        text += f"\n{en.url}"
+
+                    if en.user:
+                        text += f"\n{get_full_name(en.user)}"
     except Exception as e:
         logger.warning(f"Get text error: {e}", exc_info=True)
 
