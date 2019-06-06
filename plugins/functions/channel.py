@@ -25,7 +25,7 @@ from pyrogram.errors import FloodWait
 
 from .. import glovar
 from .etc import code, general_link, get_full_name, format_data, message_link, thread
-from .file import crypt_file, get_new_path
+from .file import crypt_file, delete_file, get_new_path
 from .telegram import get_group_info, send_document, send_message
 
 # Enable logging
@@ -175,6 +175,8 @@ def share_data(client: Client, receivers: List[str], action: str, action_type: s
                 file_path = file
 
             result = send_document(client, channel_id, file_path, text)
+            if result and "tmp/" in file_path:
+                delete_file(file_path)
         else:
             text = format_data(
                 sender=glovar.sender,
