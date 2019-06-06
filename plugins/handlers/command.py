@@ -212,7 +212,7 @@ def print_message(client: Client, message: Message):
         if message.reply_to_message:
             result = str(message.reply_to_message).replace("pyrogram.", "")
             result = re.sub('"phone_number": ".*?"', '"phone_number": "███████████"', result)
-            result_list = [result[i:i + 4096] for i in range(0, len(result), 4096)]
+            result_list = [result[i:i + 3000] for i in range(0, len(result), 3000)]
             for result_unit in result_list:
                 text = (f"管理员：{user_mention(aid)}\n\n"
                         f"消息结构：" + "-" * 24 + "\n\n"
