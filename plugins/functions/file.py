@@ -21,14 +21,11 @@ from os import remove
 from os.path import exists
 from pickle import dump
 from shutil import copyfile
-from typing import Optional
 
 from pyAesCrypt import decryptFile, encryptFile
-from pyrogram import Client
 
 from .. import glovar
 from .etc import random_str, thread
-from .telegram import download_media
 
 # Enable logging
 logger = logging.getLogger(__name__)
