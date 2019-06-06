@@ -480,6 +480,7 @@ def share_preview(client: Client, message: Message):
                    & ~Filters.command(glovar.all_commands, glovar.prefix))
 def test(client: Client, message: Message):
     try:
+        logger.warning(message)
         preview_test(client, message)
     except Exception as e:
         logger.warning(f"Test error: {e}", exc_info=True)
