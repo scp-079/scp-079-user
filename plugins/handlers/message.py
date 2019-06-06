@@ -18,7 +18,7 @@
 
 import logging
 
-from pyrogram import Client, Filters, InlineKeyboardButton, InlineKeyboardMarkup
+from pyrogram import Client, Filters, InlineKeyboardButton, InlineKeyboardMarkup, Message
 
 from .. import glovar
 from ..functions.channel import forward_evidence, get_debug_text, send_debug, share_data
@@ -39,7 +39,7 @@ logger = logging.getLogger(__name__)
 
 @Client.on_message(Filters.incoming & Filters.group & ~test_group & ~Filters.new_chat_members
                    & ~class_c & class_d & ~class_e & ~declared_message)
-def check(client, message):
+def check(client: Client, message: Message):
     try:
         gid = message.chat.id
         if glovar.configs[gid]["subscribe"]:
@@ -59,7 +59,7 @@ def check(client, message):
 
 @Client.on_message(Filters.incoming & Filters.group & ~test_group & Filters.new_chat_members
                    & ~class_c & ~class_e & ~declared_message)
-def check_join(client, message):
+def check_join(client: Client, message: Message):
     try:
         gid = message.chat.id
         mid = message.message_id
@@ -84,7 +84,7 @@ def check_join(client, message):
 
 @Client.on_message(Filters.incoming & Filters.channel & hide_channel
                    & ~Filters.command(glovar.all_commands, glovar.prefix))
-def exchange_emergency(_, message):
+def exchange_emergency(_, message: Message):
     try:
         # Read basic information
         data = receive_data(message)
@@ -103,7 +103,7 @@ def exchange_emergency(_, message):
 
 
 @Client.on_message(Filters.incoming & Filters.group & Filters.new_chat_members & new_group)
-def init_group(client, message):
+def init_group(client: Client, message: Message):
     try:
         gid = message.chat.id
         text = get_debug_text(client, message.chat)
@@ -125,18 +125,27 @@ def init_group(client, message):
         logger.warning(f"Init group error: {e}", exc_info=True)
 
 
-@Client.on_message(~Filters.private & Filters.incoming, group=1)
-def mark(client, message):
+@Client.on_message(~Filters.private & Filters.incoming & Filters.mentioned, group=1)
+def mark_mention(client: Client, message: Message):
     try:
         cid = message.chat.id
-        thread(mark_as_read, (client, cid))
+        thread(mark_as_read, (client, cid, "mention"))
     except Exception as e:
-        logger.warning(f"Mark error: {e}", exc_info=True)
+        logger.warning(f"Mark mention error: {e}", exc_info=True)
+
+
+@Client.on_message(~Filters.private & Filters.incoming, group=2)
+def mark_message(client, message):
+    try:
+        cid = message.chat.id
+        thread(mark_as_read, (client, cid, "message"))
+    except Exception as e:
+        logger.warning(f"Mark message error: {e}", exc_info=True)
 
 
 @Client.on_message(Filters.channel & exchange_channel
                    & ~Filters.command(glovar.all_commands, glovar.prefix))
-def process_data(client, message):
+def process_data(client: Client, message: Message):
     try:
         data = receive_data(message)
         if data:
@@ -438,7 +447,7 @@ def process_data(client, message):
 
 @Client.on_message(Filters.incoming & Filters.group & ~test_group & ~Filters.service
                    & ~class_c & ~class_d & ~class_e & ~declared_message)
-def share_preview(client, message):
+def share_preview(client: Client, message: Message):
     try:
         preview, _ = get_preview(client, message)
         if preview["text"] or preview["file_id"]:
@@ -464,7 +473,7 @@ def share_preview(client, message):
 
 @Client.on_message(Filters.incoming & Filters.group & test_group & ~Filters.service & ~Filters.bot
                    & ~Filters.command(glovar.all_commands, glovar.prefix))
-def test(client, message):
+def test(client: Client, message: Message):
     try:
         preview_test(client, message)
     except Exception as e:

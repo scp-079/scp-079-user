@@ -21,7 +21,7 @@ import re
 from time import time
 from copy import deepcopy
 
-from pyrogram import Client, Filters
+from pyrogram import Client, Filters, Message
 
 from .. import glovar
 from ..functions.channel import get_debug_text, share_data
@@ -37,7 +37,7 @@ logger = logging.getLogger(__name__)
 
 @Client.on_message(Filters.incoming & Filters.group
                    & Filters.command(["config"], glovar.prefix))
-def config(client, message):
+def config(client: Client, message: Message):
     try:
         gid = message.chat.id
         mid = message.message_id
@@ -82,7 +82,7 @@ def config(client, message):
 
 @Client.on_message(Filters.incoming & Filters.group
                    & Filters.command(["config_user"], glovar.prefix))
-def config_user(client, message):
+def config_user(client: Client, message: Message):
     try:
         gid = message.chat.id
         mid = message.message_id
@@ -184,7 +184,7 @@ def config_user(client, message):
 
 @Client.on_message(Filters.incoming & Filters.group & test_group
                    & Filters.command(["mention"], glovar.prefix))
-def mention(client, message):
+def mention(client: Client, message: Message):
     try:
         cid = message.chat.id
         aid = message.from_user.id
@@ -204,7 +204,7 @@ def mention(client, message):
 
 @Client.on_message(Filters.incoming & Filters.group & test_group
                    & Filters.command(["print"], glovar.prefix))
-def print_message(client, message):
+def print_message(client: Client, message: Message):
     try:
         cid = message.chat.id
         aid = message.from_user.id
@@ -222,7 +222,7 @@ def print_message(client, message):
 
 @Client.on_message(Filters.incoming & Filters.group & test_group
                    & Filters.command(["version"], glovar.prefix))
-def version(client, message):
+def version(client: Client, message: Message):
     try:
         cid = message.chat.id
         aid = message.from_user.id
