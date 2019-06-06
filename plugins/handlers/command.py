@@ -217,7 +217,7 @@ def print_message(client: Client, message: Message):
                 text = (f"管理员：{user_mention(aid)}\n\n"
                         f"消息结构：" + "-" * 24 + "\n\n"
                         f"{code_block(result_unit)}")
-                thread(send_message, (client, cid, text, mid))
+                send_message(client, cid, text, mid)
     except Exception as e:
         logger.warning(f"Print message error: {e}", exc_info=True)
 
