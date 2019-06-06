@@ -25,7 +25,7 @@ from pyrogram.errors import FloodWait
 
 from .. import glovar
 from .etc import code, general_link, get_full_name, format_data, message_link, thread
-from .file import crypt_file
+from .file import crypt_file, get_new_path
 from .telegram import get_group_info, send_document, send_message
 
 # Enable logging
@@ -149,7 +149,7 @@ def send_debug(client: Client, chat: Chat, action: str, uid: int, mid: int, em: 
 
 
 def share_data(client: Client, receivers: List[str], action: str, action_type: str, data: Union[dict, int, str],
-               file: str = None) -> bool:
+               file: str = None, encrypt: bool = True) -> bool:
     # Use this function to share data in the exchange channel
     try:
         if glovar.sender in receivers:
@@ -168,8 +168,13 @@ def share_data(client: Client, receivers: List[str], action: str, action_type: s
                 action_type=action_type,
                 data=data
             )
-            crypt_file("encrypt", f"data/{file}", f"tmp/{file}")
-            result = send_document(client, channel_id, f"tmp/{file}", text)
+            if encrypt:
+                file_path = get_new_path()
+                crypt_file("encrypt", file, file_path)
+            else:
+                file_path = file
+
+            result = send_document(client, channel_id, file_path, text)
         else:
             text = format_data(
                 sender=glovar.sender,

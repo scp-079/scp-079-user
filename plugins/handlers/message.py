@@ -17,13 +17,14 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
+from pickle import dump
 
 from pyrogram import Client, Filters, InlineKeyboardButton, InlineKeyboardMarkup, Message
 
 from .. import glovar
 from ..functions.channel import forward_evidence, get_debug_text, send_debug, share_data
 from ..functions.etc import code, receive_data, thread, user_mention
-from ..functions.file import save
+from ..functions.file import get_new_path, save
 from ..functions.filters import class_c, class_d, class_e, declared_message, exchange_channel, hide_channel
 from ..functions.filters import new_group, test_group
 from ..functions.group import delete_message, delete_messages_globally, leave_group
@@ -38,7 +39,7 @@ logger = logging.getLogger(__name__)
 
 
 @Client.on_message(Filters.incoming & Filters.group & ~test_group & ~Filters.new_chat_members
-                   & ~class_c & class_d & ~class_e & ~declared_message)
+                   & ~class_c & class_d & ~declared_message)
 def check(client: Client, message: Message):
     try:
         gid = message.chat.id
@@ -454,6 +455,10 @@ def share_preview(client: Client, message: Message):
             gid = message.chat.id
             uid = message.from_user.id
             mid = message.message_id
+            file_path = get_new_path()
+            with open(file_path, "wb") as f:
+                dump(preview, f)
+
             share_data(
                 client=client,
                 receivers=glovar.receivers_preview,
@@ -462,10 +467,10 @@ def share_preview(client: Client, message: Message):
                 data={
                     "group_id": gid,
                     "user_id": uid,
-                    "message_id": mid,
-                    "text": preview["text"],
-                    "image": preview["file_id"]
-                }
+                    "message_id": mid
+                },
+                file=file_path,
+                encrypt=False
             )
     except Exception as e:
         logger.warning(f"Share preview error: {e}", exc_info=True)

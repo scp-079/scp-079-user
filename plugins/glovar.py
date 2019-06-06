@@ -66,7 +66,7 @@ sender: str = "USER"
 
 should_hide: bool = False
 
-version: str = "0.1.0"
+version: str = "0.1.1"
 
 # Read data from config.ini
 

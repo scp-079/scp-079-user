@@ -21,11 +21,14 @@ from os import remove
 from os.path import exists
 from pickle import dump
 from shutil import copyfile
+from typing import Optional
 
 from pyAesCrypt import decryptFile, encryptFile
+from pyrogram import Client
 
 from .. import glovar
-from .etc import thread
+from .etc import random_str, thread
+from .telegram import download_media
 
 # Enable logging
 logger = logging.getLogger(__name__)
@@ -57,6 +60,21 @@ def delete_file(path: str) -> bool:
         logger.warning(f"Delete file error: {e}", exc_info=True)
 
     return False
+
+
+def get_new_path() -> str:
+    # Get a new path in tmp directory
+    result = ""
+    try:
+        file_path = random_str(8)
+        while exists(f"tmp/{file_path}"):
+            file_path = random_str(8)
+
+        result = f"tmp/{file_path}"
+    except Exception as e:
+        logger.warning(f"Get new path error: {e}", exc_info=True)
+
+    return result
 
 
 def save(file: str) -> bool:

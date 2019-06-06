@@ -175,7 +175,7 @@ def get_command_type(message: Message) -> str:
         command_list = list(filter(None, text.split(" ")))
         result = text[len(command_list[0]):].strip()
     except Exception as e:
-        logging.warning(f"Get reason error: {e}", exc_info=True)
+        logging.warning(f"Get command type error: {e}", exc_info=True)
 
     return result
 

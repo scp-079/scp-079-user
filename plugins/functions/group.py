@@ -23,6 +23,7 @@ from pyrogram import Client
 from .. import glovar
 from .etc import thread
 from .file import save
+from .ids import init_group_id
 from .telegram import delete_messages, delete_all_messages, get_common_chats, leave_chat
 
 # Enable logging
@@ -48,7 +49,9 @@ def delete_messages_globally(client: Client, uid: int) -> bool:
         if chats:
             for chat in chats:
                 gid = int(f"-100{chat.id}")
-                thread(delete_all_messages, (client, gid, uid))
+                if init_group_id(gid):
+                    if glovar.configs[gid]["subscribe"]:
+                        thread(delete_all_messages, (client, gid, uid))
 
         return True
     except Exception as e:

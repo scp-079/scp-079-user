@@ -67,29 +67,28 @@ def is_class_e(_, message: Message) -> bool:
     try:
         gid = message.chat.id
         uid = message.from_user.id
-        if uid in glovar.except_ids["users"]:
-            return True
-
-        admin_ids = deepcopy(glovar.admin_ids)
-        for gid in admin_ids:
-            if uid in admin_ids[gid]:
-                return True
-
-        if gid in glovar.except_ids["tmp"].get(uid, set()):
-            return True
-
+        id_list = [uid]
+        # Message forwarded from a user
         if message.forward_from:
             fid = message.forward_from.id
-            if fid in glovar.except_ids["users"]:
+            id_list.append(fid)
+
+        for user_id in id_list:
+            # Exception users
+            if user_id in glovar.except_ids["users"]:
                 return True
 
+            # All groups' admins
+            admin_ids = deepcopy(glovar.admin_ids)
             for gid in admin_ids:
-                if uid in admin_ids[gid]:
+                if user_id in admin_ids[gid]:
                     return True
 
-            if gid in glovar.except_ids["tmp"].get(fid, set()):
+            # The group's temp exception
+            if gid in glovar.except_ids["tmp"].get(user_id, set()):
                 return True
 
+        # Exception channels
         if message.forward_from_chat:
             cid = message.forward_from_chat.id
             if cid in glovar.except_ids["channels"]:
