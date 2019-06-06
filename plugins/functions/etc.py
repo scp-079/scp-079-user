@@ -22,7 +22,7 @@ from random import choice, uniform
 from string import ascii_letters, digits
 from threading import Thread, Timer
 from time import sleep
-from typing import Callable, List, Union
+from typing import Any, Callable, List, Union
 
 from cryptography.fernet import Fernet
 from pyrogram import Message, User
@@ -32,7 +32,7 @@ from pyrogram.errors import FloodWait
 logger = logging.getLogger(__name__)
 
 
-def bold(text) -> str:
+def bold(text: Any) -> str:
     # Get a bold text
     try:
         text = str(text)
@@ -44,7 +44,7 @@ def bold(text) -> str:
     return ""
 
 
-def code(text) -> str:
+def code(text: Any) -> str:
     # Get a code text
     try:
         text = str(text)
@@ -56,7 +56,7 @@ def code(text) -> str:
     return ""
 
 
-def code_block(text) -> str:
+def code_block(text: Any) -> str:
     # Get a code block text
     try:
         text = str(text)
@@ -148,7 +148,7 @@ def get_channel_link(message: Union[int, Message]) -> str:
 
 
 def get_command_context(message: Message) -> str:
-    # Get the context "b" in "/command a b"
+    # Get the command context "b" in "/command a b"
     result = ""
     try:
         text = get_text(message)
@@ -167,6 +167,19 @@ def get_command_context(message: Message) -> str:
     return result
 
 
+def get_command_type(message: Message) -> str:
+    # Get the command type "a" in "/command a"
+    result = ""
+    try:
+        text = get_text(message)
+        command_list = list(filter(None, text.split(" ")))
+        result = text[len(command_list[0]):].strip()
+    except Exception as e:
+        logging.warning(f"Get reason error: {e}", exc_info=True)
+
+    return result
+
+
 def get_full_name(user: User) -> str:
     # Get user's full name
     text = ""
@@ -177,18 +190,6 @@ def get_full_name(user: User) -> str:
                 text += f" {user.last_name}"
     except Exception as e:
         logger.warning(f"Get full name error: {e}", exc_info=True)
-
-    return text
-
-
-def get_reason(message: Message) -> str:
-    # Get the reason text
-    text = ""
-    try:
-        command_list = list(filter(None, get_text(message).split(" ")))
-        text = get_text(message)[len(command_list[0]):].strip()
-    except Exception as e:
-        logging.warning(f"Get reason error: {e}", exc_info=True)
 
     return text
 

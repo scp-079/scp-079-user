@@ -87,7 +87,7 @@ def forward_evidence(client: Client, message: Message, level: str, rule: str) ->
         if message.service:
             name = get_full_name(message.from_user)
             if name:
-                text += f"附加信息：{code(name)}\n"
+                text += f"用户昵称：{code(name)}\n"
 
             result = send_message(client, glovar.logging_channel_id, text)
             result = result.message_id

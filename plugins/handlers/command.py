@@ -25,7 +25,7 @@ from pyrogram import Client, Filters, Message
 
 from .. import glovar
 from ..functions.channel import get_debug_text, share_data
-from ..functions.etc import bold, code, code_block, get_command_context, get_reason, thread, user_mention
+from ..functions.etc import bold, code, code_block, get_command_context, get_command_type, thread, user_mention
 from ..functions.file import save
 from ..functions.filters import is_class_c, test_group
 from ..functions.group import delete_message
@@ -191,7 +191,7 @@ def mention(client: Client, message: Message):
         mid = message.message_id
         text = f"管理员：{user_mention(aid)}\n\n"
         try:
-            uid = int(get_reason(message))
+            uid = int(get_command_type(message))
             text += f"查询用户：{user_mention(uid)}\n"
         except Exception as e:
             text += (f"状态：{code('出现错误')}\n"
@@ -210,12 +210,14 @@ def print_message(client: Client, message: Message):
         aid = message.from_user.id
         mid = message.message_id
         if message.reply_to_message:
-            text = str(message.reply_to_message).replace("pyrogram.", "")
-            text = re.sub('"phone_number": ".*?"', '"phone_number": "███████████"', text)
-            text = (f"管理员：{user_mention(aid)}\n\n"
-                    f"消息结构：" + "-" * 24 + "\n\n"
-                    f"{code_block(text)}")
-            thread(send_message, (client, cid, text, mid))
+            result = str(message.reply_to_message).replace("pyrogram.", "")
+            result = re.sub('"phone_number": ".*?"', '"phone_number": "███████████"', result)
+            result_list = [result[i:i + 4096] for i in range(0, len(result), 4096)]
+            for result_unit in result_list:
+                text = (f"管理员：{user_mention(aid)}\n\n"
+                        f"消息结构：" + "-" * 24 + "\n\n"
+                        f"{code_block(result_unit)}")
+                thread(send_message, (client, cid, text, mid))
     except Exception as e:
         logger.warning(f"Print message error: {e}", exc_info=True)
 
