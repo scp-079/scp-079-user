@@ -31,11 +31,12 @@ logger = logging.getLogger(__name__)
 def is_class_c(_, message: Message) -> bool:
     # Check if the user who sent the message is Class C personnel
     try:
-        uid = message.from_user.id
-        gid = message.chat.id
-        if init_group_id(gid):
-            if uid in glovar.admin_ids.get(gid, set()) or uid in glovar.bot_ids or message.from_user.is_self:
-                return True
+        if message.from_user:
+            uid = message.from_user.id
+            gid = message.chat.id
+            if init_group_id(gid):
+                if uid in glovar.admin_ids.get(gid, set()) or uid in glovar.bot_ids or message.from_user.is_self:
+                    return True
     except Exception as e:
         logger.warning(f"Is class c error: {e}", exc_info=True)
 
@@ -45,9 +46,10 @@ def is_class_c(_, message: Message) -> bool:
 def is_class_d(_, message: Message) -> bool:
     # Check if the user who sent the message is Class D personnel
     try:
-        uid = message.from_user.id
-        if uid in glovar.bad_ids["users"]:
-            return True
+        if message.from_user:
+            uid = message.from_user.id
+            if uid in glovar.bad_ids["users"]:
+                return True
 
         if message.forward_from:
             fid = message.forward_from.id
@@ -66,8 +68,11 @@ def is_class_e(_, message: Message) -> bool:
     # Check if the user who sent this message is Class E personnel
     try:
         gid = message.chat.id
-        uid = message.from_user.id
-        id_list = [uid]
+        id_list = []
+        if message.from_user:
+            uid = message.from_user.id
+            id_list.append(uid)
+
         # Message forwarded from a user
         if message.forward_from:
             fid = message.forward_from.id
