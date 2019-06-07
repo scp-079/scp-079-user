@@ -11,6 +11,7 @@ See [this article](https://scp-079.org/user/).
 - [x] Help to delete messages or ban user
 - [x] Print message function
 - [x] Mark message and mention as read
+- [x] Share message preview
 
 ## Requirements
 

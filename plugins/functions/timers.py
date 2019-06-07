@@ -60,7 +60,6 @@ def interval_ten_min() -> bool:
     # Execute every 10 minutes
     try:
         # glovar.deleted_ids = {}
-
         glovar.recorded_ids = {}
 
         return True
@@ -86,10 +85,12 @@ def reset_data() -> bool:
 
         glovar.user_ids = {}
         save("user_ids")
+
+        return True
     except Exception as e:
         logger.warning(f"Reset data error: {e}", exc_info=True)
 
-    return True
+    return False
 
 
 def update_admins(client: Client) -> bool:

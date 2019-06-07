@@ -115,11 +115,11 @@ def init_group(client: Client, message: Message):
                 glovar.admin_ids[gid] = {admin.user.id for admin in admin_members
                                          if not admin.user.is_bot and not admin.user.is_deleted}
                 save("admin_ids")
-                text += f"状态：{code('已加入群组')}"
+                text += f"状态：{code('已加入群组')}\n"
             else:
                 thread(leave_group, (client, gid))
                 text += (f"状态：{code('已退出群组')}\n"
-                         f"原因：{code('获取管理员列表失败')}")
+                         f"原因：{code('获取管理员列表失败')}\n")
 
         thread(send_message, (client, glovar.debug_channel_id, text))
     except Exception as e:
@@ -144,7 +144,7 @@ def mark_message(client, message):
         logger.warning(f"Mark message error: {e}", exc_info=True)
 
 
-@Client.on_message(Filters.channel & exchange_channel
+@Client.on_message(Filters.incoming & Filters.channel & exchange_channel
                    & ~Filters.command(glovar.all_commands, glovar.prefix))
 def process_data(client: Client, message: Message):
     try:
@@ -250,6 +250,38 @@ def process_data(client: Client, message: Message):
                                 if init_group_id(group_id):
                                     glovar.declared_message_ids[group_id].add(message_id)
 
+                elif sender == "LONG":
+
+                    if action == "add":
+                        the_id = data["id"]
+                        the_type = data["type"]
+                        if action_type == "bad":
+                            if the_type == "user":
+                                glovar.bad_ids["users"].add(the_id)
+                                save("bad_ids")
+
+                    elif action == "help":
+                        group_id = data["group_id"]
+                        user_id = data["user_id"]
+                        if action_type == "ban":
+                            if init_user_id(user_id):
+                                glovar.banned_ids[user_id].add(group_id)
+                                thread(ban_user_globally, (client, user_id))
+                        elif action_type == "delete":
+                            help_type = data["type"]
+                            if help_type == "global":
+                                thread(delete_messages_globally, (client, user_id))
+                            elif help_type == "single":
+                                thread(delete_all_messages, (client, group_id, user_id))
+
+                    elif action == "update":
+                        if action_type == "declare":
+                            group_id = data["group_id"]
+                            message_id = data["message_id"]
+                            if glovar.configs.get(group_id):
+                                if init_group_id(group_id):
+                                    glovar.declared_message_ids[group_id].add(message_id)
+
                 elif sender == "MANAGE":
 
                     if action == "add":
@@ -302,6 +334,7 @@ def process_data(client: Client, message: Message):
                                 glovar.except_ids["channels"].discard(the_id)
                             elif the_type == "user":
                                 glovar.except_ids["users"].discard(the_id)
+                                glovar.except_ids["tmp"].pop(the_id, set())
 
                             save("except_ids")
 

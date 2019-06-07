@@ -48,7 +48,7 @@ def config(client: Client, message: Message):
             if len(command_list) == 2 and re.search("^user$", command_list[1], re.I):
                 now = int(time())
                 # Check the config lock
-                if now - glovar.configs[gid]["lock"] > 360:
+                if now - glovar.configs[gid]["lock"] > 310:
                     # Set lock
                     glovar.configs[gid]["lock"] = now
                     # Ask CONFIG generate a config session
@@ -98,7 +98,7 @@ def config_user(client: Client, message: Message):
             if len(command_list) > 1:
                 now = int(time())
                 # Check the config lock
-                if now - new_config["lock"] > 360:
+                if now - new_config["lock"] > 310:
                     command_type = list(filter(None, command_list))[1]
                     if command_type == "show":
                         text += (f"操作：{code('查看设置')}\n"
@@ -214,7 +214,7 @@ def print_message(client: Client, message: Message):
             result = re.sub('"phone_number": ".*?"', '"phone_number": "███████████"', result)
             text = (f"管理员：{user_mention(aid)}\n\n"
                     f"消息结构：" + "-" * 24 + "\n\n"
-                    f"{code_block(result)}")
+                    f"{code_block(result)}\n")
             thread(send_message, (client, cid, text, mid))
     except Exception as e:
         logger.warning(f"Print message error: {e}", exc_info=True)

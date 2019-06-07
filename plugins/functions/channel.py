@@ -90,7 +90,6 @@ def forward_evidence(client: Client, message: Message, level: str, rule: str) ->
                 text += f"用户昵称：{code(name)}\n"
 
             result = send_message(client, glovar.logging_channel_id, text)
-            result = result.message_id
         else:
             flood_wait = True
             while flood_wait:
@@ -106,6 +105,8 @@ def forward_evidence(client: Client, message: Message, level: str, rule: str) ->
 
             result = result.message_id
             result = send_message(client, glovar.logging_channel_id, text, result)
+
+        result = result.message_id
     except Exception as e:
         logger.warning(f"Forward evidence error: {e}", exc_info=True)
 
@@ -117,16 +118,14 @@ def get_debug_text(client: Client, context: Union[int, Chat]) -> str:
     text = ""
     try:
         if isinstance(context, int):
-            info_para = context
-            id_para = context
+            group_id = context
         else:
-            info_para = context
-            id_para = context.id
+            group_id = context.id
 
-        group_name, group_link = get_group_info(client, info_para)
+        group_name, group_link = get_group_info(client, context)
         text = (f"项目编号：{general_link(glovar.project_name, glovar.project_link)}\n"
                 f"群组名称：{general_link(group_name, group_link)}\n"
-                f"群组 ID：{code(id_para)}\n")
+                f"群组 ID：{code(group_id)}\n")
     except Exception as e:
         logger.warning(f"Get debug text error: {e}", exc_info=True)
 

@@ -53,9 +53,9 @@ default_config: Dict[str, Union[bool, int, Dict[str, bool]]] = {
     "subscribe": True
 }
 
-receivers_declare: List[str] = ["CLEAN", "LANG", "NOFLOOD", "NOPORN", "NOSPAM", "RECHECK", "USER"]
+receivers_declare: List[str] = ["CLEAN", "LANG", "LONG", "NOFLOOD", "NOPORN", "NOSPAM", "RECHECK", "USER"]
 
-receivers_preview: List[str] = ["CLEAN", "LANG", "NOFLOOD", "NOPORN", "NOSPAM", "RECHECK"]
+receivers_preview: List[str] = ["CLEAN", "LANG", "LONG", "NOFLOOD", "NOPORN", "NOSPAM", "RECHECK"]
 
 recorded_ids: Dict[int, Set[int]] = {}
 # recorded_ids = {
@@ -66,7 +66,7 @@ sender: str = "USER"
 
 should_hide: bool = False
 
-version: str = "0.1.1"
+version: str = "0.1.2"
 
 # Read data from config.ini
 
