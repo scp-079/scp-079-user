@@ -105,8 +105,6 @@ def forward_evidence(client: Client, message: Message, level: str, rule: str) ->
 
             result = result.message_id
             result = send_message(client, glovar.logging_channel_id, text, result)
-
-        result = result.message_id
     except Exception as e:
         logger.warning(f"Forward evidence error: {e}", exc_info=True)
 
