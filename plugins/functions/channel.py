@@ -24,7 +24,7 @@ from pyrogram import Chat, Client, Message
 from pyrogram.errors import FloodWait
 
 from .. import glovar
-from .etc import code, general_link, get_full_name, format_data, message_link, thread
+from .etc import code, general_link, format_data, message_link, thread
 from .file import crypt_file, delete_file, get_new_path
 from .telegram import get_group_info, send_document, send_message
 
@@ -85,10 +85,7 @@ def forward_evidence(client: Client, message: Message, level: str, rule: str) ->
                 f"操作等级：{code(level)}\n"
                 f"规则：{code(rule)}\n")
         if message.service:
-            name = get_full_name(message.from_user)
-            if name:
-                text += f"用户昵称：{code(name)}\n"
-
+            text += f"附加消息：{code('入群消息')}\n"
             result = send_message(client, glovar.logging_channel_id, text)
         else:
             flood_wait = True
