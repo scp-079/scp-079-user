@@ -22,7 +22,7 @@ from pickle import dump
 from pyrogram import Client, Filters, Message
 
 from .. import glovar
-from ..functions.channel import forward_evidence, get_debug_text, receive_data, send_debug, share_data
+from ..functions.channel import forward_evidence, get_debug_text, receive_text_data, send_debug, share_data
 from ..functions.etc import code, general_link, thread, user_mention
 from ..functions.file import get_new_path, save
 from ..functions.filters import class_c, class_d, class_e, declared_message, exchange_channel, hide_channel
@@ -88,7 +88,7 @@ def check_join(client: Client, message: Message):
 def exchange_emergency(_, message: Message):
     try:
         # Read basic information
-        data = receive_data(message)
+        data = receive_text_data(message)
         sender = data["from"]
         receivers = data["to"]
         action = data["action"]
@@ -148,7 +148,7 @@ def mark_message(client, message):
                    & ~Filters.command(glovar.all_commands, glovar.prefix))
 def process_data(client: Client, message: Message):
     try:
-        data = receive_data(message)
+        data = receive_text_data(message)
         if data:
             sender = data["from"]
             receivers = data["to"]
