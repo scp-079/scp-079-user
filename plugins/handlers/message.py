@@ -22,8 +22,8 @@ from pickle import dump
 from pyrogram import Client, Filters, Message
 
 from .. import glovar
-from ..functions.channel import forward_evidence, get_debug_text, send_debug, share_data
-from ..functions.etc import code, general_link, receive_data, thread, user_mention
+from ..functions.channel import forward_evidence, get_debug_text, receive_data, send_debug, share_data
+from ..functions.etc import code, general_link, thread, user_mention
 from ..functions.file import get_new_path, save
 from ..functions.filters import class_c, class_d, class_e, declared_message, exchange_channel, hide_channel
 from ..functions.filters import new_group, test_group

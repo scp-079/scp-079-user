@@ -17,12 +17,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
-from json import dumps, loads
 from random import choice, uniform
 from string import ascii_letters, digits
 from threading import Thread, Timer
 from time import sleep
-from typing import Any, Callable, List, Union
+from typing import Any, Callable, Union
 
 from cryptography.fernet import Fernet
 from pyrogram import Message
@@ -97,24 +96,6 @@ def delay(secs: int, target: Callable, args: list) -> bool:
         logger.warning(f"Delay error: {e}", exc_info=True)
 
     return False
-
-
-def format_data(sender: str, receivers: List[str], action: str, action_type: str, data: Any = None) -> str:
-    # See https://scp-079.org/exchange/
-    text = ""
-    try:
-        data = {
-            "from": sender,
-            "to": receivers,
-            "action": action,
-            "type": action_type,
-            "data": data
-        }
-        text = code_block(dumps(data, indent=4))
-    except Exception as e:
-        logger.warning(f"Format data error: {e}", exc_info=True)
-
-    return text
 
 
 def general_link(text: Union[int, str], link: str) -> str:
@@ -226,19 +207,6 @@ def random_str(i: int) -> str:
         logger.warning(f"Random str error: {e}", exc_info=True)
 
     return text
-
-
-def receive_data(message: Message) -> dict:
-    # Receive data from exchange channel
-    data = {}
-    try:
-        text = get_text(message)
-        if text:
-            data = loads(text)
-    except Exception as e:
-        logger.warning(f"Receive data error: {e}")
-
-    return data
 
 
 def thread(target: Callable, args: tuple) -> bool:
