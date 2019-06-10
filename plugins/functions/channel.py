@@ -149,8 +149,8 @@ def get_debug_text(client: Client, context: Union[int, Chat]) -> str:
     return text
 
 
-def receive_data(message: Message) -> dict:
-    # Receive data from exchange channel
+def receive_text_data(message: Message) -> dict:
+    # Receive text's data from exchange channel
     data = {}
     try:
         text = get_text(message)
