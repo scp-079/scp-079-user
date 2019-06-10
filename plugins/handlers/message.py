@@ -42,18 +42,19 @@ logger = logging.getLogger(__name__)
                    & ~class_c & class_d & ~declared_message)
 def check(client: Client, message: Message):
     try:
-        gid = message.chat.id
-        if glovar.configs[gid]["subscribe"]:
-            uid = message.from_user.id
-            mid = message.message_id
-            if message.forward_from or message.forward_from_chat:
-                if uid not in glovar.recorded_ids[gid]:
-                    glovar.recorded_ids[gid].add(uid)
-                    result = forward_evidence(client, message, "自动删除", "订阅列表")
-                    if result:
-                        send_debug(client, message.chat, "自动删除", uid, mid, result)
+        if message.from_user:
+            gid = message.chat.id
+            if glovar.configs[gid]["subscribe"]:
+                uid = message.from_user.id
+                mid = message.message_id
+                if message.forward_from or message.forward_from_chat:
+                    if uid not in glovar.recorded_ids[gid]:
+                        glovar.recorded_ids[gid].add(uid)
+                        result = forward_evidence(client, message, "自动删除", "订阅列表")
+                        if result:
+                            send_debug(client, message.chat, "自动删除", uid, mid, result)
 
-            delete_message(client, gid, mid)
+                delete_message(client, gid, mid)
     except Exception as e:
         logger.warning(f"Check error: {e}", exc_info=True)
 
