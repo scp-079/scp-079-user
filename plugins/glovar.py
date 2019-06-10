@@ -57,7 +57,7 @@ left_group_ids: Set[int] = set()
 
 receivers_declare: List[str] = ["CLEAN", "LANG", "LONG", "NOFLOOD", "NOPORN", "NOSPAM", "RECHECK", "USER"]
 
-receivers_preview: List[str] = ["CLEAN", "LANG", "LONG", "NOFLOOD", "NOPORN", "NOSPAM", "RECHECK"]
+receivers_preview: List[str] = ["CLEAN", "LANG", "NOPORN", "NOSPAM", "RECHECK"]
 
 recorded_ids: Dict[int, Set[int]] = {}
 # recorded_ids = {
