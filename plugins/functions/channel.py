@@ -92,7 +92,10 @@ def forward_evidence(client: Client, message: Message, level: str, rule: str) ->
             while flood_wait:
                 flood_wait = False
                 try:
-                    result = message.forward(glovar.logging_channel_id)
+                    result = message.forward(
+                        chat_id=glovar.logging_channel_id,
+                        disable_notification=True
+                    )
                 except FloodWait as e:
                     flood_wait = True
                     sleep(e.x + 1)

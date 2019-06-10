@@ -19,11 +19,11 @@
 import logging
 from pickle import dump
 
-from pyrogram import Client, Filters, InlineKeyboardButton, InlineKeyboardMarkup, Message
+from pyrogram import Client, Filters, Message
 
 from .. import glovar
 from ..functions.channel import forward_evidence, get_debug_text, send_debug, share_data
-from ..functions.etc import code, receive_data, thread, user_mention
+from ..functions.etc import code, general_link, receive_data, thread, user_mention
 from ..functions.file import get_new_path, save
 from ..functions.filters import class_c, class_d, class_e, declared_message, exchange_channel, hide_channel
 from ..functions.filters import new_group, test_group
@@ -205,18 +205,8 @@ def process_data(client: Client, message: Message):
                             link = data["config_link"]
                             text = (f"管理员：{user_mention(uid)}\n"
                                     f"操作：{code('更改设置')}\n"
-                                    f"说明：{code('请点击下方按钮进行设置')}")
-                            markup = InlineKeyboardMarkup(
-                                [
-                                    [
-                                        InlineKeyboardButton(
-                                            "前往设置",
-                                            url=link
-                                        )
-                                    ]
-                                ]
-                            )
-                            thread(send_report_message, (180, client, gid, text, None, markup))
+                                    f"设置链接：{general_link('点击此处', link)}")
+                            thread(send_report_message, (180, client, gid, text))
 
                 elif sender == "LANG":
 
@@ -473,7 +463,9 @@ def process_data(client: Client, message: Message):
                         user_id = data["user_id"]
                         if action_type == "delete":
                             help_type = data["type"]
-                            if help_type == "single":
+                            if help_type == "global":
+                                thread(delete_messages_globally, (client, user_id))
+                            elif help_type == "single":
                                 thread(delete_all_messages, (client, group_id, user_id))
     except Exception as e:
         logger.warning(f"Process data error: {e}", exc_info=True)

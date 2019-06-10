@@ -53,6 +53,8 @@ default_config: Dict[str, Union[bool, int, Dict[str, bool]]] = {
     "subscribe": True
 }
 
+left_group_ids: Set[int] = set()
+
 receivers_declare: List[str] = ["CLEAN", "LANG", "LONG", "NOFLOOD", "NOPORN", "NOSPAM", "RECHECK", "USER"]
 
 receivers_preview: List[str] = ["CLEAN", "LANG", "LONG", "NOFLOOD", "NOPORN", "NOSPAM", "RECHECK"]

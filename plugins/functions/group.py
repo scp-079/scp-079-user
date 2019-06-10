@@ -63,6 +63,7 @@ def delete_messages_globally(client: Client, uid: int) -> bool:
 def leave_group(client: Client, gid: int) -> bool:
     # Leave a group, clear it's data
     try:
+        glovar.left_group_ids.add(gid)
         thread(leave_chat, (client, gid))
 
         glovar.admin_ids.pop(gid, None)
@@ -74,3 +75,5 @@ def leave_group(client: Client, gid: int) -> bool:
         return True
     except Exception as e:
         logger.warning(f"Leave group error: {e}", exc_info=True)
+
+    return False
