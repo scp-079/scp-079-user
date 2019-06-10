@@ -63,23 +63,24 @@ def check(client: Client, message: Message):
                    & ~class_c & ~class_e & ~declared_message)
 def check_join(client: Client, message: Message):
     try:
-        gid = message.chat.id
-        mid = message.message_id
-        if glovar.configs[gid]["subscribe"]:
-            for n in message.new_chat_members:
-                uid = n.id
-                if init_user_id(uid):
-                    if uid in glovar.bad_ids["users"]:
-                        if gid in glovar.banned_ids[uid]:
-                            glovar.except_ids["tmp"][uid].add(gid)
-                            save("except_ids")
-                        else:
-                            glovar.banned_ids[uid].add(gid)
-                            save("banned_ids")
-                            result = forward_evidence(client, message, "自动封禁", "订阅列表")
-                            if result:
-                                ban_user(client, gid, uid)
-                                send_debug(client, message.chat, "自动封禁", uid, mid, result)
+        if message.from_user:
+            gid = message.chat.id
+            mid = message.message_id
+            if glovar.configs[gid]["subscribe"]:
+                for n in message.new_chat_members:
+                    uid = n.id
+                    if init_user_id(uid):
+                        if uid in glovar.bad_ids["users"]:
+                            if gid in glovar.banned_ids[uid]:
+                                glovar.except_ids["tmp"][uid].add(gid)
+                                save("except_ids")
+                            else:
+                                glovar.banned_ids[uid].add(gid)
+                                save("banned_ids")
+                                result = forward_evidence(client, message, "自动封禁", "订阅列表")
+                                if result:
+                                    ban_user(client, gid, uid)
+                                    send_debug(client, message.chat, "自动封禁", uid, mid, result)
     except Exception as e:
         logger.warning(f"Check join error: {e}", exc_info=True)
 
