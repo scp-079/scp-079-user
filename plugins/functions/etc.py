@@ -60,7 +60,7 @@ def code_block(text: Any) -> str:
     try:
         text = str(text)
         if text.strip():
-            return f"```{text}\n```"
+            return f"```{text}```"
     except Exception as e:
         logger.warning(f"Code block error: {e}", exc_info=True)
 
