@@ -34,9 +34,9 @@ logger = logging.getLogger(__name__)
 def bold(text: Any) -> str:
     # Get a bold text
     try:
-        text = str(text)
-        if text.strip():
-            return f"**{text.strip()}**"
+        text = str(text).strip()
+        if text:
+            return f"**{text}**"
     except Exception as e:
         logger.warning(f"Bold error: {e}", exc_info=True)
 
@@ -46,9 +46,9 @@ def bold(text: Any) -> str:
 def code(text: Any) -> str:
     # Get a code text
     try:
-        text = str(text)
-        if text.strip():
-            return f"`{text.strip()}`"
+        text = str(text).strip()
+        if text:
+            return f"`{text}`"
     except Exception as e:
         logger.warning(f"Code error: {e}", exc_info=True)
 
@@ -58,9 +58,9 @@ def code(text: Any) -> str:
 def code_block(text: Any) -> str:
     # Get a code block text
     try:
-        text = str(text)
-        if text.strip():
-            return f"```{text.strip()}```"
+        text = str(text).strip()
+        if text:
+            return f"```{text}```"
     except Exception as e:
         logger.warning(f"Code block error: {e}", exc_info=True)
 
