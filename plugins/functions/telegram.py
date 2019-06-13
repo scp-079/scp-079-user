@@ -21,9 +21,9 @@ from struct import pack
 from typing import Iterable, List, Optional, Union
 
 from pyrogram import Chat, ChatMember, Client, InlineKeyboardMarkup, Message
-from pyrogram.api.functions.channels import DeleteUserHistory, ReadHistory
+from pyrogram.api.functions.channels import DeleteUserHistory
 from pyrogram.api.functions.messages import GetCommonChats, GetWebPagePreview, ReadMentions
-from pyrogram.api.types import FileLocation, MessageMediaPhoto, MessageMediaWebPage, Photo, PhotoSize, WebPage
+from pyrogram.api.types import MessageMediaPhoto, MessageMediaWebPage, Photo, WebPage
 from pyrogram.api.types import InputPeerUser, InputPeerChannel
 from pyrogram.client.ext.utils import encode
 from pyrogram.errors import ChannelInvalid, ChannelPrivate, FloodWait, PeerIdInvalid
@@ -209,26 +209,18 @@ def get_preview(client: Client, message: Message) -> (dict, str):
                     if isinstance(media, Photo):
                         photo = media
 
+                # See: github.com/pyrogram/pyrogram/blob/develop/pyrogram/client/types/messages_and_media/photo.py#L81
                 if photo:
-                    size = photo.sizes[-1]
-                    if isinstance(size, PhotoSize):
-                        file_size = size.size
-                        if file_size < glovar.image_size:
-                            loc = size.location
-                            if isinstance(loc, FileLocation):
-                                file_id = encode(
-                                    pack(
-                                        "<iiqqqqi",
-                                        2,
-                                        loc.dc_id,
-                                        photo.id,
-                                        photo.access_hash,
-                                        loc.volume_id,
-                                        loc.secret,
-                                        loc.local_id
-                                    )
-                                )
-                                preview["file_id"] = file_id
+                    big = photo.sizes[-1]
+                    file_id = encode(
+                        pack(
+                            "<iiqqc",
+                            2, photo.dc_id,
+                            photo.id, photo.access_hash,
+                            big.type.encode()
+                        )
+                    )
+                    preview["file_id"] = file_id
     except Exception as e:
         logger.warning(f"Get preview error: {e}", exc_info=True)
 
@@ -272,7 +264,26 @@ def leave_chat(client: Client, cid: int) -> bool:
     return False
 
 
-def mark_as_read(client: Client, cid: int, read_type: str) -> bool:
+def read_history(client: Client, cid: int) -> bool:
+    # Mark messages in a chat as read
+    try:
+        flood_wait = True
+        while flood_wait:
+            flood_wait = False
+            try:
+                client.read_history(chat_id=cid)
+            except FloodWait as e:
+                flood_wait = True
+                wait_flood(e)
+
+        return True
+    except Exception as e:
+        logger.warning(f"Read history error: {e}", exc_info=True)
+
+    return False
+
+
+def read_mention(client: Client, cid: int) -> bool:
     # Mark a channel as read
     try:
         peer = resolve_peer(client, cid)
@@ -281,17 +292,14 @@ def mark_as_read(client: Client, cid: int, read_type: str) -> bool:
             while flood_wait:
                 flood_wait = False
                 try:
-                    if read_type == "mention":
-                        client.send(ReadMentions(peer=peer))
-                    elif read_type == "message":
-                        client.send(ReadHistory(channel=peer, max_id=0))
+                    client.send(ReadMentions(peer=peer))
                 except FloodWait as e:
                     flood_wait = True
                     wait_flood(e)
 
             return True
     except Exception as e:
-        logger.warning(f"Mark as read error: {e}", exc_info=True)
+        logger.warning(f"Read mention error: {e}", exc_info=True)
 
     return False
 

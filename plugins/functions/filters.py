@@ -67,7 +67,6 @@ def is_class_d(_, message: Message) -> bool:
 def is_class_e(_, message: Message) -> bool:
     # Check if the user who sent this message is Class E personnel
     try:
-        gid = message.chat.id
         id_list = []
         if message.from_user:
             uid = message.from_user.id
@@ -90,8 +89,10 @@ def is_class_e(_, message: Message) -> bool:
                     return True
 
             # The group's temp exception
-            if gid in glovar.except_ids["tmp"].get(user_id, set()):
-                return True
+            if message.chat:
+                gid = message.chat.id
+                if gid in glovar.except_ids["tmp"].get(user_id, set()):
+                    return True
 
         # Exception channels
         if message.forward_from_chat:
@@ -125,12 +126,13 @@ def is_declared_message(_, message: Message) -> bool:
 def is_exchange_channel(_, message: Message) -> bool:
     # Check if the message is sent from the exchange channel
     try:
-        cid = message.chat.id
-        if glovar.should_hide:
-            if cid == glovar.hide_channel_id:
+        if message.chat:
+            cid = message.chat.id
+            if glovar.should_hide:
+                if cid == glovar.hide_channel_id:
+                    return True
+            elif cid == glovar.exchange_channel_id:
                 return True
-        elif cid == glovar.exchange_channel_id:
-            return True
     except Exception as e:
         logger.warning(f"Is exchange channel error: {e}", exc_info=True)
 
@@ -140,9 +142,10 @@ def is_exchange_channel(_, message: Message) -> bool:
 def is_hide_channel(_, message: Message) -> bool:
     # Check if the message is sent from the hide channel
     try:
-        cid = message.chat.id
-        if cid == glovar.hide_channel_id:
-            return True
+        if message.chat:
+            cid = message.chat.id
+            if cid == glovar.hide_channel_id:
+                return True
     except Exception as e:
         logger.warning(f"Is hide channel error: {e}", exc_info=True)
 
@@ -153,9 +156,10 @@ def is_new_group(_, message: Message) -> bool:
     # Check if the bot joined a new group
     try:
         new_users = message.new_chat_members
-        for user in new_users:
-            if user.is_self:
-                return True
+        if new_users:
+            for user in new_users:
+                if user.is_self:
+                    return True
     except Exception as e:
         logger.warning(f"Is new group error: {e}", exc_info=True)
 
@@ -165,9 +169,10 @@ def is_new_group(_, message: Message) -> bool:
 def is_test_group(_, message: Message) -> bool:
     # Check if the message is sent from the test group
     try:
-        cid = message.chat.id
-        if cid == glovar.test_group_id:
-            return True
+        if message.chat:
+            cid = message.chat.id
+            if cid == glovar.test_group_id:
+                return True
     except Exception as e:
         logger.warning(f"Is test group error: {e}", exc_info=True)
 

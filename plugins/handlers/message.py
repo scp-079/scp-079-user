@@ -29,7 +29,7 @@ from ..functions.filters import class_c, class_d, class_e, declared_message, exc
 from ..functions.filters import new_group, test_group
 from ..functions.group import delete_message, delete_messages_globally, leave_group
 from ..functions.ids import init_group_id, init_user_id
-from ..functions.telegram import delete_all_messages, get_admins, get_preview, mark_as_read
+from ..functions.telegram import delete_all_messages, get_admins, get_preview, read_history, read_mention
 from ..functions.telegram import send_message, send_report_message, unban_chat_member
 from ..functions.tests import preview_test
 from ..functions.user import ban_user, ban_user_globally
@@ -132,7 +132,7 @@ def init_group(client: Client, message: Message):
 def mark_mention(client: Client, message: Message):
     try:
         cid = message.chat.id
-        thread(mark_as_read, (client, cid, "mention"))
+        thread(read_mention, (client, cid))
     except Exception as e:
         logger.warning(f"Mark mention error: {e}", exc_info=True)
 
@@ -141,7 +141,7 @@ def mark_mention(client: Client, message: Message):
 def mark_message(client, message):
     try:
         cid = message.chat.id
-        thread(mark_as_read, (client, cid, "message"))
+        thread(read_history, (client, cid))
     except Exception as e:
         logger.warning(f"Mark message error: {e}", exc_info=True)
 

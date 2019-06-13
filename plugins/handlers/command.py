@@ -43,9 +43,9 @@ def config(client: Client, message: Message):
         mid = message.message_id
         # Check permission
         if is_class_c(None, message):
-            command_list = list(filter(None, message.command))
             # Check command format
-            if len(command_list) == 2 and re.search("^user$", command_list[1], re.I):
+            command_type = get_command_type(message)
+            if command_type and re.search("^user$", command_type, re.I):
                 now = int(time())
                 # Check the config lock
                 if now - glovar.configs[gid]["lock"] > 310:
@@ -89,17 +89,16 @@ def config_user(client: Client, message: Message):
         # Check permission
         if is_class_c(None, message):
             aid = message.from_user.id
-            command_list = message.command
             success = True
             reason = "已更新"
             new_config = deepcopy(glovar.configs[gid])
             text = f"管理员：{code(aid)}\n"
             # Check command format
-            if len(command_list) > 1:
+            command_type, command_context = get_command_context(message)
+            if command_type:
                 now = int(time())
                 # Check the config lock
                 if now - new_config["lock"] > 310:
-                    command_type = list(filter(None, command_list))[1]
                     if command_type == "show":
                         text += (f"操作：{code('查看设置')}\n"
                                  f"设置：{code((lambda x: '默认' if x else '自定义')(new_config.get('default')))}\n"
@@ -111,7 +110,6 @@ def config_user(client: Client, message: Message):
                         if not new_config.get("default"):
                             new_config = deepcopy(glovar.default_config)
                     else:
-                        command_context = get_command_context(message)
                         if command_context:
                             if command_type == "subscribe":
                                 if command_context == "off":
