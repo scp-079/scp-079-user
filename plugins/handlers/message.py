@@ -91,16 +91,17 @@ def exchange_emergency(_, message: Message):
     try:
         # Read basic information
         data = receive_text_data(message)
-        sender = data["from"]
-        receivers = data["to"]
-        action = data["action"]
-        action_type = data["type"]
-        data = data["data"]
-        if "EMERGENCY" in receivers:
-            if sender == "EMERGENCY":
-                if action == "backup":
-                    if action_type == "hide":
-                        glovar.should_hide = data
+        if data:
+            sender = data["from"]
+            receivers = data["to"]
+            action = data["action"]
+            action_type = data["type"]
+            data = data["data"]
+            if "EMERGENCY" in receivers:
+                if sender == "EMERGENCY":
+                    if action == "backup":
+                        if action_type == "hide":
+                            glovar.should_hide = data
     except Exception as e:
         logger.warning(f"Exchange emergency error: {e}", exc_info=True)
 
@@ -108,22 +109,23 @@ def exchange_emergency(_, message: Message):
 @Client.on_message(Filters.incoming & Filters.group & Filters.new_chat_members & new_group)
 def init_group(client: Client, message: Message):
     try:
-        gid = message.chat.id
-        text = get_debug_text(client, message.chat)
-        # Check permission
-        if init_group_id(gid):
-            admin_members = get_admins(client, gid)
-            if admin_members:
-                glovar.admin_ids[gid] = {admin.user.id for admin in admin_members
-                                         if not admin.user.is_bot and not admin.user.is_deleted}
-                save("admin_ids")
-                text += f"状态：{code('已加入群组')}\n"
-            else:
-                thread(leave_group, (client, gid))
-                text += (f"状态：{code('已退出群组')}\n"
-                         f"原因：{code('获取管理员列表失败')}\n")
+        if message.from_user:
+            gid = message.chat.id
+            text = get_debug_text(client, message.chat)
+            # Check permission
+            if init_group_id(gid):
+                admin_members = get_admins(client, gid)
+                if admin_members:
+                    glovar.admin_ids[gid] = {admin.user.id for admin in admin_members
+                                             if not admin.user.is_bot and not admin.user.is_deleted}
+                    save("admin_ids")
+                    text += f"状态：{code('已加入群组')}\n"
+                else:
+                    thread(leave_group, (client, gid))
+                    text += (f"状态：{code('已退出群组')}\n"
+                             f"原因：{code('获取管理员列表失败')}\n")
 
-        thread(send_message, (client, glovar.debug_channel_id, text))
+            thread(send_message, (client, glovar.debug_channel_id, text))
     except Exception as e:
         logger.warning(f"Init group error: {e}", exc_info=True)
 
@@ -131,8 +133,9 @@ def init_group(client: Client, message: Message):
 @Client.on_message(~Filters.private & Filters.incoming & Filters.mentioned, group=1)
 def mark_mention(client: Client, message: Message):
     try:
-        cid = message.chat.id
-        thread(read_mention, (client, cid))
+        if message.chat:
+            cid = message.chat.id
+            thread(read_mention, (client, cid))
     except Exception as e:
         logger.warning(f"Mark mention error: {e}", exc_info=True)
 
@@ -140,8 +143,9 @@ def mark_mention(client: Client, message: Message):
 @Client.on_message(~Filters.private & Filters.incoming, group=2)
 def mark_message(client, message):
     try:
-        cid = message.chat.id
-        thread(read_history, (client, cid))
+        if message.chat:
+            cid = message.chat.id
+            thread(read_history, (client, cid))
     except Exception as e:
         logger.warning(f"Mark message error: {e}", exc_info=True)
 
@@ -477,28 +481,29 @@ def process_data(client: Client, message: Message):
                    & ~class_c & ~class_d & ~class_e & ~declared_message)
 def share_preview(client: Client, message: Message):
     try:
-        preview, _ = get_preview(client, message)
-        if preview["text"] or preview["file_id"]:
-            gid = message.chat.id
-            uid = message.from_user.id
-            mid = message.message_id
-            file_path = get_new_path()
-            with open(file_path, "wb") as f:
-                dump(preview, f)
+        if message.from_user:
+            preview, _ = get_preview(client, message)
+            if preview["text"] or preview["file_id"]:
+                gid = message.chat.id
+                uid = message.from_user.id
+                mid = message.message_id
+                file_path = get_new_path()
+                with open(file_path, "wb") as f:
+                    dump(preview, f)
 
-            share_data(
-                client=client,
-                receivers=glovar.receivers_preview,
-                action="update",
-                action_type="preview",
-                data={
-                    "group_id": gid,
-                    "user_id": uid,
-                    "message_id": mid
-                },
-                file=file_path,
-                encrypt=False
-            )
+                share_data(
+                    client=client,
+                    receivers=glovar.receivers_preview,
+                    action="update",
+                    action_type="preview",
+                    data={
+                        "group_id": gid,
+                        "user_id": uid,
+                        "message_id": mid
+                    },
+                    file=file_path,
+                    encrypt=False
+                )
     except Exception as e:
         logger.warning(f"Share preview error: {e}", exc_info=True)
 
