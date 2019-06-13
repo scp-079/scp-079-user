@@ -36,7 +36,7 @@ def bold(text: Any) -> str:
     try:
         text = str(text)
         if text.strip():
-            return f"**{text}**"
+            return f"**{text.strip()}**"
     except Exception as e:
         logger.warning(f"Bold error: {e}", exc_info=True)
 
@@ -48,7 +48,7 @@ def code(text: Any) -> str:
     try:
         text = str(text)
         if text.strip():
-            return f"`{text}`"
+            return f"`{text.strip()}`"
     except Exception as e:
         logger.warning(f"Code error: {e}", exc_info=True)
 
@@ -60,7 +60,7 @@ def code_block(text: Any) -> str:
     try:
         text = str(text)
         if text.strip():
-            return f"```{text}```"
+            return f"```{text.strip()}```"
     except Exception as e:
         logger.warning(f"Code block error: {e}", exc_info=True)
 
