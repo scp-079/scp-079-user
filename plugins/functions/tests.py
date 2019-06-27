@@ -31,7 +31,7 @@ def preview_test(client: Client, message: Message) -> bool:
     # Test preview
     try:
         preview, url = get_preview(client, message)
-        if preview["file_id"] or preview["text"]:
+        if preview["image"] or preview["text"]:
             cid = message.chat.id
             aid = message.from_user.id
             mid = message.message_id
@@ -42,8 +42,8 @@ def preview_test(client: Client, message: Message) -> bool:
             if preview["text"]:
                 text += "预览文字：" + "-" * 24 + "\n\n" + code_block(preview["text"]) + "\n\n"
 
-            if preview["file_id"]:
-                thread(send_photo, (client, cid, preview["file_id"], text, mid))
+            if preview["image"]:
+                thread(send_photo, (client, cid, preview["image"], text, mid))
             else:
                 thread(send_message, (client, cid, text, mid))
 

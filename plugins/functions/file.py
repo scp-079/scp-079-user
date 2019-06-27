@@ -21,11 +21,14 @@ from os import remove
 from os.path import exists
 from pickle import dump
 from shutil import copyfile
+from typing import Optional
 
 from pyAesCrypt import decryptFile, encryptFile
+from pyrogram import Client
 
 from .. import glovar
 from .etc import random_str, thread
+from .telegram import download_media
 
 # Enable logging
 logger = logging.getLogger(__name__)
@@ -58,6 +61,19 @@ def delete_file(path: str) -> bool:
         logger.warning(f"Delete file error: {e}", exc_info=True)
 
     return False
+
+
+def get_downloaded_path(client: Client, file_id: str) -> Optional[str]:
+    # Download file, get it's path on local machine
+    final_path = None
+    try:
+        if file_id:
+            file_path = get_new_path()
+            final_path = download_media(client, file_id, file_path)
+    except Exception as e:
+        logger.warning(f"Get downloaded path error: {e}", exc_info=True)
+
+    return final_path
 
 
 def get_new_path() -> str:

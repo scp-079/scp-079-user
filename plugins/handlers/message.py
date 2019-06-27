@@ -19,12 +19,13 @@
 import logging
 from pickle import dump
 
+from PIL import Image
 from pyrogram import Client, Filters, Message
 
 from .. import glovar
 from ..functions.channel import forward_evidence, get_debug_text, receive_text_data, send_debug, share_data
 from ..functions.etc import code, general_link, thread, user_mention
-from ..functions.file import get_new_path, save
+from ..functions.file import get_downloaded_path, get_new_path, save
 from ..functions.filters import class_c, class_d, class_e, declared_message, exchange_channel, hide_channel
 from ..functions.filters import new_group, test_group
 from ..functions.group import delete_message, delete_messages_globally, leave_group
@@ -483,10 +484,17 @@ def share_preview(client: Client, message: Message):
     try:
         if message.from_user:
             preview, _ = get_preview(client, message)
-            if preview["text"] or preview["file_id"]:
+            if preview["text"] or preview["image"]:
                 gid = message.chat.id
                 uid = message.from_user.id
                 mid = message.message_id
+                if preview["image"]:
+                    image_path = get_downloaded_path(client, preview["image"])
+                    if image_path:
+                        preview["image"] = Image.open(image_path)
+                    else:
+                        preview["image"] = None
+
                 file_path = get_new_path()
                 with open(file_path, "wb") as f:
                     dump(preview, f)

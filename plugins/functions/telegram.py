@@ -81,6 +81,24 @@ def delete_all_messages(client: Client, gid: int, uid: int) -> bool:
     return False
 
 
+def download_media(client: Client, file_id: str, file_path: str):
+    # Download a media file
+    result = None
+    try:
+        flood_wait = True
+        while flood_wait:
+            flood_wait = False
+            try:
+                result = client.download_media(message=file_id, file_name=file_path)
+            except FloodWait as e:
+                flood_wait = True
+                wait_flood(e)
+    except Exception as e:
+        logger.warning(f"Download media {file_id} to {file_path} error: {e}", exc_info=True)
+
+    return result
+
+
 def get_admins(client: Client, cid: int) -> Optional[Union[bool, List[ChatMember]]]:
     # Get a group's admins
     result = None
@@ -163,7 +181,7 @@ def get_preview(client: Client, message: Message) -> (dict, str):
     # Get message's preview
     preview = {
         "text": None,
-        "file_id": None
+        "image": None
     }
     url = ""
     try:
@@ -220,7 +238,7 @@ def get_preview(client: Client, message: Message) -> (dict, str):
                             big.type.encode()
                         )
                     )
-                    preview["file_id"] = file_id
+                    preview["image"] = file_id
     except Exception as e:
         logger.warning(f"Get preview error: {e}", exc_info=True)
 
