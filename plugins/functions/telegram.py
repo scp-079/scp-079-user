@@ -177,13 +177,13 @@ def get_group_info(client: Client, chat: Union[int, Chat]) -> (str, str):
     return group_name, group_link
 
 
-def get_preview(client: Client, message: Message) -> (dict, str):
+def get_preview(client: Client, message: Message) -> dict:
     # Get message's preview
     preview = {
+        "url": None,
         "text": None,
         "image": None
     }
-    url = ""
     try:
         if should_preview(message):
             result = None
@@ -204,7 +204,7 @@ def get_preview(client: Client, message: Message) -> (dict, str):
                     if isinstance(web_page, WebPage):
                         text = ""
                         if web_page.url:
-                            url = web_page.url
+                            preview["url"] = web_page.url
 
                         if web_page.display_url:
                             text += web_page.display_url + "\n\n"
@@ -242,7 +242,7 @@ def get_preview(client: Client, message: Message) -> (dict, str):
     except Exception as e:
         logger.warning(f"Get preview error: {e}", exc_info=True)
 
-    return preview, url
+    return preview
 
 
 def kick_chat_member(client: Client, cid: int, uid: int) -> Optional[Union[bool, Message]]:

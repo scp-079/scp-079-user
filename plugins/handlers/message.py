@@ -483,8 +483,8 @@ def process_data(client: Client, message: Message):
 def share_preview(client: Client, message: Message):
     try:
         if message.from_user:
-            preview, _ = get_preview(client, message)
-            if preview["text"] or preview["image"]:
+            preview = get_preview(client, message)
+            if preview["url"]:
                 gid = message.chat.id
                 uid = message.from_user.id
                 mid = message.message_id
