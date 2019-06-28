@@ -68,6 +68,8 @@ sender: str = "USER"
 
 should_hide: bool = False
 
+shared_url: Set[str] = set()
+
 version: str = "0.1.4"
 
 # Read data from config.ini

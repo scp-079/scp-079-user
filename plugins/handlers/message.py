@@ -484,7 +484,8 @@ def share_preview(client: Client, message: Message):
     try:
         if message.from_user:
             preview = get_preview(client, message)
-            if preview["url"]:
+            url = preview["url"]
+            if url and url not in glovar.shared_url:
                 gid = message.chat.id
                 uid = message.from_user.id
                 mid = message.message_id
@@ -512,6 +513,7 @@ def share_preview(client: Client, message: Message):
                     file=file_path,
                     encrypt=False
                 )
+                glovar.shared_url.add(url)
     except Exception as e:
         logger.warning(f"Share preview error: {e}", exc_info=True)
 
