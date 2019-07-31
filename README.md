@@ -16,13 +16,13 @@ See [this article](https://scp-079.org/user/).
 ## Requirements
 
 - Python 3.6 or higher.
-- `requirements.txt` : APScheduler Pillow pyAesCrypt pyrogram[fast]
+- pip: `pip install -r requirements.txt` or `pip install -U APScheduler Pillow pyAesCrypt pyrogram[fast]`
 
 ## Files
 
 - plugins
     - functions
-        - `channel.py` : Send messages to channel
+        - `channel.py` : Functions about channel
         - `etc.py` : Miscellaneous
         - `file.py` : Save files
         - `filters.py` : Some filters

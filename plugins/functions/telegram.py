@@ -382,6 +382,7 @@ def send_message(client: Client, cid: int, text: str, mid: int = None,
                         result = client.send_message(
                             chat_id=cid,
                             text=text_unit,
+                            parse_mode="html",
                             disable_web_page_preview=True,
                             reply_to_message_id=mid,
                             reply_markup=markup
@@ -411,6 +412,7 @@ def send_photo(client: Client, cid: int, photo: str, caption: str = None, mid: i
                         chat_id=cid,
                         photo=photo,
                         caption=caption,
+                        parse_mode="html",
                         reply_to_message_id=mid,
                         reply_markup=markup
                     )
@@ -431,24 +433,27 @@ def send_report_message(secs: int, client: Client, cid: int, text: str, mid: int
     result = None
     try:
         if text.strip():
-            flood_wait = True
-            while flood_wait:
-                flood_wait = False
-                try:
-                    result = client.send_message(
-                        chat_id=cid,
-                        text=text,
-                        disable_web_page_preview=True,
-                        reply_to_message_id=mid,
-                        reply_markup=markup
-                    )
-                except FloodWait as e:
-                    flood_wait = True
-                    wait_flood(e)
+            text_list = [text[i:i + 4096] for i in range(0, len(text), 4096)]
+            for text_unit in text_list:
+                flood_wait = True
+                while flood_wait:
+                    flood_wait = False
+                    try:
+                        result = client.send_message(
+                            chat_id=cid,
+                            text=text_unit,
+                            parse_mode="html",
+                            disable_web_page_preview=True,
+                            reply_to_message_id=mid,
+                            reply_markup=markup
+                        )
+                    except FloodWait as e:
+                        flood_wait = True
+                        wait_flood(e)
 
-            mid = result.message_id
-            mids = [mid]
-            delay(secs, delete_messages, [client, cid, mids])
+                mid = result.message_id
+                mids = [mid]
+                delay(secs, delete_messages, [client, cid, mids])
     except Exception as e:
         logger.warning(f"Send message to {cid} error: {e}", exc_info=True)
 
