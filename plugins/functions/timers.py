@@ -141,7 +141,7 @@ def update_admins(client: Client) -> bool:
                     data=gid
                 )
         except Exception as e:
-            logger.warning(f"Update admin in {gid} error: {e}")
+            logger.warning(f"Update admin in {gid} error: {e}", exc_info=True)
 
     return True
 
@@ -149,6 +149,7 @@ def update_admins(client: Client) -> bool:
 def update_status(client: Client) -> bool:
     # Update running status to BACKUP
     try:
+        logger.warning("Update status triggered")
         share_data(
             client=client,
             receivers=["BACKUP"],
@@ -158,6 +159,6 @@ def update_status(client: Client) -> bool:
         )
         return True
     except Exception as e:
-        logger.warning(f"Update status error: {e}")
+        logger.warning(f"Update status error: {e}", exc_info=True)
 
     return False
