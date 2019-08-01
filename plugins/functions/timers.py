@@ -149,7 +149,6 @@ def update_admins(client: Client) -> bool:
 def update_status(client: Client) -> bool:
     # Update running status to BACKUP
     try:
-        logger.warning("Update status triggered")
         share_data(
             client=client,
             receivers=["BACKUP"],
