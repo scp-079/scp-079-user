@@ -43,7 +43,7 @@ app.start()
 
 # Timer
 scheduler = BackgroundScheduler()
-scheduler.add_job(interval_ten_min, "interval", [app], minutes=10)
+scheduler.add_job(interval_ten_min, "interval", minutes=10)
 scheduler.add_job(update_status, "cron", [app], minute=30)
 scheduler.add_job(backup_files, "cron", [app], hour=20)
 scheduler.add_job(reset_data, "cron", day=glovar.reset_day, hour=22)
