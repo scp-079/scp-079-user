@@ -24,6 +24,7 @@ from pyrogram import Client, Filters, Message
 
 from .. import glovar
 from ..functions.channel import forward_evidence, get_debug_text, receive_text_data, send_debug, share_data
+from ..functions.channel import share_forgiven_user
 from ..functions.etc import code, general_link, thread, user_mention
 from ..functions.file import get_downloaded_path, get_new_path, save
 from ..functions.filters import class_c, class_d, class_e, declared_message, exchange_channel, hide_channel
@@ -31,16 +32,16 @@ from ..functions.filters import new_group, test_group
 from ..functions.group import delete_message, delete_messages_globally, leave_group
 from ..functions.ids import init_group_id, init_user_id
 from ..functions.telegram import delete_all_messages, get_admins, get_preview, read_history, read_mention
-from ..functions.telegram import send_message, send_report_message, unban_chat_member
+from ..functions.telegram import send_message, send_report_message
 from ..functions.tests import preview_test
-from ..functions.user import ban_user, ban_user_globally
+from ..functions.user import ban_user, ban_user_globally, unban_user, unban_user_globally
 
 # Enable logging
 logger = logging.getLogger(__name__)
 
 
 @Client.on_message(Filters.incoming & Filters.group & ~test_group & ~Filters.new_chat_members
-                   & ~class_c & class_d & ~declared_message)
+                   & ~class_c & class_d & ~class_e & ~declared_message)
 def check(client: Client, message: Message):
     try:
         if message.from_user:
@@ -75,6 +76,12 @@ def check_join(client: Client, message: Message):
                             if gid in glovar.banned_ids[uid]:
                                 glovar.except_ids["tmp"][uid].add(gid)
                                 save("except_ids")
+                                # If three groups forgive the user, then unban the user automatically
+                                if len(glovar.except_ids["tmp"][uid]) == 3:
+                                    unban_user_globally(client, uid)
+                                    share_forgiven_user(client, uid)
+                                else:
+                                    unban_user(client, gid, uid)
                             else:
                                 glovar.banned_ids[uid].add(gid)
                                 save("banned_ids")
@@ -88,7 +95,7 @@ def check_join(client: Client, message: Message):
 
 @Client.on_message(Filters.incoming & Filters.channel & hide_channel
                    & ~Filters.command(glovar.all_commands, glovar.prefix))
-def exchange_emergency(_, message: Message):
+def exchange_emergency(_: Client, message: Message):
     try:
         # Read basic information
         data = receive_text_data(message)
@@ -99,9 +106,11 @@ def exchange_emergency(_, message: Message):
             action_type = data["type"]
             data = data["data"]
             if "EMERGENCY" in receivers:
-                if sender == "EMERGENCY":
-                    if action == "backup":
-                        if action_type == "hide":
+                if action == "backup":
+                    if action_type == "hide":
+                        if data is True:
+                            glovar.should_hide = data
+                        elif data is False and sender == "MANAGE":
                             glovar.should_hide = data
     except Exception as e:
         logger.warning(f"Exchange emergency error: {e}", exc_info=True)
@@ -182,6 +191,7 @@ def process_data(client: Client, message: Message):
                         if action_type == "ban":
                             if init_user_id(user_id):
                                 glovar.banned_ids[user_id].add(group_id)
+                                save("banned_ids")
                                 thread(ban_user_globally, (client, user_id))
                         elif action_type == "delete":
                             help_type = data["type"]
@@ -313,19 +323,9 @@ def process_data(client: Client, message: Message):
                         if action_type == "bad":
                             if the_type == "channel":
                                 glovar.bad_ids["channels"].discard(the_id)
-                            elif the_type == "user":
-                                glovar.bad_ids["users"].discard(the_id)
                                 save("bad_ids")
-                                for gid in glovar.banned_ids[the_id]:
-                                    thread(unban_chat_member, (client, gid, the_id))
-
-                                glovar.banned_ids[the_id] = set()
-                                save("banned_ids")
-                                if glovar.except_ids["tmp"].get(the_id):
-                                    glovar.except_ids["tmp"].pop(the_id, set())
-                                    save("except_ids")
-
-                            save("bad_ids")
+                            elif the_type == "user":
+                                unban_user_globally(client, the_id)
                         elif action_type == "except":
                             if the_type == "channel":
                                 glovar.except_ids["channels"].discard(the_id)

@@ -70,7 +70,7 @@ should_hide: bool = False
 
 shared_url: Set[str] = set()
 
-version: str = "0.1.4"
+version: str = "0.1.5"
 
 # Read data from config.ini
 
@@ -91,6 +91,7 @@ user_id: int = 0
 warn_id: int = 0
 
 # [channels]
+critical_channel_id: int = 0
 debug_channel_id: int = 0
 exchange_channel_id: int = 0
 hide_channel_id: int = 0
@@ -125,6 +126,7 @@ try:
     user_id = int(config["bots"].get("user_id", user_id))
     warn_id = int(config["bots"].get("warn_id", warn_id))
     # [channels]
+    critical_channel_id = int(config["channels"].get("critical_channel_id", critical_channel_id))
     debug_channel_id = int(config["channels"].get("debug_channel_id", debug_channel_id))
     exchange_channel_id = int(config["channels"].get("exchange_channel_id", exchange_channel_id))
     hide_channel_id = int(config["channels"].get("hide_channel_id", hide_channel_id))
@@ -154,6 +156,7 @@ if (prefix == []
         or tip_id == 0
         or user_id == 0
         or warn_id == 0
+        or critical_channel_id == 0
         or debug_channel_id == 0
         or exchange_channel_id == 0
         or hide_channel_id == 0

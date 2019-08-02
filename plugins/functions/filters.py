@@ -89,10 +89,9 @@ def is_class_e(_, message: Message) -> bool:
                     return True
 
             # The group's temp exception
-            if message.chat:
-                gid = message.chat.id
-                if gid in glovar.except_ids["tmp"].get(user_id, set()):
-                    return True
+            gid = message.chat.id
+            if gid in glovar.except_ids["tmp"].get(user_id, set()):
+                return True
 
         # Exception channels
         if message.forward_from_chat:

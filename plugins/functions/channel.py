@@ -58,14 +58,17 @@ def exchange_to_hide(client: Client) -> bool:
     # Let other bots exchange data in the hide channel instead
     try:
         glovar.should_hide = True
-        text = format_data(
-            sender="EMERGENCY",
+        share_data(
+            client=client,
             receivers=["EMERGENCY"],
             action="backup",
             action_type="hide",
             data=True
         )
-        thread(send_message, (client, glovar.hide_channel_id, text))
+        text = (f"项目编号：{code(glovar.sender)}\n"
+                f"发现状况：{code('数据交换频道失效')}\n"
+                f"自动处理：{code('启用 1 号协议')}\n")
+        thread(send_message, (client, glovar.critical_channel_id, text))
         return True
     except Exception as e:
         logger.warning(f"Exchange to hide error: {e}", exc_info=True)
@@ -220,10 +223,30 @@ def share_data(client: Client, receivers: List[str], action: str, action_type: s
         if result is False:
             # Use hide channel instead
             exchange_to_hide(client)
-            thread(share_data, (client, receivers, action, action_type, data, file))
+            thread(share_data, (client, receivers, action, action_type, data, file, encrypt))
 
         return True
     except Exception as e:
         logger.warning(f"Share data error: {e}", exc_info=True)
+
+    return False
+
+
+def share_forgiven_user(client: Client, uid: int) -> bool:
+    # Share the automatically forgiven user with MANAGE
+    try:
+        share_data(
+            client=client,
+            receivers=["MANAGE"],
+            action="remove",
+            action_type="bad",
+            data={
+                "id": uid,
+                "type": "user"
+            }
+        )
+        return True
+    except Exception as e:
+        logger.warning(f"Share forgive user error: {e}", exc_info=True)
 
     return False

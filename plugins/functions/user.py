@@ -24,7 +24,7 @@ from .. import glovar
 from .etc import thread
 from .file import save
 from .ids import init_group_id
-from .telegram import get_common_chats, kick_chat_member
+from .telegram import get_common_chats, kick_chat_member, unban_chat_member
 
 # Enable logging
 logger = logging.getLogger(__name__)
@@ -47,6 +47,7 @@ def ban_user(client: Client, gid: int, uid: int) -> bool:
     try:
         thread(kick_chat_member, (client, gid, uid))
         glovar.banned_ids[uid].add(gid)
+        save("banned_ids")
         return True
     except Exception as e:
         logger.warning(f"Ban user error: {e}", exc_info=True)
@@ -68,5 +69,35 @@ def ban_user_globally(client: Client, uid: int) -> bool:
         return True
     except Exception as e:
         logger.warning(f"Ban user globally error: {e}", exc_info=True)
+
+    return False
+
+
+def unban_user(client: Client, gid: int, uid: int) -> bool:
+    # Unban a user
+    try:
+        thread(unban_chat_member, (client, gid, uid))
+        glovar.banned_ids[uid].discard(gid)
+        save("banned_ids")
+        return True
+    except Exception as e:
+        logger.warning(f"Unban user error: {e}", exc_info=True)
+
+    return False
+
+
+def unban_user_globally(client: Client, uid: int) -> bool:
+    # Unban a user globally
+    try:
+        glovar.bad_ids["users"].discard(uid)
+        save("bad_ids")
+        for gid in glovar.banned_ids[uid]:
+            unban_user(client, gid, uid)
+
+        if glovar.except_ids["tmp"].get(uid):
+            glovar.except_ids["tmp"].pop(uid, set())
+            save("except_ids")
+    except Exception as e:
+        logger.warning(f"Unban user globally error: {e}", exc_info=True)
 
     return False
