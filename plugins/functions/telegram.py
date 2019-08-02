@@ -228,15 +228,16 @@ def get_preview(client: Client, message: Message) -> dict:
                 # See: github.com/pyrogram/pyrogram/blob/develop/pyrogram/client/types/messages_and_media/photo.py#L81
                 if photo:
                     big = photo.sizes[-1]
-                    file_id = encode(
-                        pack(
-                            "<iiqqc",
-                            2, photo.dc_id,
-                            photo.id, photo.access_hash,
-                            big.type.encode()
+                    if big.size <= glovar.image_size:
+                        file_id = encode(
+                            pack(
+                                "<iiqqc",
+                                2, photo.dc_id,
+                                photo.id, photo.access_hash,
+                                big.type.encode()
+                            )
                         )
-                    )
-                    preview["image"] = file_id
+                        preview["image"] = file_id
     except Exception as e:
         logger.warning(f"Get preview error: {e}", exc_info=True)
 
