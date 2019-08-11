@@ -17,7 +17,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
-from pickle import dump
 
 from PIL import Image
 from pyrogram import Client, Filters, Message
@@ -26,7 +25,7 @@ from .. import glovar
 from ..functions.channel import forward_evidence, get_debug_text, receive_text_data, send_debug, share_data
 from ..functions.channel import share_forgiven_user
 from ..functions.etc import code, general_link, thread, user_mention
-from ..functions.file import get_downloaded_path, get_new_path, save
+from ..functions.file import data_to_file, get_downloaded_path, save
 from ..functions.filters import class_c, class_d, class_e, declared_message, exchange_channel, hide_channel
 from ..functions.filters import new_group, test_group
 from ..functions.group import delete_message, delete_messages_globally, leave_group
@@ -496,10 +495,7 @@ def share_preview(client: Client, message: Message):
                     else:
                         preview["image"] = None
 
-                file_path = get_new_path()
-                with open(file_path, "wb") as f:
-                    dump(preview, f)
-
+                file = data_to_file(preview)
                 share_data(
                     client=client,
                     receivers=glovar.receivers_preview,
@@ -510,7 +506,7 @@ def share_preview(client: Client, message: Message):
                         "user_id": uid,
                         "message_id": mid
                     },
-                    file=file_path,
+                    file=file,
                     encrypt=False
                 )
                 glovar.shared_url.add(url)
