@@ -200,9 +200,6 @@ def mention(client: Client, message: Message):
             text += f"错误：{code('缺少用户 ID')}\n"
 
         thread(send_message, (client, cid, text, mid))
-        # Test
-        from ..functions.timers import update_admins
-        update_admins(client)
     except Exception as e:
         logger.warning(f"Mention error: {e}", exc_info=True)
 
