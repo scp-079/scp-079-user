@@ -188,14 +188,21 @@ def mention(client: Client, message: Message):
         aid = message.from_user.id
         mid = message.message_id
         text = f"管理员：{user_mention(aid)}\n\n"
-        try:
-            uid = int(get_command_type(message))
-            text += f"查询用户：{user_mention(uid)}\n"
-        except Exception as e:
-            text += (f"状态：{code('出现错误')}\n"
-                     f"错误：{code(e)}\n")
+        user_text = get_command_type(message)
+        if user_text:
+            try:
+                uid = int(get_command_type(message))
+                text += f"查询用户：{user_mention(uid)}\n"
+            except Exception as e:
+                text += (f"状态：{code('出现错误')}\n"
+                         f"错误：{code(e)}\n")
+        else:
+            text += f"错误：{code('缺少用户 ID')}\n"
 
         thread(send_message, (client, cid, text, mid))
+        # Test
+        from ..functions.timers import update_admins
+        update_admins(client)
     except Exception as e:
         logger.warning(f"Mention error: {e}", exc_info=True)
 
