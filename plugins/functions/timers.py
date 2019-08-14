@@ -105,6 +105,8 @@ def update_admins(client: Client) -> bool:
             admin_members = get_admins(client, gid)
             # Test
             logger.warning(gid)
+            logger.warning(admin_members)
+            logger.warning(any([admin.user.is_self for admin in admin_members]))
             if admin_members and any([admin.user.is_self for admin in admin_members]):
                 glovar.admin_ids[gid] = {admin.user.id for admin in admin_members
                                          if not admin.user.is_bot and not admin.user.is_deleted}
