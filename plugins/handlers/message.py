@@ -73,10 +73,10 @@ def check_join(client: Client, message: Message):
                     if init_user_id(uid):
                         if uid in glovar.bad_ids["users"]:
                             if gid in glovar.banned_ids[uid]:
-                                glovar.except_ids["tmp"][uid].add(gid)
+                                glovar.except_ids["temp"][uid].add(gid)
                                 save("except_ids")
                                 # If three groups forgive the user, then unban the user automatically
-                                if len(glovar.except_ids["tmp"][uid]) == 3:
+                                if len(glovar.except_ids["temp"][uid]) == 3:
                                     unban_user_globally(client, uid)
                                     share_forgiven_user(client, uid)
                                 else:
@@ -93,7 +93,7 @@ def check_join(client: Client, message: Message):
 
 
 @Client.on_message(Filters.incoming & Filters.channel & hide_channel
-                   & ~Filters.command(glovar.all_commands, glovar.prefix))
+                   & ~Filters.command(glovar.all_commands, glovar.prefix), group=-1)
 def exchange_emergency(_: Client, message: Message):
     try:
         # Read basic information
@@ -330,7 +330,7 @@ def process_data(client: Client, message: Message):
                                 glovar.except_ids["channels"].discard(the_id)
                             elif the_type == "user":
                                 glovar.except_ids["users"].discard(the_id)
-                                glovar.except_ids["tmp"].pop(the_id, set())
+                                glovar.except_ids["temp"].pop(the_id, set())
 
                             save("except_ids")
 

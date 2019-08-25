@@ -208,15 +208,13 @@ banned_ids: Dict[int, Set[int]] = {}
 
 except_ids: Dict[str, Union[Dict, Set[int]]] = {
     "channels": set(),
-    "tmp": {},
-    "users": set()
+    "temp": {}
 }
 # except_ids = {
 #     "channels": {-10012345678},
-#     "tmp": {
+#     "temp": {
 #         12345678: {-10012345678}
-#     },
-#     "users": {12345678}
+#     }
 # }
 
 # Init data variables

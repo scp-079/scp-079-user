@@ -78,10 +78,6 @@ def is_class_e(_, message: Message) -> bool:
             id_list.append(fid)
 
         for user_id in id_list:
-            # Exception users
-            if user_id in glovar.except_ids["users"]:
-                return True
-
             # All groups' admins
             admin_ids = deepcopy(glovar.admin_ids)
             for gid in admin_ids:
@@ -90,7 +86,7 @@ def is_class_e(_, message: Message) -> bool:
 
             # The group's temp exception
             gid = message.chat.id
-            if gid in glovar.except_ids["tmp"].get(user_id, set()):
+            if gid in glovar.except_ids["temp"].get(user_id, set()):
                 return True
 
         # Exception channels

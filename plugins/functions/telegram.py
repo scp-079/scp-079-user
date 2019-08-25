@@ -301,7 +301,7 @@ def read_history(client: Client, cid: int) -> bool:
 
 
 def read_mention(client: Client, cid: int) -> bool:
-    # Mark a channel as read
+    # Mark a mention as read
     try:
         peer = resolve_peer(client, cid)
         if peer:
@@ -321,7 +321,7 @@ def read_mention(client: Client, cid: int) -> bool:
     return False
 
 
-def resolve_peer(client: Client, pid: int) -> Optional[Union[InputPeerChannel, InputPeerUser]]:
+def resolve_peer(client: Client, pid: Union[int, str]) -> Optional[Union[InputPeerChannel, InputPeerUser]]:
     # Get an input peer by id
     result = None
     try:

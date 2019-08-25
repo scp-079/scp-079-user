@@ -94,8 +94,8 @@ def unban_user_globally(client: Client, uid: int) -> bool:
         for gid in glovar.banned_ids[uid]:
             unban_user(client, gid, uid)
 
-        if glovar.except_ids["tmp"].get(uid):
-            glovar.except_ids["tmp"].pop(uid, set())
+        if glovar.except_ids["temp"].get(uid, set()):
+            glovar.except_ids["temp"].pop(uid, set())
             save("except_ids")
     except Exception as e:
         logger.warning(f"Unban user globally error: {e}", exc_info=True)
