@@ -46,14 +46,15 @@ def is_class_c(_, message: Message) -> bool:
 def is_class_d(_, message: Message) -> bool:
     # Check if the user who sent the message is Class D personnel
     try:
+        gid = message.chat.id
         if message.from_user:
             uid = message.from_user.id
-            if uid in glovar.bad_ids["users"]:
+            if uid in glovar.bad_ids["users"] and gid not in glovar.except_ids["temp"].get(uid, set()):
                 return True
 
         if message.forward_from:
             fid = message.forward_from.id
-            if fid in glovar.bad_ids["users"]:
+            if fid in glovar.bad_ids["users"] and gid not in glovar.except_ids["temp"].get(fid, set()):
                 return True
 
         if message.forward_from_chat:
