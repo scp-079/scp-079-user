@@ -210,7 +210,7 @@ def mention(client: Client, message: Message):
             else:
                 text += f"查询用户：{user_mention(uid)}\n"
         else:
-            text += f"错误：{code('缺少用户参数')}\n"
+            text += f"错误：{code('用户参数有误')}\n"
 
         thread(send_message, (client, cid, text, mid))
     except Exception as e:
