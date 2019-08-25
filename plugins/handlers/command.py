@@ -194,6 +194,7 @@ def mention(client: Client, message: Message):
         text = f"管理员：{user_mention(aid)}\n\n"
         uid = 0
         id_text = get_command_type(message)
+        the_type = ""
         if id_text:
             uid = get_int(id_text)
             if not uid:
@@ -204,7 +205,10 @@ def mention(client: Client, message: Message):
             uid = message.reply_to_message.forward_from.id
 
         if uid:
-            text += f"查询用户：{user_mention(uid)}\n"
+            if the_type:
+                text += f"查询用户：{code(uid)}\n"
+            else:
+                text += f"查询用户：{user_mention(uid)}\n"
         else:
             text += f"错误：{code('缺少用户参数')}\n"
 
