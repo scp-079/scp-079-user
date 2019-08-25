@@ -73,7 +73,7 @@ should_hide: bool = False
 
 shared_url: Set[str] = set()
 
-version: str = "0.1.5"
+version: str = "0.1.6"
 
 # Read data from config.ini
 
