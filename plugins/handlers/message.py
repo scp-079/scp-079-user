@@ -189,6 +189,7 @@ def process_data(client: Client, message: Message):
                         user_id = data["user_id"]
                         if action_type == "ban":
                             if init_user_id(user_id):
+                                thread(delete_all_messages, (client, group_id, user_id))
                                 glovar.banned_ids[user_id].add(group_id)
                                 save("banned_ids")
                                 thread(ban_user_globally, (client, user_id))
@@ -239,7 +240,9 @@ def process_data(client: Client, message: Message):
                         user_id = data["user_id"]
                         if action_type == "ban":
                             if init_user_id(user_id):
+                                thread(delete_all_messages, (client, group_id, user_id))
                                 glovar.banned_ids[user_id].add(group_id)
+                                save("banned_ids")
                                 thread(ban_user_globally, (client, user_id))
                         elif action_type == "delete":
                             help_type = data["type"]
@@ -271,7 +274,9 @@ def process_data(client: Client, message: Message):
                         user_id = data["user_id"]
                         if action_type == "ban":
                             if init_user_id(user_id):
+                                thread(delete_all_messages, (client, group_id, user_id))
                                 glovar.banned_ids[user_id].add(group_id)
+                                save("banned_ids")
                                 thread(ban_user_globally, (client, user_id))
                         elif action_type == "delete":
                             help_type = data["type"]
@@ -349,7 +354,9 @@ def process_data(client: Client, message: Message):
                         user_id = data["user_id"]
                         if action_type == "ban":
                             if init_user_id(user_id):
+                                thread(delete_all_messages, (client, group_id, user_id))
                                 glovar.banned_ids[user_id].add(group_id)
+                                save("banned_ids")
                                 thread(ban_user_globally, (client, user_id))
                         elif action_type == "delete":
                             help_type = data["type"]
@@ -381,7 +388,9 @@ def process_data(client: Client, message: Message):
                         user_id = data["user_id"]
                         if action_type == "ban":
                             if init_user_id(user_id):
+                                thread(delete_all_messages, (client, group_id, user_id))
                                 glovar.banned_ids[user_id].add(group_id)
+                                save("banned_ids")
                                 thread(ban_user_globally, (client, user_id))
                         elif action_type == "delete":
                             help_type = data["type"]
@@ -413,7 +422,9 @@ def process_data(client: Client, message: Message):
                         user_id = data["user_id"]
                         if action_type == "ban":
                             if init_user_id(user_id):
+                                thread(delete_all_messages, (client, group_id, user_id))
                                 glovar.banned_ids[user_id].add(group_id)
+                                save("banned_ids")
                                 thread(ban_user_globally, (client, user_id))
                         elif action_type == "delete":
                             help_type = data["type"]
@@ -445,7 +456,9 @@ def process_data(client: Client, message: Message):
                         user_id = data["user_id"]
                         if action_type == "ban":
                             if init_user_id(user_id):
+                                thread(delete_all_messages, (client, group_id, user_id))
                                 glovar.banned_ids[user_id].add(group_id)
+                                save("banned_ids")
                                 thread(ban_user_globally, (client, user_id))
                         elif action_type == "delete":
                             help_type = data["type"]
