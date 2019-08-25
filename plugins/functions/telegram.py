@@ -26,7 +26,7 @@ from pyrogram.api.functions.messages import GetCommonChats, GetWebPagePreview, R
 from pyrogram.api.types import MessageMediaPhoto, MessageMediaWebPage, Photo, WebPage
 from pyrogram.api.types import InputPeerUser, InputPeerChannel
 from pyrogram.client.ext.utils import encode
-from pyrogram.errors import ChannelInvalid, ChannelPrivate, FloodWait, PeerIdInvalid
+from pyrogram.errors import ChannelInvalid, ChannelPrivate, FloodWait, PeerIdInvalid, UsernameInvalid
 
 from .. import glovar
 from .etc import delay, get_text, wait_flood
@@ -321,7 +321,7 @@ def read_mention(client: Client, cid: int) -> bool:
     return False
 
 
-def resolve_peer(client: Client, pid: Union[int, str]) -> Optional[Union[InputPeerChannel, InputPeerUser]]:
+def resolve_peer(client: Client, pid: Union[int, str]) -> Optional[Union[bool, InputPeerChannel, InputPeerUser]]:
     # Get an input peer by id
     result = None
     try:
@@ -333,6 +333,8 @@ def resolve_peer(client: Client, pid: Union[int, str]) -> Optional[Union[InputPe
             except FloodWait as e:
                 flood_wait = True
                 wait_flood(e)
+            except UsernameInvalid:
+                return False
     except Exception as e:
         logger.warning(f"Resolve peer error: {e}", exc_info=True)
 
