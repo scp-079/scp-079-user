@@ -98,7 +98,7 @@ def reset_data() -> bool:
 
 def update_admins(client: Client) -> bool:
     # Update admin list every day
-    group_list = list(glovar.configs)
+    group_list = list(glovar.admin_ids)
     for gid in group_list:
         try:
             should_leave = True
@@ -166,6 +166,7 @@ def update_status(client: Client) -> bool:
             action_type="status",
             data="awake"
         )
+
         return True
     except Exception as e:
         logger.warning(f"Update status error: {e}", exc_info=True)

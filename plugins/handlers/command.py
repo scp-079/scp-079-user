@@ -25,11 +25,12 @@ from pyrogram import Client, Filters, Message
 
 from .. import glovar
 from ..functions.channel import get_debug_text, share_data
-from ..functions.etc import bold, code, code_block, get_command_context, get_command_type, thread, user_mention
+from ..functions.etc import bold, code, code_block, get_command_context, get_command_type, get_int, thread, user_mention
 from ..functions.file import save
 from ..functions.filters import is_class_c, test_group
 from ..functions.group import delete_message
 from ..functions.telegram import get_group_info, send_message, send_report_message
+from ..functions.user import resolve_username
 
 # Enable logging
 logger = logging.getLogger(__name__)
@@ -38,6 +39,7 @@ logger = logging.getLogger(__name__)
 @Client.on_message(Filters.incoming & Filters.group
                    & Filters.command(["config"], glovar.prefix))
 def config(client: Client, message: Message):
+    # Request CONFIG session
     try:
         gid = message.chat.id
         mid = message.message_id
@@ -83,6 +85,7 @@ def config(client: Client, message: Message):
 @Client.on_message(Filters.incoming & Filters.group
                    & Filters.command(["config_user"], glovar.prefix))
 def config_user(client: Client, message: Message):
+    # Config the bot directly
     try:
         gid = message.chat.id
         mid = message.message_id
@@ -183,21 +186,27 @@ def config_user(client: Client, message: Message):
 @Client.on_message(Filters.incoming & Filters.group & test_group
                    & Filters.command(["mention"], glovar.prefix))
 def mention(client: Client, message: Message):
+    # Mention a user
     try:
         cid = message.chat.id
         aid = message.from_user.id
         mid = message.message_id
         text = f"管理员：{user_mention(aid)}\n\n"
-        user_text = get_command_type(message)
-        if user_text:
-            try:
-                uid = int(get_command_type(message))
-                text += f"查询用户：{user_mention(uid)}\n"
-            except Exception as e:
-                text += (f"状态：{code('出现错误')}\n"
-                         f"错误：{code(e)}\n")
+        uid = 0
+        id_text = get_command_type(message)
+        if id_text:
+            uid = get_int(id_text)
+            if not uid:
+                the_type, the_id = resolve_username(client, id_text)
+                if the_type == "user":
+                    uid = the_id
+        elif message.reply_to_message.forward_from:
+            uid = message.reply_to_message.forward_from.id
+
+        if uid:
+            text += f"查询用户：{user_mention(uid)}\n"
         else:
-            text += f"错误：{code('缺少用户 ID')}\n"
+            text += f"错误：{code('缺少用户参数')}\n"
 
         thread(send_message, (client, cid, text, mid))
     except Exception as e:
@@ -207,6 +216,7 @@ def mention(client: Client, message: Message):
 @Client.on_message(Filters.incoming & Filters.group & test_group
                    & Filters.command(["print"], glovar.prefix))
 def print_message(client: Client, message: Message):
+    # Print a message
     try:
         cid = message.chat.id
         aid = message.from_user.id
@@ -227,6 +237,7 @@ def print_message(client: Client, message: Message):
 @Client.on_message(Filters.incoming & Filters.group & test_group
                    & Filters.command(["version"], glovar.prefix))
 def version(client: Client, message: Message):
+    # Check the program's version
     try:
         cid = message.chat.id
         aid = message.from_user.id

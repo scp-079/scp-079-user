@@ -39,7 +39,7 @@ def declare_message(client: Client, gid: int, mid: int) -> bool:
         glovar.declared_message_ids[gid].add(mid)
         share_data(
             client=client,
-            receivers=glovar.receivers_declare,
+            receivers=glovar.receivers["declare"],
             action="update",
             action_type="declare",
             data={
@@ -47,6 +47,7 @@ def declare_message(client: Client, gid: int, mid: int) -> bool:
                 "message_id": mid
             }
         )
+
         return True
     except Exception as e:
         logger.warning(f"Declare message error: {e}", exc_info=True)
@@ -69,6 +70,7 @@ def exchange_to_hide(client: Client) -> bool:
                 f"发现状况：{code('数据交换频道失效')}\n"
                 f"自动处理：{code('启用 1 号协议')}\n")
         thread(send_message, (client, glovar.critical_channel_id, text))
+
         return True
     except Exception as e:
         logger.warning(f"Exchange to hide error: {e}", exc_info=True)
@@ -174,6 +176,7 @@ def send_debug(client: Client, chat: Chat, action: str, uid: int, mid: int, em: 
                  f"执行操作：{code(action)}\n"
                  f"触发消息：{general_link(mid, message_link(em))}\n")
         thread(send_message, (client, glovar.debug_channel_id, text))
+
         return True
     except Exception as e:
         logger.warning(f"Send debug error: {e}", exc_info=True)
@@ -240,11 +243,11 @@ def share_data(client: Client, receivers: List[str], action: str, action_type: s
 
 
 def share_forgiven_user(client: Client, uid: int) -> bool:
-    # Share the automatically forgiven user with MANAGE
+    # Share the automatically forgiven user with other bots
     try:
         share_data(
             client=client,
-            receivers=["MANAGE"],
+            receivers=glovar.receivers["bad"],
             action="remove",
             action_type="bad",
             data={
@@ -252,6 +255,7 @@ def share_forgiven_user(client: Client, uid: int) -> bool:
                 "type": "user"
             }
         )
+
         return True
     except Exception as e:
         logger.warning(f"Share forgive user error: {e}", exc_info=True)

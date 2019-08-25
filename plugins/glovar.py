@@ -55,9 +55,12 @@ default_config: Dict[str, Union[bool, int, Dict[str, bool]]] = {
 
 left_group_ids: Set[int] = set()
 
-receivers_declare: List[str] = ["CLEAN", "LANG", "LONG", "NOFLOOD", "NOPORN", "NOSPAM", "RECHECK", "USER"]
-
-receivers_preview: List[str] = ["CLEAN", "LANG", "NOPORN", "NOSPAM", "RECHECK"]
+receivers: Dict[str, List[str]] = {
+    "bad": ["ANALYZE", "APPEAL", "CAPTCHA", "CLEAN", "LANG", "LONG", "MANAGE", "NOFLOOD", "NOPORN",
+            "NOSPAM", "RECHECK", "WATCH"],
+    "declare": ["CLEAN", "LANG", "LONG", "NOFLOOD", "NOPORN", "NOSPAM", "RECHECK", "USER"],
+    "preview": ["CLEAN", "LANG", "NOPORN", "NOSPAM", "RECHECK"]
+}
 
 recorded_ids: Dict[int, Set[int]] = {}
 # recorded_ids = {

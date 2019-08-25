@@ -42,6 +42,7 @@ logger = logging.getLogger(__name__)
 @Client.on_message(Filters.incoming & Filters.group & ~test_group & ~Filters.new_chat_members
                    & ~class_c & class_d & ~class_e & ~declared_message)
 def check(client: Client, message: Message):
+    # Check messages from groups
     try:
         if message.from_user:
             gid = message.chat.id
@@ -63,6 +64,7 @@ def check(client: Client, message: Message):
 @Client.on_message(Filters.incoming & Filters.group & ~test_group & Filters.new_chat_members
                    & ~class_c & ~class_e & ~declared_message)
 def check_join(client: Client, message: Message):
+    # Check new joined user
     try:
         if message.from_user:
             gid = message.chat.id
@@ -79,6 +81,7 @@ def check_join(client: Client, message: Message):
                                 if len(glovar.except_ids["temp"][uid]) == 3:
                                     unban_user_globally(client, uid)
                                     share_forgiven_user(client, uid)
+                                    send_debug(client, message.chat, "自动解禁", uid, mid, message)
                                 else:
                                     unban_user(client, gid, uid)
                             else:
@@ -95,6 +98,7 @@ def check_join(client: Client, message: Message):
 @Client.on_message(Filters.incoming & Filters.channel & hide_channel
                    & ~Filters.command(glovar.all_commands, glovar.prefix), group=-1)
 def exchange_emergency(_: Client, message: Message):
+    # Sent emergency channel transfer request
     try:
         # Read basic information
         data = receive_text_data(message)
@@ -117,6 +121,7 @@ def exchange_emergency(_: Client, message: Message):
 
 @Client.on_message(Filters.incoming & Filters.group & Filters.new_chat_members & new_group)
 def init_group(client: Client, message: Message):
+    # Initiate new groups
     try:
         if message.from_user:
             gid = message.chat.id
@@ -141,6 +146,7 @@ def init_group(client: Client, message: Message):
 
 @Client.on_message(~Filters.private & Filters.incoming & Filters.mentioned, group=1)
 def mark_mention(client: Client, message: Message):
+    # Mark mention as read
     try:
         if message.chat:
             cid = message.chat.id
@@ -151,6 +157,7 @@ def mark_mention(client: Client, message: Message):
 
 @Client.on_message(~Filters.private & Filters.incoming, group=2)
 def mark_message(client, message):
+    # Mark messages in group and channel as read
     try:
         if message.chat:
             cid = message.chat.id
@@ -162,6 +169,7 @@ def mark_message(client, message):
 @Client.on_message(Filters.incoming & Filters.channel & exchange_channel
                    & ~Filters.command(glovar.all_commands, glovar.prefix))
 def process_data(client: Client, message: Message):
+    # Process the data in exchange channel
     try:
         data = receive_text_data(message)
         if data:
@@ -493,6 +501,7 @@ def process_data(client: Client, message: Message):
 @Client.on_message(Filters.incoming & Filters.group & ~test_group & ~Filters.service
                    & ~class_c & ~class_d & ~class_e & ~declared_message)
 def share_preview(client: Client, message: Message):
+    # Share the message's preview with other bots
     try:
         if message.from_user:
             preview = get_preview(client, message)
@@ -511,7 +520,7 @@ def share_preview(client: Client, message: Message):
                 file = data_to_file(preview)
                 share_data(
                     client=client,
-                    receivers=glovar.receivers_preview,
+                    receivers=glovar.receivers["preview"],
                     action="update",
                     action_type="preview",
                     data={
@@ -530,6 +539,7 @@ def share_preview(client: Client, message: Message):
 @Client.on_message(Filters.incoming & Filters.group & test_group & ~Filters.service & ~Filters.bot
                    & ~Filters.command(glovar.all_commands, glovar.prefix))
 def test(client: Client, message: Message):
+    # Show test results in TEST group
     try:
         preview_test(client, message)
     except Exception as e:
