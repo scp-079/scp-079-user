@@ -125,7 +125,7 @@ def update_admins(client: Client) -> bool:
                             "group_id": gid,
                             "group_name": group_name,
                             "group_link": group_link,
-                            "reason": "permissions"
+                            "reason": "权限缺失"
                         }
                     )
                     debug_text = (f"项目编号：{general_link(glovar.project_name, glovar.project_link)}\n"
@@ -142,7 +142,11 @@ def update_admins(client: Client) -> bool:
                     receivers=["MANAGE"],
                     action="leave",
                     action_type="info",
-                    data=gid
+                    data={
+                        "group_id": gid,
+                        "group_name": group_name,
+                        "group_link": group_link
+                    }
                 )
                 debug_text = (f"项目编号：{general_link(glovar.project_name, glovar.project_link)}\n"
                               f"群组名称：{general_link(group_name, group_link)}\n"

@@ -17,7 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
-from json import dumps, loads
+from json import dumps
 from time import sleep
 from typing import Any, List, Optional, Union
 
@@ -25,7 +25,7 @@ from pyrogram import Chat, Client, Message
 from pyrogram.errors import FloodWait
 
 from .. import glovar
-from .etc import code, code_block, general_link, get_full_name, get_text, message_link, thread
+from .etc import code, code_block, general_link, get_full_name, message_link, thread
 from .file import crypt_file, delete_file, get_new_path
 from .telegram import get_group_info, send_document, send_message
 
@@ -153,19 +153,6 @@ def get_debug_text(client: Client, context: Union[int, Chat]) -> str:
         logger.warning(f"Get debug text error: {e}", exc_info=True)
 
     return text
-
-
-def receive_text_data(message: Message) -> dict:
-    # Receive text's data from exchange channel
-    data = {}
-    try:
-        text = get_text(message)
-        if text:
-            data = loads(text)
-    except Exception as e:
-        logger.warning(f"Receive data error: {e}")
-
-    return data
 
 
 def send_debug(client: Client, chat: Chat, action: str, uid: int, mid: int, em: Message) -> bool:

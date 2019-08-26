@@ -25,6 +25,12 @@ from shutil import rmtree
 from typing import Dict, List, Set, Union
 
 # Enable logging
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    level=logging.WARNING,
+    filename='log',
+    filemode='w'
+)
 logger = logging.getLogger(__name__)
 
 # Init
@@ -89,6 +95,7 @@ long_id: int = 0
 noflood_id: int = 0
 noporn_id: int = 0
 nospam_id: int = 0
+recheck_id: int = 0
 tip_id: int = 0
 user_id: int = 0
 warn_id: int = 0
@@ -125,6 +132,7 @@ try:
     noflood_id = int(config["bots"].get("noflood_id", noflood_id))
     noporn_id = int(config["bots"].get("noporn_id", noporn_id))
     nospam_id = int(config["bots"].get("nospam_id", nospam_id))
+    recheck_id = int(config["bots"].get("recheck_id", recheck_id))
     tip_id = int(config["bots"].get("tip_id", tip_id))
     user_id = int(config["bots"].get("user_id", user_id))
     warn_id = int(config["bots"].get("warn_id", warn_id))
@@ -156,6 +164,7 @@ if (prefix == []
         or noflood_id == 0
         or noporn_id == 0
         or nospam_id == 0
+        or recheck_id == 0
         or tip_id == 0
         or user_id == 0
         or warn_id == 0
@@ -172,9 +181,11 @@ if (prefix == []
         or reset_day in {"", "[DATA EXPUNGED]"}
         or key in {"", "[DATA EXPUNGED]"}
         or password in {"", "[DATA EXPUNGED]"}):
-    raise SystemExit('No proper settings')
+    logger.critical("No proper settings")
+    raise SystemExit("No proper settings")
 
-bot_ids: Set[int] = {captcha_id, clean_id, lang_id, long_id, noflood_id, noporn_id, nospam_id, tip_id, user_id, warn_id}
+bot_ids: Set[int] = {captcha_id, clean_id, lang_id, long_id,
+                     noflood_id, noporn_id, nospam_id, recheck_id, tip_id, user_id, warn_id}
 
 # Load data from pickle
 
