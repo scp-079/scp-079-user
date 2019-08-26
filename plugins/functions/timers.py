@@ -125,7 +125,7 @@ def update_admins(client: Client) -> bool:
                             "group_id": gid,
                             "group_name": group_name,
                             "group_link": group_link,
-                            "reason": "权限缺失"
+                            "reason": "permission"
                         }
                     )
                     debug_text = (f"项目编号：{general_link(glovar.project_name, glovar.project_link)}\n"
