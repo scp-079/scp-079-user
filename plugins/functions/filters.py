@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 
 
 def is_class_c(_, message: Message) -> bool:
-    # Check if the user who sent the message is Class C personnel
+    # Check if the message is Class C object
     try:
         if message.from_user:
             uid = message.from_user.id
@@ -44,7 +44,7 @@ def is_class_c(_, message: Message) -> bool:
 
 
 def is_class_d(_, message: Message) -> bool:
-    # Check if the user who sent the message is Class D personnel
+    # Check if the message is Class D object
     try:
         if message.from_user:
             uid = message.from_user.id
@@ -65,7 +65,7 @@ def is_class_d(_, message: Message) -> bool:
 
 
 def is_class_e(_, message: Message) -> bool:
-    # Check if the user who sent this message is Class E personnel
+    # Check if the message is Class E object
     try:
         id_list = []
         if message.from_user:
