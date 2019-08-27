@@ -103,15 +103,10 @@ def is_class_e(_, message: Message) -> bool:
 def is_declared_message(_, message: Message) -> bool:
     # Check if the message is declared by other bots
     try:
-        if isinstance(message, int):
-            gid = _
-            mid = message
-        else:
+        if message.chat:
             gid = message.chat.id
             mid = message.message_id
-
-        if mid in glovar.declared_message_ids.get(gid, set()):
-            return True
+            return is_declared_message_id(gid, mid)
     except Exception as e:
         logger.warning(f"Is declared message error: {e}", exc_info=True)
 
@@ -213,3 +208,14 @@ test_group = Filters.create(
     func=is_test_group,
     name="Test Group"
 )
+
+
+def is_declared_message_id(gid: int, mid: int) -> bool:
+    # Check if the message's ID is declared by other bots
+    try:
+        if mid in glovar.declared_message_ids.get(gid, set()):
+            return True
+    except Exception as e:
+        logger.warning(f"Is declared message id error: {e}", exc_info=True)
+
+    return False
