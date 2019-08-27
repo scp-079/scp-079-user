@@ -21,7 +21,7 @@ from html import escape
 from random import choice, uniform
 from string import ascii_letters, digits
 from threading import Thread, Timer
-from time import sleep
+from time import sleep, time
 from typing import Any, Callable, Union
 
 from cryptography.fernet import Fernet
@@ -185,6 +185,17 @@ def get_int(text: str) -> int:
         result = int(text)
     except Exception as e:
         logger.info(f"Get int error: {e}", exc_info=True)
+
+    return result
+
+
+def get_now() -> int:
+    # Get time for now
+    result = 0
+    try:
+        result = int(time())
+    except Exception as e:
+        logger.warning(f"Get now error: {e}", exc_info=True)
 
     return result
 

@@ -18,14 +18,14 @@
 
 import logging
 import re
-from time import time
 from copy import deepcopy
 
 from pyrogram import Client, Filters, Message
 
 from .. import glovar
 from ..functions.channel import get_debug_text, share_data
-from ..functions.etc import bold, code, code_block, get_command_context, get_command_type, get_int, thread, user_mention
+from ..functions.etc import bold, code, code_block, get_command_context, get_command_type, get_int, get_now
+from ..functions.etc import thread, user_mention
 from ..functions.file import save
 from ..functions.filters import is_class_c, test_group
 from ..functions.group import delete_message
@@ -47,8 +47,8 @@ def config(client: Client, message: Message):
         if is_class_c(None, message):
             # Check command format
             command_type = get_command_type(message)
-            if command_type and re.search("^user$", command_type, re.I):
-                now = int(time())
+            if command_type and re.search(f"^{glovar.sender}$", command_type, re.I):
+                now = get_now()
                 # Check the config lock
                 if now - glovar.configs[gid]["lock"] > 310:
                     # Set lock
@@ -99,7 +99,7 @@ def config_user(client: Client, message: Message):
             # Check command format
             command_type, command_context = get_command_context(message)
             if command_type:
-                now = int(time())
+                now = get_now()
                 # Check the config lock
                 if now - new_config["lock"] > 310:
                     if command_type == "show":
