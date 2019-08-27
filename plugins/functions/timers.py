@@ -56,11 +56,12 @@ def backup_files(client: Client) -> bool:
     return False
 
 
-def interval_ten_min() -> bool:
+def interval_min_ten() -> bool:
     # Execute every 10 minutes
     try:
         # glovar.deleted_ids = {}
-        glovar.recorded_ids = {}
+        for gid in list(glovar.recorded_ids):
+            glovar.recorded_ids[gid] = set()
 
         return True
     except Exception as e:
