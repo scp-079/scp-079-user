@@ -68,7 +68,7 @@ def data_to_file(data: Any) -> str:
 def delete_file(path: str) -> bool:
     # Delete a file
     try:
-        if exists(path):
+        if path and exists(path):
             remove(path)
 
         return True

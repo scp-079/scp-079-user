@@ -24,7 +24,7 @@ from pyrogram import Client, Filters, Message
 from .. import glovar
 from ..functions.channel import forward_evidence, get_debug_text, send_debug, share_data, share_forgiven_user
 from ..functions.etc import code, thread
-from ..functions.file import data_to_file, get_downloaded_path, save
+from ..functions.file import data_to_file, delete_file, get_downloaded_path, save
 from ..functions.filters import class_c, class_d, class_e, declared_message, exchange_channel, hide_channel
 from ..functions.filters import new_group, test_group
 from ..functions.group import delete_message, leave_group
@@ -376,6 +376,7 @@ def share_preview(client: Client, message: Message) -> bool:
                     image_path = get_downloaded_path(client, preview["image"])
                     if image_path:
                         preview["image"] = Image.open(image_path)
+                        thread(delete_file, (image_path,))
                     else:
                         preview["image"] = None
 
