@@ -43,7 +43,7 @@ logger = logging.getLogger(__name__)
 
 @Client.on_message(Filters.incoming & Filters.group & ~test_group & ~Filters.new_chat_members
                    & ~class_c & class_d & ~class_e & ~declared_message)
-def check(client: Client, message: Message):
+def check(client: Client, message: Message) -> bool:
     # Check messages from groups
     try:
         if message.from_user:
@@ -59,13 +59,17 @@ def check(client: Client, message: Message):
                             send_debug(client, message.chat, "自动删除", uid, mid, result)
 
                 delete_message(client, gid, mid)
+
+        return True
     except Exception as e:
         logger.warning(f"Check error: {e}", exc_info=True)
+
+    return False
 
 
 @Client.on_message(Filters.incoming & Filters.group & ~test_group & Filters.new_chat_members
                    & ~class_c & ~class_e & ~declared_message)
-def check_join(client: Client, message: Message):
+def check_join(client: Client, message: Message) -> bool:
     # Check new joined user
     try:
         if message.from_user:
@@ -93,13 +97,17 @@ def check_join(client: Client, message: Message):
                                 if result:
                                     ban_user(client, gid, uid)
                                     send_debug(client, message.chat, "自动封禁", uid, mid, result)
+
+        return True
     except Exception as e:
         logger.warning(f"Check join error: {e}", exc_info=True)
+
+    return False
 
 
 @Client.on_message(Filters.incoming & Filters.channel & hide_channel
                    & ~Filters.command(glovar.all_commands, glovar.prefix), group=-1)
-def exchange_emergency(_: Client, message: Message):
+def exchange_emergency(_: Client, message: Message) -> bool:
     # Sent emergency channel transfer request
     try:
         # Read basic information
@@ -117,12 +125,16 @@ def exchange_emergency(_: Client, message: Message):
                             glovar.should_hide = data
                         elif data is False and sender == "MANAGE":
                             glovar.should_hide = data
+
+        return True
     except Exception as e:
         logger.warning(f"Exchange emergency error: {e}", exc_info=True)
 
+    return False
 
-@Client.on_message(Filters.incoming & Filters.group & Filters.new_chat_members & new_group)
-def init_group(client: Client, message: Message):
+
+@Client.on_message(Filters.incoming & Filters.group & ~test_group & Filters.new_chat_members & new_group)
+def init_group(client: Client, message: Message) -> bool:
     # Initiate new groups
     try:
         if message.from_user:
@@ -142,35 +154,47 @@ def init_group(client: Client, message: Message):
                              f"原因：{code('获取管理员列表失败')}\n")
 
             thread(send_message, (client, glovar.debug_channel_id, text))
+
+        return True
     except Exception as e:
         logger.warning(f"Init group error: {e}", exc_info=True)
 
+    return False
+
 
 @Client.on_message(~Filters.private & Filters.incoming & Filters.mentioned, group=1)
-def mark_mention(client: Client, message: Message):
+def mark_mention(client: Client, message: Message) -> bool:
     # Mark mention as read
     try:
         if message.chat:
             cid = message.chat.id
             thread(read_mention, (client, cid))
+
+        return True
     except Exception as e:
         logger.warning(f"Mark mention error: {e}", exc_info=True)
 
+    return False
+
 
 @Client.on_message(~Filters.private & Filters.incoming, group=2)
-def mark_message(client, message):
+def mark_message(client: Client, message: Message) -> bool:
     # Mark messages from groups and channels as read
     try:
         if message.chat:
             cid = message.chat.id
             thread(read_history, (client, cid))
+
+        return True
     except Exception as e:
         logger.warning(f"Mark message error: {e}", exc_info=True)
+
+    return False
 
 
 @Client.on_message(Filters.incoming & Filters.channel & exchange_channel
                    & ~Filters.command(glovar.all_commands, glovar.prefix))
-def process_data(client: Client, message: Message):
+def process_data(client: Client, message: Message) -> bool:
     # Process the data in exchange channel
     try:
         data = receive_text_data(message)
@@ -328,13 +352,17 @@ def process_data(client: Client, message: Message):
                     if action == "help":
                         if action_type == "delete":
                             receive_help_delete(client, data)
+
+        return True
     except Exception as e:
         logger.warning(f"Process data error: {e}", exc_info=True)
+
+    return False
 
 
 @Client.on_message(Filters.incoming & Filters.group & ~test_group & ~Filters.service
                    & ~class_c & ~class_d & ~class_e & ~declared_message)
-def share_preview(client: Client, message: Message):
+def share_preview(client: Client, message: Message) -> bool:
     # Share the message's preview with other bots
     try:
         if message.from_user:
@@ -366,15 +394,23 @@ def share_preview(client: Client, message: Message):
                     encrypt=False
                 )
                 glovar.shared_url.add(url)
+
+        return True
     except Exception as e:
         logger.warning(f"Share preview error: {e}", exc_info=True)
+
+    return False
 
 
 @Client.on_message(Filters.incoming & Filters.group & test_group & ~Filters.service & ~Filters.bot
                    & ~Filters.command(glovar.all_commands, glovar.prefix))
-def test(client: Client, message: Message):
+def test(client: Client, message: Message) -> bool:
     # Show test results in TEST group
     try:
         preview_test(client, message)
+
+        return True
     except Exception as e:
         logger.warning(f"Test error: {e}", exc_info=True)
+
+    return False

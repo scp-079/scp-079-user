@@ -36,9 +36,9 @@ from ..functions.user import resolve_username
 logger = logging.getLogger(__name__)
 
 
-@Client.on_message(Filters.incoming & Filters.group
+@Client.on_message(Filters.incoming & Filters.group & ~test_group
                    & Filters.command(["config"], glovar.prefix))
-def config(client: Client, message: Message):
+def config(client: Client, message: Message) -> bool:
     # Request CONFIG session
     try:
         gid = message.chat.id
@@ -78,13 +78,17 @@ def config(client: Client, message: Message):
                     thread(send_message, (client, glovar.debug_channel_id, text))
 
         thread(delete_message, (client, gid, mid))
+
+        return True
     except Exception as e:
         logger.warning(f"Config error: {e}", exc_info=True)
 
+    return False
 
-@Client.on_message(Filters.incoming & Filters.group
+
+@Client.on_message(Filters.incoming & Filters.group & ~test_group
                    & Filters.command(["config_user"], glovar.prefix))
-def config_user(client: Client, message: Message):
+def config_directly(client: Client, message: Message) -> bool:
     # Config the bot directly
     try:
         gid = message.chat.id
@@ -108,7 +112,7 @@ def config_user(client: Client, message: Message):
                                  f"订阅名单：{code((lambda x: '启用' if x else '禁用')(new_config.get('channel')))}\n")
                         thread(send_report_message, (15, client, gid, text))
                         thread(delete_message, (client, gid, mid))
-                        return
+                        return True
                     elif command_type == "default":
                         if not new_config.get("default"):
                             new_config = deepcopy(glovar.default_config)
@@ -155,8 +159,12 @@ def config_user(client: Client, message: Message):
             thread(send_report_message, ((lambda x: 10 if x else 5)(success), client, gid, text))
 
         thread(delete_message, (client, gid, mid))
+
+        return True
     except Exception as e:
-        logger.warning(f"Config error: {e}", exc_info=True)
+        logger.warning(f"Config directly error: {e}", exc_info=True)
+
+    return False
 
 
 # @Client.on_message(Filters.incoming & Filters.group
@@ -185,7 +193,7 @@ def config_user(client: Client, message: Message):
 
 @Client.on_message(Filters.incoming & Filters.group & test_group
                    & Filters.command(["mention"], glovar.prefix))
-def mention(client: Client, message: Message):
+def mention(client: Client, message: Message) -> bool:
     # Mention a user
     try:
         cid = message.chat.id
@@ -213,13 +221,17 @@ def mention(client: Client, message: Message):
             text += f"错误：{code('用户参数有误')}\n"
 
         thread(send_message, (client, cid, text, mid))
+
+        return True
     except Exception as e:
         logger.warning(f"Mention error: {e}", exc_info=True)
+
+    return False
 
 
 @Client.on_message(Filters.incoming & Filters.group & test_group
                    & Filters.command(["print"], glovar.prefix))
-def print_message(client: Client, message: Message):
+def print_message(client: Client, message: Message) -> bool:
     # Print a message
     try:
         cid = message.chat.id
@@ -234,13 +246,17 @@ def print_message(client: Client, message: Message):
                         f"消息结构：" + "-" * 24 + "\n\n"
                         f"{code_block(result)}\n")
                 send_message(client, cid, text, mid)
+
+        return True
     except Exception as e:
         logger.warning(f"Print message error: {e}", exc_info=True)
+
+    return False
 
 
 @Client.on_message(Filters.incoming & Filters.group & test_group
                    & Filters.command(["version"], glovar.prefix))
-def version(client: Client, message: Message):
+def version(client: Client, message: Message) -> bool:
     # Check the program's version
     try:
         cid = message.chat.id
@@ -249,5 +265,9 @@ def version(client: Client, message: Message):
         text = (f"管理员：{user_mention(aid)}\n\n"
                 f"版本：{bold(glovar.version)}\n")
         thread(send_message, (client, cid, text, mid))
+
+        return True
     except Exception as e:
         logger.warning(f"Version error: {e}", exc_info=True)
+
+    return False
