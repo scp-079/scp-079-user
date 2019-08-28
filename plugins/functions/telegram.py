@@ -144,6 +144,24 @@ def get_common_chats(client: Client, uid: int) -> Optional[List[Chat]]:
     return result
 
 
+def get_chat(client: Client, cid: Union[int, str]) -> Optional[Chat]:
+    # Get a chat
+    result = None
+    try:
+        flood_wait = True
+        while flood_wait:
+            flood_wait = False
+            try:
+                result = client.get_chat(chat_id=cid)
+            except FloodWait as e:
+                flood_wait = True
+                wait_flood(e)
+    except Exception as e:
+        logger.warning(f"Get chat error: {e}", exc_info=True)
+
+    return result
+
+
 def get_group_info(client: Client, chat: Union[int, Chat]) -> (str, str):
     # Get a group's name and link
     group_name = "Unknown Group"
