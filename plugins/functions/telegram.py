@@ -23,8 +23,7 @@ from typing import Iterable, List, Optional, Union
 from pyrogram import Chat, ChatMember, Client, InlineKeyboardMarkup, Message
 from pyrogram.api.functions.channels import DeleteUserHistory
 from pyrogram.api.functions.messages import GetCommonChats, GetWebPagePreview, ReadMentions
-from pyrogram.api.types import MessageMediaPhoto, MessageMediaWebPage, Photo, WebPage
-from pyrogram.api.types import InputPeerUser, InputPeerChannel
+from pyrogram.api.types import InputPeerUser, InputPeerChannel, MessageMediaPhoto, MessageMediaWebPage, Photo, WebPage
 from pyrogram.client.ext.utils import encode
 from pyrogram.errors import ChannelInvalid, ChannelPrivate, FloodWait, PeerIdInvalid, UsernameInvalid
 
