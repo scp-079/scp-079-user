@@ -29,8 +29,7 @@ from ..functions.etc import thread, user_mention
 from ..functions.file import save
 from ..functions.filters import is_class_c, test_group
 from ..functions.group import delete_message
-from ..functions.telegram import get_group_info, send_message, send_report_message
-from ..functions.user import resolve_username
+from ..functions.telegram import get_group_info, resolve_username, send_message, send_report_message
 
 # Enable logging
 logger = logging.getLogger(__name__)

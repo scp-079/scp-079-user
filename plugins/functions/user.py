@@ -19,13 +19,12 @@
 import logging
 
 from pyrogram import Client
-from pyrogram.api.types import InputPeerUser, InputPeerChannel
 
 from .. import glovar
-from .etc import get_int, thread
+from .etc import thread
 from .file import save
 from .ids import init_group_id
-from .telegram import get_common_chats, kick_chat_member, resolve_peer, unban_chat_member
+from .telegram import get_common_chats, kick_chat_member, unban_chat_member
 
 # Enable logging
 logger = logging.getLogger(__name__)
@@ -74,27 +73,6 @@ def ban_user_globally(client: Client, uid: int) -> bool:
         logger.warning(f"Ban user globally error: {e}", exc_info=True)
 
     return False
-
-
-def resolve_username(client: Client, username: str) -> (str, int):
-    # Resolve peer by username
-    peer_type = ""
-    peer_id = 0
-    try:
-        if username:
-            result = resolve_peer(client, username)
-            if result:
-                if isinstance(result, InputPeerChannel):
-                    peer_type = "channel"
-                    peer_id = result.channel_id
-                    peer_id = get_int(f"-100{peer_id}")
-                elif isinstance(result, InputPeerUser):
-                    peer_type = "user"
-                    peer_id = result.user_id
-    except Exception as e:
-        logger.warning(f"Resolve username error: {e}", exc_info=True)
-
-    return peer_type, peer_id
 
 
 def unban_user(client: Client, gid: int, uid: int) -> bool:
