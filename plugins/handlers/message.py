@@ -64,38 +64,41 @@ def check(client: Client, message: Message) -> bool:
                    & ~class_c & ~class_e & ~declared_message)
 def check_join(client: Client, message: Message) -> bool:
     # Check new joined user
-    try:
-        if not message.from_user:
-            return True
+    if glovar.locks["message"].acquire():
+        try:
+            if not message.from_user:
+                return True
 
-        gid = message.chat.id
-        mid = message.message_id
-        if glovar.configs[gid]["subscribe"]:
-            for n in message.new_chat_members:
-                uid = n.id
-                if init_user_id(uid):
-                    if uid in glovar.bad_ids["users"]:
-                        if gid in glovar.banned_ids[uid]:
-                            glovar.except_ids["temp"][uid].add(gid)
-                            save("except_ids")
-                            # If three groups forgive the user, then unban the user automatically
-                            if len(glovar.except_ids["temp"][uid]) == 3:
-                                unban_user_globally(client, uid)
-                                share_forgiven_user(client, uid)
-                                send_debug(client, message.chat, "自动解禁", uid, mid, message)
+            gid = message.chat.id
+            mid = message.message_id
+            if glovar.configs[gid]["subscribe"]:
+                for n in message.new_chat_members:
+                    uid = n.id
+                    if init_user_id(uid):
+                        if uid in glovar.bad_ids["users"]:
+                            if gid in glovar.banned_ids[uid]:
+                                glovar.except_ids["temp"][uid].add(gid)
+                                save("except_ids")
+                                # If three groups forgive the user, then unban the user automatically
+                                if len(glovar.except_ids["temp"][uid]) == 3:
+                                    unban_user_globally(client, uid)
+                                    share_forgiven_user(client, uid)
+                                    send_debug(client, message.chat, "自动解禁", uid, mid, message)
+                                else:
+                                    unban_user(client, gid, uid)
                             else:
-                                unban_user(client, gid, uid)
-                        else:
-                            glovar.banned_ids[uid].add(gid)
-                            save("banned_ids")
-                            result = forward_evidence(client, message, "自动封禁", "订阅列表")
-                            if result:
-                                ban_user(client, gid, uid)
-                                send_debug(client, message.chat, "自动封禁", uid, mid, result)
+                                glovar.banned_ids[uid].add(gid)
+                                save("banned_ids")
+                                result = forward_evidence(client, message, "自动封禁", "订阅列表")
+                                if result:
+                                    ban_user(client, gid, uid)
+                                    send_debug(client, message.chat, "自动封禁", uid, mid, result)
 
-        return True
-    except Exception as e:
-        logger.warning(f"Check join error: {e}", exc_info=True)
+            return True
+        except Exception as e:
+            logger.warning(f"Check join error: {e}", exc_info=True)
+        finally:
+            glovar.locks["message"].release()
 
     return False
 
