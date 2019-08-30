@@ -105,8 +105,7 @@ def update_admins(client: Client) -> bool:
             should_leave = True
             admin_members = get_admins(client, gid)
             if admin_members and any([admin.user.is_self for admin in admin_members]):
-                glovar.admin_ids[gid] = {admin.user.id for admin in admin_members
-                                         if not admin.user.is_bot and not admin.user.is_deleted}
+                glovar.admin_ids[gid] = {admin.user.id for admin in admin_members if not admin.user.is_bot}
                 for admin in admin_members:
                     if admin.user.is_self:
                         if (admin.permissions.can_delete_messages
