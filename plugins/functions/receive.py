@@ -217,7 +217,6 @@ def receive_remove_except(data: dict) -> bool:
     try:
         the_id = data["id"]
         the_type = data["type"]
-        # Do not receive except channels
         if the_type == "channel":
             glovar.except_ids["channels"].discard(the_id)
             save("except_ids")
