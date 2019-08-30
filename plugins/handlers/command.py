@@ -119,28 +119,20 @@ def config_directly(client: Client, message: Message) -> bool:
                             new_config = deepcopy(glovar.default_config)
                     else:
                         if command_context:
-                            if command_type == "subscribe":
+                            if command_type in {"subscribe"}:
                                 if command_context == "off":
-                                    new_config["subscribe"] = False
+                                    new_config[command_type] = False
                                 elif command_context == "on":
-                                    new_config["subscribe"] = True
+                                    new_config[command_type] = True
                                 else:
                                     success = False
-                                    reason = "订阅选项有误"
-                            elif command_type == "dafm":
-                                if command_context == "off":
-                                    new_config["dafm"] = False
-                                elif command_context == "on":
-                                    new_config["dafm"] = True
-                                else:
-                                    success = False
-                                    reason = "自助选项有误"
+                                    reason = "命令参数有误"
                             else:
                                 success = False
                                 reason = "命令类别有误"
                         else:
                             success = False
-                            reason = "命令选项缺失"
+                            reason = "命令参数缺失"
 
                         if success:
                             new_config["default"] = False
