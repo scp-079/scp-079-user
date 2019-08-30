@@ -22,6 +22,7 @@ from configparser import RawConfigParser
 from os import mkdir
 from os.path import exists
 from shutil import rmtree
+from threading import Lock
 from typing import Dict, List, Set, Union
 
 # Enable logging
@@ -55,6 +56,10 @@ default_config: Dict[str, Union[bool, int, Dict[str, bool]]] = {
 }
 
 left_group_ids: Set[int] = set()
+
+locks: Dict[str, Lock] = {
+    "message": Lock()
+}
 
 receivers: Dict[str, List[str]] = {
     "bad": ["ANALYZE", "APPEAL", "CAPTCHA", "CLEAN", "LANG", "LONG", "MANAGE", "NOFLOOD", "NOPORN",

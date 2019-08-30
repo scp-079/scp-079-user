@@ -18,11 +18,13 @@
 
 import logging
 
-from pyrogram import Client
+from pyrogram import Client, Message
 
 from .. import glovar
+from .channel import forward_evidence, send_debug
 from .etc import thread
 from .file import save
+from .group import delete_message
 from .ids import init_group_id
 from .telegram import get_common_chats, kick_chat_member, unban_chat_member
 
@@ -71,6 +73,28 @@ def ban_user_globally(client: Client, uid: int) -> bool:
         return True
     except Exception as e:
         logger.warning(f"Ban user globally error: {e}", exc_info=True)
+
+    return False
+
+
+def terminate_user(client: Client, message: Message) -> bool:
+    # Delete user's message
+    try:
+        gid = message.chat.id
+        uid = message.from_user.id
+        mid = message.message_id
+        if message.forward_from or message.forward_from_chat:
+            if uid not in glovar.recorded_ids[gid]:
+                glovar.recorded_ids[gid].add(uid)
+                result = forward_evidence(client, message, "自动删除", "订阅列表")
+                if result:
+                    send_debug(client, message.chat, "自动删除", uid, mid, result)
+
+        delete_message(client, gid, mid)
+
+        return True
+    except Exception as e:
+        logger.warning(f"Terminate user error: {e}", exc_info=True)
 
     return False
 

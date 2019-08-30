@@ -219,3 +219,18 @@ def is_declared_message_id(gid: int, mid: int) -> bool:
         logger.warning(f"Is declared message id error: {e}", exc_info=True)
 
     return False
+
+
+def is_delete(message: Message) -> bool:
+    # Check if the message should be deleted
+    if glovar.locks["message"].acquire():
+        try:
+            gid = message.chat.id
+            if glovar.configs[gid]["subscribe"]:
+                return True
+        except Exception as e:
+            logger.warning(f"Is delete error: {e}", exc_info=True)
+        finally:
+            glovar.locks["message"].release()
+
+    return False

@@ -26,8 +26,8 @@ from ..functions.channel import forward_evidence, get_debug_text, send_debug, sh
 from ..functions.etc import code, thread
 from ..functions.file import data_to_file, delete_file, get_downloaded_path, save
 from ..functions.filters import class_c, class_d, class_e, declared_message, exchange_channel, hide_channel
-from ..functions.filters import new_group, test_group
-from ..functions.group import delete_message, leave_group
+from ..functions.filters import is_delete, new_group, test_group
+from ..functions.group import leave_group
 from ..functions.ids import init_group_id, init_user_id
 from ..functions.receive import receive_add_bad, receive_add_except, receive_config_commit, receive_config_reply
 from ..functions.receive import receive_declared_message, receive_help_ban, receive_help_delete, receive_leave_approve
@@ -35,13 +35,13 @@ from ..functions.receive import receive_remove_bad, receive_remove_except, recei
 from ..functions.telegram import get_admins, get_preview, read_history, read_mention
 from ..functions.telegram import send_message
 from ..functions.tests import preview_test
-from ..functions.user import ban_user, unban_user, unban_user_globally
+from ..functions.user import ban_user, terminate_user, unban_user, unban_user_globally
 
 # Enable logging
 logger = logging.getLogger(__name__)
 
 
-@Client.on_message(Filters.incoming & Filters.group & ~test_group & ~Filters.new_chat_members
+@Client.on_message(Filters.incoming & Filters.group & ~test_group & ~Filters.service
                    & ~class_c & class_d & ~class_e & ~declared_message)
 def check(client: Client, message: Message) -> bool:
     # Check messages from groups
@@ -49,18 +49,9 @@ def check(client: Client, message: Message) -> bool:
         if not message.from_user:
             return True
 
-        gid = message.chat.id
-        if glovar.configs[gid]["subscribe"]:
-            uid = message.from_user.id
-            mid = message.message_id
-            if message.forward_from or message.forward_from_chat:
-                if uid not in glovar.recorded_ids[gid]:
-                    glovar.recorded_ids[gid].add(uid)
-                    result = forward_evidence(client, message, "自动删除", "订阅列表")
-                    if result:
-                        send_debug(client, message.chat, "自动删除", uid, mid, result)
-
-            delete_message(client, gid, mid)
+        # Need deletion
+        if is_delete(message):
+            terminate_user(client, message)
 
         return True
     except Exception as e:
