@@ -18,10 +18,10 @@
 
 import logging
 
-from pyrogram import Client, Message
+from pyrogram import Client, Message, WebPage
 
-from .etc import code_block, thread, user_mention
-from .telegram import get_preview, send_message, send_photo
+from .etc import code, thread, user_mention
+from .telegram import send_document, send_message, send_photo
 
 # Enable logging
 logger = logging.getLogger(__name__)
@@ -30,19 +30,32 @@ logger = logging.getLogger(__name__)
 def preview_test(client: Client, message: Message) -> bool:
     # Test preview
     try:
-        preview = get_preview(client, message)
-        url = preview["url"]
-        if url:
+        if message.web_page:
+            web_page: WebPage = message.web_page
+            url = web_page.url
             cid = message.chat.id
             aid = message.from_user.id
             mid = message.message_id
             text = f"管理员：{user_mention(aid)}\n\n"
-            text += "触发链接：" + "-" * 24 + "\n\n" + code_block(url) + "\n\n"
-            if preview["text"]:
-                text += "预览文字：" + "-" * 24 + "\n\n" + code_block(preview["text"]) + "\n\n"
+            text += "触发链接：" + "-" * 24 + "\n\n" + code(url) + "\n\n"
+            text += "预览内容：" + "-" * 24 + "\n\n"
+            text += web_page.display_url + "\n\n"
 
-            if preview["image"]:
-                thread(send_photo, (client, cid, preview["image"], text, mid))
+            if web_page.site_name:
+                text += web_page.site_name + "\n\n"
+
+            if web_page.title:
+                text += web_page.title + "\n\n"
+
+            if web_page.description:
+                text += web_page.description + "\n\n"
+
+            if web_page.photo:
+                file_id = web_page.photo.file_id
+                thread(send_photo, (client, cid, file_id, text, mid))
+            elif web_page.document:
+                file_id = web_page.document.file_id
+                thread(send_document, (client, cid, file_id, text, mid))
             else:
                 thread(send_message, (client, cid, text, mid))
 

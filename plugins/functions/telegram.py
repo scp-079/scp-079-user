@@ -17,18 +17,16 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
-from struct import pack
 from typing import Iterable, List, Optional, Union
 
 from pyrogram import Chat, ChatMember, Client, InlineKeyboardMarkup, Message
 from pyrogram.api.functions.channels import DeleteUserHistory
-from pyrogram.api.functions.messages import GetCommonChats, GetWebPagePreview, ReadMentions
-from pyrogram.api.types import InputPeerUser, InputPeerChannel, MessageMediaPhoto, MessageMediaWebPage, Photo, WebPage
-from pyrogram.client.ext.utils import encode
+from pyrogram.api.functions.messages import ReadMentions
+from pyrogram.api.types import InputPeerUser, InputPeerChannel
 from pyrogram.errors import ChannelInvalid, ChannelPrivate, FloodWait, PeerIdInvalid, UsernameInvalid
 
 from .. import glovar
-from .etc import delay, get_int, get_text, wait_flood
+from .etc import delay, get_int, wait_flood
 
 # Enable logging
 logger = logging.getLogger(__name__)
@@ -119,24 +117,17 @@ def get_admins(client: Client, cid: int) -> Optional[Union[bool, List[ChatMember
 
 
 def get_common_chats(client: Client, uid: int) -> Optional[List[Chat]]:
-    # Get the common groups with a user
+    # Get the common chats with a user
     result = None
     try:
-        user_id = resolve_peer(client, uid)
-        if user_id:
-            flood_wait = True
-            while flood_wait:
-                flood_wait = False
-                try:
-                    chats = client.send(GetCommonChats(
-                        user_id=user_id,
-                        max_id=0,
-                        limit=len(glovar.configs))
-                    )
-                    result = chats.chats
-                except FloodWait as e:
-                    flood_wait = True
-                    wait_flood(e)
+        flood_wait = True
+        while flood_wait:
+            flood_wait = False
+            try:
+                result = client.get_common_chats(user_id=uid)
+            except FloodWait as e:
+                flood_wait = True
+                wait_flood(e)
     except Exception as e:
         logger.warning(f"Get common chats error: {e}", exc_info=True)
 
@@ -190,75 +181,6 @@ def get_group_info(client: Client, chat: Union[int, Chat]) -> (str, str):
         logger.info(f"Get group info error: {e}", exc_info=True)
 
     return group_name, group_link
-
-
-def get_preview(client: Client, message: Message) -> dict:
-    # Get message's preview
-    preview = {
-        "url": None,
-        "text": None,
-        "image": None
-    }
-    try:
-        if should_preview(message):
-            result = None
-            message_text = get_text(message)
-            flood_wait = True
-            while flood_wait:
-                flood_wait = False
-                try:
-                    result = client.send(GetWebPagePreview(message=message_text))
-                except FloodWait as e:
-                    flood_wait = True
-                    wait_flood(e)
-
-            if result:
-                photo = None
-                if isinstance(result, MessageMediaWebPage):
-                    web_page = result.webpage
-                    if isinstance(web_page, WebPage):
-                        text = ""
-                        if web_page.url:
-                            preview["url"] = web_page.url
-
-                        if web_page.display_url:
-                            text += web_page.display_url + "\n\n"
-
-                        if web_page.site_name:
-                            text += web_page.site_name + "\n\n"
-
-                        if web_page.title:
-                            text += web_page.title + "\n\n"
-
-                        if web_page.description:
-                            text += web_page.description + "\n\n"
-
-                        preview["text"] = text.strip()
-                        if web_page.photo:
-                            if isinstance(web_page.photo, Photo):
-                                photo = web_page.photo
-                elif isinstance(result, MessageMediaPhoto):
-                    media = result.photo
-                    if isinstance(media, Photo):
-                        photo = media
-
-                # See: github.com/pyrogram/pyrogram/blob/develop/pyrogram/client/types/messages_and_media/photo.py#L81
-                if photo:
-                    big = photo.sizes[-1]
-                    if big.size <= glovar.image_size:
-                        file_id = encode(
-                            pack(
-                                "<iiqqc",
-                                2, photo.dc_id,
-                                photo.id, photo.access_hash,
-                                big.type.encode()
-                            )
-                        )
-                        preview["image"] = file_id
-    except Exception as e:
-        logger.warning(f"Get preview error: {e}", exc_info=True)
-
-    return preview
 
 
 def kick_chat_member(client: Client, cid: int, uid: int) -> Optional[Union[bool, Message]]:

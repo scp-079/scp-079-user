@@ -19,7 +19,7 @@
 import logging
 
 from PIL import Image
-from pyrogram import Client, Filters, Message
+from pyrogram import Client, Filters, Message, WebPage
 
 from .. import glovar
 from ..functions.channel import forward_evidence, get_debug_text, send_debug, share_data, share_forgiven_user
@@ -32,8 +32,7 @@ from ..functions.ids import init_group_id, init_user_id
 from ..functions.receive import receive_add_bad, receive_add_except, receive_config_commit, receive_config_reply
 from ..functions.receive import receive_declared_message, receive_help_ban, receive_help_delete, receive_leave_approve
 from ..functions.receive import receive_remove_bad, receive_remove_except, receive_text_data
-from ..functions.telegram import get_admins, get_preview, read_history, read_mention
-from ..functions.telegram import send_message
+from ..functions.telegram import get_admins, read_history, read_mention, send_message
 from ..functions.tests import preview_test
 from ..functions.user import ban_user, terminate_user, unban_user, unban_user_globally
 
@@ -363,20 +362,27 @@ def process_data(client: Client, message: Message) -> bool:
 def share_preview(client: Client, message: Message) -> bool:
     # Share the message's preview with other bots
     try:
-        if message.from_user:
-            preview = get_preview(client, message)
-            url = preview["url"]
-            if url and url not in glovar.shared_url:
+        if not message.from_user:
+            return True
+
+        if message.web_page:
+            web_page: WebPage = message.web_page
+            preview = {
+                "image": None,
+                "web_page": web_page
+            }
+            url = web_page.url
+            if url not in glovar.shared_url:
                 gid = message.chat.id
                 uid = message.from_user.id
                 mid = message.message_id
-                if preview["image"]:
-                    image_path = get_downloaded_path(client, preview["image"])
-                    if image_path:
-                        preview["image"] = Image.open(image_path)
-                        thread(delete_file, (image_path,))
-                    else:
-                        preview["image"] = None
+                if web_page.photo:
+                    if web_page.photo.file_size <= glovar.image_size:
+                        file_id = web_page.photo.file_id
+                        image_path = get_downloaded_path(client, file_id)
+                        if image_path:
+                            preview["image"] = Image.open(image_path)
+                            thread(delete_file, (image_path,))
 
                 file = data_to_file(preview)
                 share_data(
