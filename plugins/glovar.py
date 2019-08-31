@@ -55,6 +55,8 @@ default_config: Dict[str, Union[bool, int, Dict[str, bool]]] = {
     "subscribe": True
 }
 
+helped_ids: Set[int] = set()
+
 left_group_ids: Set[int] = set()
 
 locks: Dict[str, Lock] = {
