@@ -60,7 +60,7 @@ def check(client: Client, message: Message) -> bool:
     return False
 
 
-@Client.on_message(Filters.incoming & Filters.group & ~test_group & Filters.new_chat_members
+@Client.on_message(Filters.incoming & Filters.group & ~test_group & Filters.new_chat_members & ~new_group
                    & ~class_c & ~class_e & ~declared_message)
 def check_join(client: Client, message: Message) -> bool:
     # Check new joined user
