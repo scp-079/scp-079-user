@@ -27,7 +27,7 @@ from ..functions.etc import code, thread
 from ..functions.file import data_to_file, delete_file, get_downloaded_path, save
 from ..functions.filters import class_c, class_d, class_e, declared_message, exchange_channel, hide_channel
 from ..functions.filters import is_delete, new_group, test_group
-from ..functions.group import leave_group
+from ..functions.group import archive_chat, leave_group
 from ..functions.ids import init_group_id, init_user_id
 from ..functions.receive import receive_add_bad, receive_add_except, receive_config_commit, receive_config_reply
 from ..functions.receive import receive_declared_message, receive_help_ban, receive_help_delete, receive_leave_approve
@@ -144,6 +144,7 @@ def init_group(client: Client, message: Message) -> bool:
                     glovar.admin_ids[gid] = {admin.user.id for admin in admin_members
                                              if not admin.user.is_bot and not admin.user.is_deleted}
                     save("admin_ids")
+                    archive_chat(client, gid)
                     text += f"状态：{code('已加入群组')}\n"
                 else:
                     thread(leave_group, (client, gid))
