@@ -36,11 +36,12 @@ from .user import ban_user_globally
 logger = logging.getLogger(__name__)
 
 
-def receive_add_except(data: dict) -> bool:
-    # Receive a channel and add it to except lists
+def receive_add_except(_: Client, data: dict) -> bool:
+    # Receive a object and add it to except list
     try:
         the_id = data["id"]
         the_type = data["type"]
+        # Receive except channels
         if the_type == "channel":
             glovar.except_ids["channels"].add(the_id)
             save("except_ids")
@@ -214,11 +215,12 @@ def receive_remove_bad(sender: str, data: dict) -> bool:
     return False
 
 
-def receive_remove_except(data: dict) -> bool:
-    # Receive a message and remove it from except lists
+def receive_remove_except(_: Client, data: dict) -> bool:
+    # Receive a object and remove it from except list
     try:
         the_id = data["id"]
         the_type = data["type"]
+        # Receive except channels
         if the_type == "channel":
             glovar.except_ids["channels"].discard(the_id)
             save("except_ids")
