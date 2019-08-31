@@ -179,8 +179,10 @@ def mention(client: Client, message: Message) -> bool:
                 the_type, the_id = resolve_username(client, id_text)
                 if the_type == "user":
                     uid = the_id
-        elif message.reply_to_message.forward_from:
-            uid = message.reply_to_message.forward_from.id
+        elif message.reply_to_message:
+            r_message = message.reply_to_message
+            if r_message.forward_from:
+                uid = r_message.forward_from.id
 
         if uid:
             if the_type:
