@@ -269,7 +269,7 @@ def process_data(client: Client, message: Message) -> bool:
                             if action_type == "bad":
                                 receive_add_bad(sender, data)
                             elif action_type == "except":
-                                receive_add_except(data)
+                                receive_add_except(client, data)
 
                     elif action == "leave":
                         if action_type == "approve":
@@ -279,7 +279,7 @@ def process_data(client: Client, message: Message) -> bool:
                         if action_type == "bad":
                             receive_remove_bad(sender, data)
                         elif action_type == "except":
-                            receive_remove_except(data)
+                            receive_remove_except(client, data)
 
                 elif sender == "NOFLOOD":
 
