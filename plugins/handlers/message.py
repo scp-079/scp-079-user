@@ -369,13 +369,16 @@ def share_preview(client: Client, message: Message) -> bool:
             web_page: WebPage = message.web_page
             preview = {
                 "image": None,
-                "web_page": web_page
+                "text": None,
+                "url": None
             }
             url = web_page.url
             if url not in glovar.shared_url:
                 gid = message.chat.id
                 uid = message.from_user.id
                 mid = message.message_id
+
+                # Store image
                 if web_page.photo:
                     if web_page.photo.file_size <= glovar.image_size:
                         file_id = web_page.photo.file_id
@@ -384,6 +387,24 @@ def share_preview(client: Client, message: Message) -> bool:
                             preview["image"] = Image.open(image_path)
                             thread(delete_file, (image_path,))
 
+                # Store text
+                text = web_page.display_url + "\n\n"
+
+                if web_page.site_name:
+                    text += web_page.site_name + "\n\n"
+
+                if web_page.title:
+                    text += web_page.title + "\n\n"
+
+                if web_page.description:
+                    text += web_page.description + "\n\n"
+
+                preview["text"] = text
+
+                # Store url
+                preview["url"] = url
+
+                # Save and share
                 file = data_to_file(preview)
                 share_data(
                     client=client,

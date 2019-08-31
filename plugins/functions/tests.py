@@ -21,7 +21,7 @@ import logging
 from pyrogram import Client, Message, WebPage
 
 from .etc import code, thread, user_mention
-from .telegram import send_document, send_message, send_photo
+from .telegram import send_message, send_photo
 
 # Enable logging
 logger = logging.getLogger(__name__)
@@ -53,9 +53,6 @@ def preview_test(client: Client, message: Message) -> bool:
             if web_page.photo:
                 file_id = web_page.photo.file_id
                 thread(send_photo, (client, cid, file_id, text, mid))
-            elif web_page.document:
-                file_id = web_page.document.file_id
-                thread(send_document, (client, cid, file_id, text, mid))
             else:
                 thread(send_message, (client, cid, text, mid))
 
