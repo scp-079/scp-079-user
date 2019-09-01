@@ -111,7 +111,7 @@ def update_admins(client: Client) -> bool:
                         if (admin.can_delete_messages
                                 and admin.can_restrict_members
                                 and (admin.can_invite_users
-                                     or get_chat(client, gid).can_invite_users)
+                                     or get_chat(client, gid).permissions.can_invite_users)
                                 and admin.can_promote_members):
                             should_leave = False
 
