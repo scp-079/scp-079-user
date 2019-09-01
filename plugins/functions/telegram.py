@@ -436,21 +436,6 @@ def send_report_message(secs: int, client: Client, cid: int, text: str, mid: int
     return result
 
 
-def should_preview(message: Message) -> bool:
-    # Check if the message should be previewed
-    if message.entities or message.caption_entities:
-        if message.entities:
-            entities = message.entities
-        else:
-            entities = message.caption_entities
-
-        for en in entities:
-            if en.type in ["url", "text_link"]:
-                return True
-
-    return False
-
-
 def unban_chat_member(client: Client, cid: int, uid: int) -> Optional[bool]:
     # Unban a user in a group
     result = None
