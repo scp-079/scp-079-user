@@ -108,11 +108,11 @@ def update_admins(client: Client) -> bool:
                 glovar.admin_ids[gid] = {admin.user.id for admin in admin_members if not admin.user.is_bot}
                 for admin in admin_members:
                     if admin.user.is_self:
-                        if (admin.permissions.can_delete_messages
-                                and admin.permissions.can_restrict_members
-                                and (admin.permissions.can_invite_users
-                                     or get_chat(client, gid).permissions.can_invite_users)
-                                and admin.permissions.can_promote_members):
+                        if (admin.can_delete_messages
+                                and admin.can_restrict_members
+                                and (admin.can_invite_users
+                                     or get_chat(client, gid).can_invite_users)
+                                and admin.can_promote_members):
                             should_leave = False
 
                 if should_leave:
