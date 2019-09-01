@@ -237,8 +237,7 @@ def version(client: Client, message: Message) -> bool:
         text = (f"管理员：{user_mention(aid)}\n\n"
                 f"版本：{bold(glovar.version)}\n")
         thread(send_message, (client, cid, text, mid))
-        from ..functions.timers import update_admins
-        update_admins(client)
+
         return True
     except Exception as e:
         logger.warning(f"Version error: {e}", exc_info=True)
