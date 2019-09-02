@@ -70,12 +70,6 @@ def is_class_e(_, message: Message) -> bool:
         if message.from_user:
             uid = message.from_user.id
 
-            # All groups' admins
-            admin_ids = deepcopy(glovar.admin_ids)
-            for gid in admin_ids:
-                if uid in admin_ids[gid]:
-                    return True
-
             # The group's temp exception
             gid = message.chat.id
             if gid in glovar.except_ids["temp"].get(uid, set()):
@@ -219,6 +213,14 @@ def is_delete(message: Message) -> bool:
         try:
             gid = message.chat.id
             if glovar.configs[gid]["subscribe"]:
+                uid = message.from_user.id
+
+                # All groups' admins
+                admin_ids = deepcopy(glovar.admin_ids)
+                for gid in admin_ids:
+                    if uid in admin_ids[gid]:
+                        return False
+
                 return True
         except Exception as e:
             logger.warning(f"Is delete error: {e}", exc_info=True)

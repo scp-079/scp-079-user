@@ -17,6 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
+from copy import deepcopy
 
 from PIL import Image
 from pyrogram import Client, Filters, Message, WebPage
@@ -70,6 +71,14 @@ def check_join(client: Client, message: Message) -> bool:
 
             gid = message.chat.id
             mid = message.message_id
+            iid = message.from_user.id
+
+            # All groups' admins
+            admin_ids = deepcopy(glovar.admin_ids)
+            for gid in admin_ids:
+                if iid in admin_ids[gid]:
+                    return True
+
             if glovar.configs[gid]["subscribe"]:
                 for n in message.new_chat_members:
                     uid = n.id
