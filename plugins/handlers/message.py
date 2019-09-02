@@ -368,7 +368,7 @@ def process_data(client: Client, message: Message) -> bool:
 
 
 @Client.on_message(Filters.incoming & Filters.group & ~test_group & ~Filters.service
-                   & ~class_c & ~class_d & ~class_e & ~declared_message)
+                   & ~class_d & ~class_e & ~declared_message)
 def share_preview(client: Client, message: Message) -> bool:
     # Share the message's preview with other bots
     if glovar.locks["preview"].acquire():
