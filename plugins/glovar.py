@@ -60,7 +60,8 @@ helped_ids: Set[int] = set()
 left_group_ids: Set[int] = set()
 
 locks: Dict[str, Lock] = {
-    "message": Lock()
+    "message": Lock(),
+    "preview": Lock()
 }
 
 receivers: Dict[str, List[str]] = {

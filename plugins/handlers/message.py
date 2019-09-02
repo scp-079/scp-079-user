@@ -362,78 +362,83 @@ def process_data(client: Client, message: Message) -> bool:
                    & ~class_c & ~class_d & ~class_e & ~declared_message)
 def share_preview(client: Client, message: Message) -> bool:
     # Share the message's preview with other bots
-    try:
-        if not message.from_user:
+    if glovar.locks["preview"].acquire():
+        logger.warning(message)
+        try:
+            if not message.from_user:
+                return True
+
+            if message.web_page:
+                web_page: WebPage = message.web_page
+                preview = {
+                    "image": None,
+                    "text": None,
+                    "url": None,
+                    "media": None
+                }
+                url = web_page.url
+                if url not in glovar.shared_url:
+                    gid = message.chat.id
+                    uid = message.from_user.id
+                    mid = message.message_id
+
+                    # Store image
+                    if web_page.photo:
+                        if web_page.photo.file_size <= glovar.image_size:
+                            file_id = web_page.photo.file_id
+                            image_path = get_downloaded_path(client, file_id)
+                            if is_declared_message(None, message):
+                                return True
+                            elif image_path:
+                                preview["image"] = Image.open(image_path)
+                                thread(delete_file, (image_path,))
+
+                    # Store text
+                    text = web_page.display_url + "\n\n"
+
+                    if web_page.site_name:
+                        text += web_page.site_name + "\n\n"
+
+                    if web_page.title:
+                        text += web_page.title + "\n\n"
+
+                    if web_page.description:
+                        text += web_page.description + "\n\n"
+
+                    preview["text"] = text
+
+                    # Store url
+                    preview["url"] = url
+
+                    # Store media
+                    if (web_page.audio
+                            or web_page.document
+                            or web_page.animation
+                            or web_page.video):
+                        preview["media"] = True
+
+                    # Save and share
+                    file = data_to_file(preview)
+                    logger.warning(file)
+                    share_data(
+                        client=client,
+                        receivers=glovar.receivers["preview"],
+                        action="update",
+                        action_type="preview",
+                        data={
+                            "group_id": gid,
+                            "user_id": uid,
+                            "message_id": mid
+                        },
+                        file=file
+                    )
+                    glovar.shared_url.add(url)
+
             return True
-
-        if message.web_page:
-            web_page: WebPage = message.web_page
-            preview = {
-                "image": None,
-                "text": None,
-                "url": None,
-                "media": None
-            }
-            url = web_page.url
-            if url not in glovar.shared_url:
-                gid = message.chat.id
-                uid = message.from_user.id
-                mid = message.message_id
-
-                # Store image
-                if web_page.photo:
-                    if web_page.photo.file_size <= glovar.image_size:
-                        file_id = web_page.photo.file_id
-                        image_path = get_downloaded_path(client, file_id)
-                        if is_declared_message(None, message):
-                            return True
-                        elif image_path:
-                            preview["image"] = Image.open(image_path)
-                            thread(delete_file, (image_path,))
-
-                # Store text
-                text = web_page.display_url + "\n\n"
-
-                if web_page.site_name:
-                    text += web_page.site_name + "\n\n"
-
-                if web_page.title:
-                    text += web_page.title + "\n\n"
-
-                if web_page.description:
-                    text += web_page.description + "\n\n"
-
-                preview["text"] = text
-
-                # Store url
-                preview["url"] = url
-
-                # Store media
-                if (web_page.audio
-                        or web_page.document
-                        or web_page.animation
-                        or web_page.video):
-                    preview["media"] = True
-
-                # Save and share
-                file = data_to_file(preview)
-                share_data(
-                    client=client,
-                    receivers=glovar.receivers["preview"],
-                    action="update",
-                    action_type="preview",
-                    data={
-                        "group_id": gid,
-                        "user_id": uid,
-                        "message_id": mid
-                    },
-                    file=file
-                )
-                glovar.shared_url.add(url)
-
-        return True
-    except Exception as e:
-        logger.warning(f"Share preview error: {e}", exc_info=True)
+        except Exception as e:
+            logger.warning(f"Share preview error: {e}", exc_info=True)
+        finally:
+            glovar.locks["preview"].release()
 
     return False
 
