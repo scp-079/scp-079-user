@@ -363,7 +363,6 @@ def process_data(client: Client, message: Message) -> bool:
 def share_preview(client: Client, message: Message) -> bool:
     # Share the message's preview with other bots
     if glovar.locks["preview"].acquire():
-        logger.warning(message)
         try:
             if not message.from_user:
                 return True
@@ -419,7 +418,6 @@ def share_preview(client: Client, message: Message) -> bool:
 
                     # Save and share
                     file = data_to_file(preview)
-                    logger.warning(file)
                     share_data(
                         client=client,
                         receivers=glovar.receivers["preview"],
