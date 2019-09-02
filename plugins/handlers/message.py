@@ -371,7 +371,8 @@ def share_preview(client: Client, message: Message) -> bool:
             preview = {
                 "image": None,
                 "text": None,
-                "url": None
+                "url": None,
+                "media": None
             }
             url = web_page.url
             if url not in glovar.shared_url:
@@ -406,6 +407,13 @@ def share_preview(client: Client, message: Message) -> bool:
 
                 # Store url
                 preview["url"] = url
+
+                # Store media
+                if (web_page.audio
+                        or web_page.document
+                        or web_page.animation
+                        or web_page.video):
+                    preview["media"] = True
 
                 # Save and share
                 file = data_to_file(preview)
