@@ -427,8 +427,7 @@ def share_preview(client: Client, message: Message) -> bool:
                         "user_id": uid,
                         "message_id": mid
                     },
-                    file=file,
-                    encrypt=False
+                    file=file
                 )
                 glovar.shared_url.add(url)
 
