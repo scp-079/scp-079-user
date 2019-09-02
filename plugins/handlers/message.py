@@ -26,7 +26,7 @@ from ..functions.channel import forward_evidence, get_debug_text, send_debug, sh
 from ..functions.etc import code, thread
 from ..functions.file import data_to_file, delete_file, get_downloaded_path, save
 from ..functions.filters import class_c, class_d, class_e, declared_message, exchange_channel, hide_channel
-from ..functions.filters import is_delete, new_group, test_group
+from ..functions.filters import is_declared_message, is_delete, new_group, test_group
 from ..functions.group import archive_chat, leave_group
 from ..functions.ids import init_group_id, init_user_id
 from ..functions.receive import receive_add_bad, receive_add_except, receive_config_commit, receive_config_reply
@@ -384,7 +384,9 @@ def share_preview(client: Client, message: Message) -> bool:
                     if web_page.photo.file_size <= glovar.image_size:
                         file_id = web_page.photo.file_id
                         image_path = get_downloaded_path(client, file_id)
-                        if image_path:
+                        if is_declared_message(None, message):
+                            return True
+                        elif image_path:
                             preview["image"] = Image.open(image_path)
                             thread(delete_file, (image_path,))
 
