@@ -182,7 +182,7 @@ if (prefix == []
         or project_link in {"", "[DATA EXPUNGED]"}
         or project_name in {"", "[DATA EXPUNGED]"}
         or reset_day in {"", "[DATA EXPUNGED]"}
-        or key in {"", "[DATA EXPUNGED]"}
+        or key in {b"", b"[DATA EXPUNGED]"}
         or password in {"", "[DATA EXPUNGED]"}):
     logger.critical("No proper settings")
     raise SystemExit("No proper settings")
