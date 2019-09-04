@@ -17,6 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
+from typing import Union
 
 from pyrogram import Client, Message
 
@@ -26,7 +27,7 @@ from .etc import thread
 from .file import save
 from .group import delete_message
 from .ids import init_group_id
-from .telegram import get_common_chats, kick_chat_member, unban_chat_member
+from .telegram import get_common_chats, kick_chat_member, resolve_username, unban_chat_member
 
 # Enable logging
 logger = logging.getLogger(__name__)
@@ -45,11 +46,17 @@ def add_bad_user(uid: int) -> bool:
     return False
 
 
-def ban_user(client: Client, gid: int, uid: int) -> bool:
+def ban_user(client: Client, gid: int, uid: Union[int, str]) -> bool:
     # Ban a user
     try:
         thread(kick_chat_member, (client, gid, uid))
-        glovar.banned_ids[uid].add(gid)
+        if isinstance(uid, int):
+            glovar.banned_ids[uid].add(gid)
+        else:
+            peer_type, peer_id = resolve_username(client, uid)
+            if peer_type == "user":
+                glovar.banned_ids[peer_id].add(gid)
+
         save("banned_ids")
 
         return True

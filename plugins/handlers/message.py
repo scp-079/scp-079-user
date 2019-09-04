@@ -99,7 +99,7 @@ def check_join(client: Client, message: Message) -> bool:
                                 save("banned_ids")
                                 result = forward_evidence(client, message, "自动封禁", "订阅列表")
                                 if result:
-                                    ban_user(client, gid, uid)
+                                    ban_user(client, gid, message.from_user.username or uid)
                                     send_debug(client, message.chat, "自动封禁", uid, mid, result)
 
             return True
