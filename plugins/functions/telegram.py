@@ -23,7 +23,8 @@ from pyrogram import Chat, ChatMember, Client, InlineKeyboardMarkup, Message
 from pyrogram.api.functions.channels import DeleteUserHistory
 from pyrogram.api.functions.messages import ReadMentions
 from pyrogram.api.types import InputPeerUser, InputPeerChannel
-from pyrogram.errors import ChannelInvalid, ChannelPrivate, FloodWait, PeerIdInvalid, UsernameInvalid
+from pyrogram.errors import ChannelInvalid, ChannelPrivate, FloodWait, PeerIdInvalid
+from pyrogram.errors import UsernameInvalid, UsernameNotOccupied
 
 from .. import glovar
 from .etc import delay, get_int, wait_flood
@@ -290,7 +291,7 @@ def resolve_peer(client: Client, pid: Union[int, str]) -> Optional[Union[bool, I
             except FloodWait as e:
                 flood_wait = True
                 wait_flood(e)
-            except UsernameInvalid:
+            except (PeerIdInvalid, UsernameInvalid, UsernameNotOccupied):
                 return False
     except Exception as e:
         logger.warning(f"Resolve peer error: {e}", exc_info=True)
