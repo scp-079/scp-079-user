@@ -209,22 +209,19 @@ def is_declared_message_id(gid: int, mid: int) -> bool:
 
 def is_delete(message: Message) -> bool:
     # Check if the message should be deleted
-    if glovar.locks["message"].acquire():
-        try:
-            gid = message.chat.id
-            if glovar.configs[gid]["subscribe"]:
-                uid = message.from_user.id
+    try:
+        gid = message.chat.id
+        if glovar.configs[gid]["subscribe"]:
+            uid = message.from_user.id
 
-                # All groups' admins
-                admin_ids = deepcopy(glovar.admin_ids)
-                for gid in admin_ids:
-                    if uid in admin_ids[gid]:
-                        return False
+            # All groups' admins
+            admin_ids = deepcopy(glovar.admin_ids)
+            for gid in admin_ids:
+                if uid in admin_ids[gid]:
+                    return False
 
-                return True
-        except Exception as e:
-            logger.warning(f"Is delete error: {e}", exc_info=True)
-        finally:
-            glovar.locks["message"].release()
+            return True
+    except Exception as e:
+        logger.warning(f"Is delete error: {e}", exc_info=True)
 
     return False

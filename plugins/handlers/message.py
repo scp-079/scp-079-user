@@ -45,17 +45,24 @@ logger = logging.getLogger(__name__)
                    & ~class_c & class_d & ~class_e & ~declared_message)
 def check(client: Client, message: Message) -> bool:
     # Check messages from groups
-    try:
-        if not message.from_user:
+    if glovar.locks["message"].acquire():
+        try:
+            if not message.from_user:
+                return True
+
+            # Check declare status
+            if is_declared_message(None, message):
+                return True
+
+            # Need deletion
+            if is_delete(message):
+                terminate_user(client, message)
+
             return True
-
-        # Need deletion
-        if is_delete(message):
-            terminate_user(client, message)
-
-        return True
-    except Exception as e:
-        logger.warning(f"Check error: {e}", exc_info=True)
+        except Exception as e:
+            logger.warning(f"Check error: {e}", exc_info=True)
+        finally:
+            glovar.locks["message"].release()
 
     return False
 
@@ -454,11 +461,14 @@ def share_preview(client: Client, message: Message) -> bool:
                    & ~Filters.command(glovar.all_commands, glovar.prefix))
 def test(client: Client, message: Message) -> bool:
     # Show test results in TEST group
-    try:
-        preview_test(client, message)
+    if glovar.locks["test"].acquire():
+        try:
+            preview_test(client, message)
 
-        return True
-    except Exception as e:
-        logger.warning(f"Test error: {e}", exc_info=True)
+            return True
+        except Exception as e:
+            logger.warning(f"Test error: {e}", exc_info=True)
+        finally:
+            glovar.locks["test"].release()
 
     return False
