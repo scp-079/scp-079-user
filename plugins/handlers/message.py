@@ -54,6 +54,13 @@ def check(client: Client, message: Message) -> bool:
             if is_declared_message(None, message):
                 return True
 
+            # All groups' admins
+            uid = message.from_user.id
+            admin_ids = deepcopy(glovar.admin_ids)
+            for gid in admin_ids:
+                if uid in admin_ids[gid]:
+                    return True
+
             # Need deletion
             if is_delete(message):
                 terminate_user(client, message)
@@ -76,15 +83,19 @@ def check_join(client: Client, message: Message) -> bool:
             if not message.from_user:
                 return True
 
-            gid = message.chat.id
-            mid = message.message_id
-            iid = message.from_user.id
+            # Check declare status
+            if is_declared_message(None, message):
+                return True
 
             # All groups' admins
+            uid = message.from_user.id
             admin_ids = deepcopy(glovar.admin_ids)
             for gid in admin_ids:
-                if iid in admin_ids[gid]:
+                if uid in admin_ids[gid]:
                     return True
+
+            gid = message.chat.id
+            mid = message.message_id
 
             if glovar.configs[gid]["subscribe"]:
                 for n in message.new_chat_members:
