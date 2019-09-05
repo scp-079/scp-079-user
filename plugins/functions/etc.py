@@ -22,7 +22,7 @@ from random import choice, uniform
 from string import ascii_letters, digits
 from threading import Thread, Timer
 from time import sleep, time
-from typing import Any, Callable, Union
+from typing import Any, Callable, Optional, Union
 
 from cryptography.fernet import Fernet
 from pyrogram import Message, User
@@ -178,7 +178,7 @@ def get_full_name(user: User) -> str:
     return text
 
 
-def get_int(text: str) -> int:
+def get_int(text: str) -> Optional[int]:
     # Get a int from a string
     result = None
     try:
