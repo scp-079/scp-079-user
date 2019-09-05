@@ -420,7 +420,11 @@ def share_preview(client: Client, message: Message) -> bool:
                                 thread(delete_file, (image_path,))
 
                     # Store text
-                    text = web_page.display_url + "\n\n"
+                    text = ""
+                    if message.text:
+                        text += message.text + "\n\n"
+
+                    text += web_page.display_url + "\n\n"
 
                     if web_page.site_name:
                         text += web_page.site_name + "\n\n"
