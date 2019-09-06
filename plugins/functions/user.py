@@ -90,12 +90,11 @@ def terminate_user(client: Client, message: Message) -> bool:
         gid = message.chat.id
         uid = message.from_user.id
         mid = message.message_id
-        if message.forward_from or message.forward_from_chat:
-            if uid not in glovar.recorded_ids[gid]:
-                glovar.recorded_ids[gid].add(uid)
-                result = forward_evidence(client, message, "自动删除", "订阅列表")
-                if result:
-                    send_debug(client, message.chat, "自动删除", uid, mid, result)
+        if uid not in glovar.recorded_ids[gid]:
+            glovar.recorded_ids[gid].add(uid)
+            result = forward_evidence(client, message, "自动删除", "订阅列表")
+            if result:
+                send_debug(client, message.chat, "自动删除", uid, mid, result)
 
         delete_message(client, gid, mid)
 
