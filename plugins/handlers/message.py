@@ -26,7 +26,7 @@ from .. import glovar
 from ..functions.channel import forward_evidence, get_debug_text, send_debug, share_data, share_forgiven_user
 from ..functions.etc import code, thread
 from ..functions.file import data_to_file, delete_file, get_downloaded_path, save
-from ..functions.filters import class_c, class_d, class_e, declared_message, exchange_channel, hide_channel
+from ..functions.filters import class_c, class_d, class_e, declared_message, exchange_channel, from_user, hide_channel
 from ..functions.filters import is_declared_message, is_delete, new_group, test_group
 from ..functions.group import archive_chat, leave_group
 from ..functions.ids import init_group_id, init_user_id
@@ -41,15 +41,12 @@ from ..functions.user import ban_user, terminate_user, unban_user, unban_user_gl
 logger = logging.getLogger(__name__)
 
 
-@Client.on_message(Filters.incoming & Filters.group & ~test_group & ~Filters.service
+@Client.on_message(Filters.incoming & Filters.group & ~test_group & from_user & ~Filters.service
                    & ~class_c & class_d & ~class_e & ~declared_message)
 def check(client: Client, message: Message) -> bool:
     # Check messages from groups
     if glovar.locks["message"].acquire():
         try:
-            if not message.from_user:
-                return True
-
             # Check declare status
             if is_declared_message(None, message):
                 return True
@@ -74,15 +71,12 @@ def check(client: Client, message: Message) -> bool:
     return False
 
 
-@Client.on_message(Filters.incoming & Filters.group & ~test_group & Filters.new_chat_members & ~new_group
+@Client.on_message(Filters.incoming & Filters.group & ~test_group & from_user & Filters.new_chat_members & ~new_group
                    & ~class_c & ~class_e & ~declared_message)
 def check_join(client: Client, message: Message) -> bool:
     # Check new joined user
     if glovar.locks["message"].acquire():
         try:
-            if not message.from_user:
-                return True
-
             # Check declare status
             if is_declared_message(None, message):
                 return True
@@ -157,7 +151,7 @@ def exchange_emergency(_: Client, message: Message) -> bool:
     return False
 
 
-@Client.on_message(Filters.incoming & Filters.group & ~test_group & Filters.new_chat_members & new_group)
+@Client.on_message(Filters.incoming & Filters.group & ~test_group & from_user & Filters.new_chat_members & new_group)
 def init_group(client: Client, message: Message) -> bool:
     # Initiate new groups
     try:
@@ -385,15 +379,12 @@ def process_data(client: Client, message: Message) -> bool:
     return False
 
 
-@Client.on_message(Filters.incoming & Filters.group & ~test_group & ~Filters.service
+@Client.on_message(Filters.incoming & Filters.group & ~test_group & from_user & ~Filters.service
                    & ~class_d & ~class_e & ~declared_message)
 def share_preview(client: Client, message: Message) -> bool:
     # Share the message's preview with other bots
     if glovar.locks["preview"].acquire():
         try:
-            if not message.from_user:
-                return True
-
             if message.web_page:
                 web_page: WebPage = message.web_page
                 preview = {
@@ -472,7 +463,7 @@ def share_preview(client: Client, message: Message) -> bool:
     return False
 
 
-@Client.on_message(Filters.incoming & Filters.group & test_group & ~Filters.service & ~Filters.bot
+@Client.on_message(Filters.incoming & Filters.group & test_group & from_user & ~Filters.service & ~Filters.bot
                    & ~Filters.command(glovar.all_commands, glovar.prefix))
 def test(client: Client, message: Message) -> bool:
     # Show test results in TEST group

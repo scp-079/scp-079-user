@@ -27,7 +27,7 @@ from ..functions.channel import get_debug_text, share_data
 from ..functions.etc import bold, code, delay, code_block, get_command_context, get_command_type, get_int, get_now
 from ..functions.etc import thread, user_mention
 from ..functions.file import save
-from ..functions.filters import is_class_c, test_group
+from ..functions.filters import from_user, is_class_c, test_group
 from ..functions.group import delete_message
 from ..functions.telegram import get_group_info, resolve_username, send_message, send_report_message
 
@@ -35,7 +35,7 @@ from ..functions.telegram import get_group_info, resolve_username, send_message,
 logger = logging.getLogger(__name__)
 
 
-@Client.on_message(Filters.incoming & Filters.group & ~test_group
+@Client.on_message(Filters.incoming & Filters.group & ~test_group & from_user
                    & Filters.command(["config"], glovar.prefix))
 def config(client: Client, message: Message) -> bool:
     # Request CONFIG session
@@ -87,7 +87,7 @@ def config(client: Client, message: Message) -> bool:
     return False
 
 
-@Client.on_message(Filters.incoming & Filters.group & ~test_group
+@Client.on_message(Filters.incoming & Filters.group & ~test_group & from_user
                    & Filters.command(["config_user"], glovar.prefix))
 def config_directly(client: Client, message: Message) -> bool:
     # Config the bot directly
@@ -161,7 +161,7 @@ def config_directly(client: Client, message: Message) -> bool:
     return False
 
 
-@Client.on_message(Filters.incoming & Filters.group & test_group
+@Client.on_message(Filters.incoming & Filters.group & test_group & from_user
                    & Filters.command(["mention"], glovar.prefix))
 def mention(client: Client, message: Message) -> bool:
     # Mention a user
@@ -201,7 +201,7 @@ def mention(client: Client, message: Message) -> bool:
     return False
 
 
-@Client.on_message(Filters.incoming & Filters.group & test_group
+@Client.on_message(Filters.incoming & Filters.group & test_group & from_user
                    & Filters.command(["print"], glovar.prefix))
 def print_message(client: Client, message: Message) -> bool:
     # Print a message
@@ -226,7 +226,7 @@ def print_message(client: Client, message: Message) -> bool:
     return False
 
 
-@Client.on_message(Filters.incoming & Filters.group & test_group
+@Client.on_message(Filters.incoming & Filters.group & test_group & from_user
                    & Filters.command(["version"], glovar.prefix))
 def version(client: Client, message: Message) -> bool:
     # Check the program's version
