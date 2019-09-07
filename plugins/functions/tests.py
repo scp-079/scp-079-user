@@ -39,16 +39,16 @@ def preview_test(client: Client, message: Message) -> bool:
             text = f"管理员：{user_mention(aid)}\n\n"
             text += "触发链接：" + "-" * 24 + "\n\n" + code(url) + "\n\n"
             text += "预览内容：" + "-" * 24 + "\n\n"
-            text += web_page.display_url + "\n\n"
+            text += code(web_page.display_url) + "\n\n"
 
             if web_page.site_name:
-                text += web_page.site_name + "\n\n"
+                text += code(web_page.site_name) + "\n\n"
 
             if web_page.title:
-                text += web_page.title + "\n\n"
+                text += code(web_page.title) + "\n\n"
 
             if web_page.description:
-                text += web_page.description + "\n\n"
+                text += code(web_page.description) + "\n\n"
 
             if web_page.photo:
                 file_id = web_page.photo.file_id
