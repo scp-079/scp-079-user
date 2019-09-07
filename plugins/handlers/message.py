@@ -35,6 +35,7 @@ from ..functions.receive import receive_declared_message, receive_help_ban, rece
 from ..functions.receive import receive_remove_bad, receive_remove_except, receive_text_data
 from ..functions.telegram import get_admins, read_history, read_mention, send_message
 from ..functions.tests import preview_test
+from ..functions.timers import update_admins
 from ..functions.user import ban_user, terminate_user, unban_user, unban_user_globally
 
 # Enable logging
@@ -301,6 +302,11 @@ def process_data(client: Client, message: Message) -> bool:
                             receive_remove_bad(sender, data)
                         elif action_type == "except":
                             receive_remove_except(client, data)
+
+                    elif action_type == "update":
+                        if action_type == "admin":
+                            if data == "demand":
+                                update_admins(client)
 
                 elif sender == "NOFLOOD":
 
