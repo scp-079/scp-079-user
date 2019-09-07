@@ -120,7 +120,7 @@ def receive_declared_message(data: dict) -> bool:
     return False
 
 
-def receive_file_data(client: Client, message: Message, decrypt: bool = False) -> Any:
+def receive_file_data(client: Client, message: Message, decrypt: bool = True) -> Any:
     # Receive file's data from exchange channel
     data = None
     try:
