@@ -24,9 +24,9 @@ from typing import Any
 from pyrogram import Client, Message
 
 from .. import glovar
-from .channel import get_debug_text
+from .channel import get_debug_text, share_data
 from .etc import code, general_link, get_text, thread, user_mention
-from .file import crypt_file, delete_file, get_new_path, get_downloaded_path, save
+from .file import crypt_file, data_to_file, delete_file, get_new_path, get_downloaded_path, save
 from .group import delete_all_messages, delete_messages_globally, leave_group
 from .ids import init_group_id, init_user_id
 from .telegram import send_message, send_report_message
@@ -250,6 +250,35 @@ def receive_remove_except(_: Client, data: dict) -> bool:
         return True
     except Exception as e:
         logger.warning(f"Receive remove except error: {e}", exc_info=True)
+
+    return False
+
+
+def receive_status_ask(client: Client, data: dict) -> bool:
+    # Receive version info request
+    try:
+        aid = data["admin_id"]
+        mid = data["message_id"]
+        group_count = len(glovar.admin_ids)
+        status = {
+            "群组数量": f"{group_count} 个"
+        }
+        file = data_to_file(status)
+        share_data(
+            client=client,
+            receivers=["MANAGE"],
+            action="status",
+            action_type="reply",
+            data={
+                "admin_id": aid,
+                "message_id": mid
+            },
+            file=file
+        )
+
+        return True
+    except Exception as e:
+        logger.warning(f"Receive version ask error: {e}", exc_info=True)
 
     return False
 
