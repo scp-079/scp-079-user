@@ -161,6 +161,8 @@ def receive_help_ban(client: Client, data: dict) -> bool:
                 thread(ban_user_globally, (client, user_id))
                 glovar.banned_ids[user_id].add(group_id)
                 save("banned_ids")
+
+        return True
     except Exception as e:
         logger.warning(f"Receive help ban error: {e}", exc_info=True)
 
@@ -173,10 +175,15 @@ def receive_help_delete(client: Client, data: dict) -> bool:
         group_id = data["group_id"]
         user_id = data["user_id"]
         help_type = data["type"]
+        if group_id and group_id not in glovar.admin_ids:
+            return True
+
         if help_type == "global":
             thread(delete_messages_globally, (client, user_id))
         elif help_type == "single":
             thread(delete_all_messages, (client, group_id, user_id))
+
+        return True
     except Exception as e:
         logger.warning(f"Receive help delete error: {e}", exc_info=True)
 
