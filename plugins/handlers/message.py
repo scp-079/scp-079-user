@@ -27,7 +27,7 @@ from ..functions.channel import forward_evidence, get_debug_text, send_debug, sh
 from ..functions.etc import code, thread
 from ..functions.file import data_to_file, delete_file, get_downloaded_path, save
 from ..functions.filters import class_c, class_d, class_e, declared_message, exchange_channel, from_user, hide_channel
-from ..functions.filters import is_declared_message, is_delete, new_group, test_group
+from ..functions.filters import is_class_d, is_declared_message, is_delete, new_group, test_group
 from ..functions.group import archive_chat, leave_group
 from ..functions.ids import init_group_id, init_user_id
 from ..functions.receive import receive_add_bad, receive_add_except, receive_config_commit, receive_config_reply

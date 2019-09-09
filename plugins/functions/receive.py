@@ -30,7 +30,7 @@ from .file import crypt_file, data_to_file, delete_file, get_new_path, get_downl
 from .group import delete_all_messages, delete_messages_globally, leave_group
 from .ids import init_group_id, init_user_id
 from .telegram import send_message, send_report_message
-from .user import ban_user_globally
+from .user import ban_user_globally, unban_user_globally
 
 # Enable logging
 logger = logging.getLogger(__name__)
@@ -218,7 +218,7 @@ def receive_leave_approve(client: Client, data: dict) -> bool:
     return False
 
 
-def receive_remove_bad(sender: str, data: dict) -> bool:
+def receive_remove_bad(client: Client, sender: str, data: dict) -> bool:
     # Receive removed bad objects
     try:
         the_id = data["id"]
@@ -227,6 +227,7 @@ def receive_remove_bad(sender: str, data: dict) -> bool:
             glovar.bad_ids["channels"].discard(the_id)
         elif the_type == "user":
             glovar.bad_ids["users"].discard(the_id)
+            unban_user_globally(client, the_id)
 
         save("bad_ids")
 

@@ -24,7 +24,7 @@ from pyrogram import Chat, Client, Message
 from pyrogram.errors import FloodWait
 
 from .. import glovar
-from .etc import code, code_block, general_link, get_full_name, message_link, thread, wait_flood
+from .etc import code, code_block, general_link, message_link, thread, wait_flood
 from .file import crypt_file, delete_file, get_new_path
 from .telegram import get_group_info, send_document, send_message
 
@@ -96,7 +96,8 @@ def format_data(sender: str, receivers: List[str], action: str, action_type: str
     return text
 
 
-def forward_evidence(client: Client, message: Message, level: str, rule: str) -> Optional[Union[bool, Message]]:
+def forward_evidence(client: Client, message: Message, level: str, rule: str,
+                     more: str = None) -> Optional[Union[bool, Message]]:
     # Forward the message to the logging channel as evidence
     result = None
     try:
@@ -105,31 +106,46 @@ def forward_evidence(client: Client, message: Message, level: str, rule: str) ->
                 f"用户 ID：{code(uid)}\n"
                 f"操作等级：{code(level)}\n"
                 f"规则：{code(rule)}\n")
-        if message.service:
-            name = get_full_name(message.from_user)
-            if name:
-                text += f"用户昵称：{code(name)}\n"
 
-            text += f"附加消息：{code('入群消息')}\n"
+        if message.game:
+            text += f"消息类别：{code('游戏')}\n"
+        elif message.service:
+            text += f"消息类别：{code('服务消息')}\n"
+
+        if message.contact or message.location or message.venue or message.video_note or message.voice:
+            text += f"附加信息：{code('可能涉及隐私而未转发')}\n"
+        elif message.game or message.service:
+            text += f"附加信息：{code('此类消息无法转发至频道')}\n"
+        elif more:
+            text += f"附加信息：{code(more)}\n"
+
+        # DO NOT try to forward these types of message
+        if (message.contact or message.location
+                or message.venue
+                or message.video_note
+                or message.voice
+                or message.game
+                or message.service):
             result = send_message(client, glovar.logging_channel_id, text)
-        else:
-            flood_wait = True
-            while flood_wait:
-                flood_wait = False
-                try:
-                    result = message.forward(
-                        chat_id=glovar.logging_channel_id,
-                        disable_notification=True
-                    )
-                except FloodWait as e:
-                    flood_wait = True
-                    wait_flood(e)
-                except Exception as e:
-                    logger.info(f"Forward evidence message error: {e}", exc_info=True)
-                    return False
+            return result
 
-            result = result.message_id
-            result = send_message(client, glovar.logging_channel_id, text, result)
+        flood_wait = True
+        while flood_wait:
+            flood_wait = False
+            try:
+                result = message.forward(
+                    chat_id=glovar.logging_channel_id,
+                    disable_notification=True
+                )
+            except FloodWait as e:
+                flood_wait = True
+                wait_flood(e)
+            except Exception as e:
+                logger.info(f"Forward evidence message error: {e}", exc_info=True)
+                return False
+
+        result = result.message_id
+        result = send_message(client, glovar.logging_channel_id, text, result)
     except Exception as e:
         logger.warning(f"Forward evidence error: {e}", exc_info=True)
 
