@@ -30,9 +30,8 @@ from plugins.functions.timers import backup_files, interval_min_10, reset_data, 
 # Enable logging
 logger = logging.getLogger(__name__)
 
-# Start
+# Config session
 app = Client(session_name="account")
-app.start()
 
 # Timer
 scheduler = BackgroundScheduler()

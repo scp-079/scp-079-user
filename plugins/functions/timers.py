@@ -99,65 +99,69 @@ def reset_data() -> bool:
 
 def update_admins(client: Client) -> bool:
     # Update admin list every day
-    group_list = list(glovar.admin_ids)
-    for gid in group_list:
+    if glovar.locks["admin"].acquire():
         try:
-            should_leave = True
-            admin_members = get_admins(client, gid)
-            if admin_members and any([admin.user.is_self for admin in admin_members]):
-                glovar.admin_ids[gid] = {admin.user.id for admin in admin_members
-                                         if not admin.user.is_bot or admin.user.id in glovar.bot_ids}
-                for admin in admin_members:
-                    if admin.user.is_self:
-                        if (admin.can_delete_messages
-                                and admin.can_restrict_members
-                                and (admin.can_invite_users
-                                     or get_chat(client, gid).permissions.can_invite_users)
-                                and admin.can_promote_members):
-                            should_leave = False
+            group_list = list(glovar.admin_ids)
+            for gid in group_list:
+                try:
+                    should_leave = True
+                    admin_members = get_admins(client, gid)
+                    if admin_members and any([admin.user.is_self for admin in admin_members]):
+                        glovar.admin_ids[gid] = {admin.user.id for admin in admin_members
+                                                 if not admin.user.is_bot or admin.user.id in glovar.bot_ids}
+                        for admin in admin_members:
+                            if admin.user.is_self:
+                                if (admin.can_delete_messages
+                                        and admin.can_restrict_members
+                                        and (admin.can_invite_users
+                                             or get_chat(client, gid).permissions.can_invite_users)
+                                        and admin.can_promote_members):
+                                    should_leave = False
 
-                if should_leave:
-                    group_name, group_link = get_group_info(client, gid)
-                    share_data(
-                        client=client,
-                        receivers=["MANAGE"],
-                        action="leave",
-                        action_type="request",
-                        data={
-                            "group_id": gid,
-                            "group_name": group_name,
-                            "group_link": group_link,
-                            "reason": "permissions"
-                        }
-                    )
-                    debug_text = (f"项目编号：{general_link(glovar.project_name, glovar.project_link)}\n"
-                                  f"群组名称：{general_link(group_name, group_link)}\n"
-                                  f"群组 ID：{code(gid)}\n"
-                                  f"状态：{code('权限缺失')}\n")
-                    thread(send_message, (client, glovar.debug_channel_id, debug_text))
-            elif admin_members is False or any([admin.user.is_self for admin in admin_members]) is False:
-                # Bot is not in the chat, leave automatically without approve
-                group_name, group_link = get_group_info(client, gid)
-                leave_group(client, gid)
-                share_data(
-                    client=client,
-                    receivers=["MANAGE"],
-                    action="leave",
-                    action_type="info",
-                    data={
-                        "group_id": gid,
-                        "group_name": group_name,
-                        "group_link": group_link
-                    }
-                )
-                debug_text = (f"项目编号：{general_link(glovar.project_name, glovar.project_link)}\n"
-                              f"群组名称：{general_link(group_name, group_link)}\n"
-                              f"群组 ID：{code(gid)}\n"
-                              f"状态：{code('自动退出并清空数据')}\n"
-                              f"原因：{code('非管理员或已不在群组中')}\n")
-                thread(send_message, (client, glovar.debug_channel_id, debug_text))
-        except Exception as e:
-            logger.warning(f"Update admin in {gid} error: {e}", exc_info=True)
+                        if should_leave:
+                            group_name, group_link = get_group_info(client, gid)
+                            share_data(
+                                client=client,
+                                receivers=["MANAGE"],
+                                action="leave",
+                                action_type="request",
+                                data={
+                                    "group_id": gid,
+                                    "group_name": group_name,
+                                    "group_link": group_link,
+                                    "reason": "permissions"
+                                }
+                            )
+                            debug_text = (f"项目编号：{general_link(glovar.project_name, glovar.project_link)}\n"
+                                          f"群组名称：{general_link(group_name, group_link)}\n"
+                                          f"群组 ID：{code(gid)}\n"
+                                          f"状态：{code('权限缺失')}\n")
+                            thread(send_message, (client, glovar.debug_channel_id, debug_text))
+                    elif admin_members is False or any([admin.user.is_self for admin in admin_members]) is False:
+                        # Bot is not in the chat, leave automatically without approve
+                        group_name, group_link = get_group_info(client, gid)
+                        leave_group(client, gid)
+                        share_data(
+                            client=client,
+                            receivers=["MANAGE"],
+                            action="leave",
+                            action_type="info",
+                            data={
+                                "group_id": gid,
+                                "group_name": group_name,
+                                "group_link": group_link
+                            }
+                        )
+                        debug_text = (f"项目编号：{general_link(glovar.project_name, glovar.project_link)}\n"
+                                      f"群组名称：{general_link(group_name, group_link)}\n"
+                                      f"群组 ID：{code(gid)}\n"
+                                      f"状态：{code('自动退出并清空数据')}\n"
+                                      f"原因：{code('非管理员或已不在群组中')}\n")
+                        thread(send_message, (client, glovar.debug_channel_id, debug_text))
+                except Exception as e:
+                    logger.warning(f"Update admin in {gid} error: {e}", exc_info=True)
+        finally:
+            glovar.locks["admin"].release()
 
     return True
 

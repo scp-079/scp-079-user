@@ -60,6 +60,7 @@ helped_ids: Set[int] = set()
 left_group_ids: Set[int] = set()
 
 locks: Dict[str, Lock] = {
+    "admin": Lock(),
     "message": Lock(),
     "preview": Lock(),
     "test": Lock()
