@@ -157,8 +157,8 @@ def receive_help_ban(client: Client, data: dict) -> bool:
         if user_id not in glovar.helped_ids:
             if init_user_id(user_id):
                 glovar.helped_ids.add(user_id)
-                thread(delete_all_messages, (client, group_id, user_id))
                 thread(ban_user_globally, (client, user_id))
+                thread(delete_messages_globally, (client, user_id))
                 glovar.banned_ids[user_id].add(group_id)
                 save("banned_ids")
 
