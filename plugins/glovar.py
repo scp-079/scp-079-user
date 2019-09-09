@@ -67,9 +67,10 @@ locks: Dict[str, Lock] = {
 }
 
 receivers: Dict[str, List[str]] = {
-    "bad": ["ANALYZE", "APPEAL", "CAPTCHA", "CLEAN", "LANG", "LONG", "MANAGE", "NOFLOOD", "NOPORN",
-            "NOSPAM", "RECHECK", "WATCH"],
-    "declare": ["CLEAN", "LANG", "LONG", "NOFLOOD", "NOPORN", "NOSPAM", "RECHECK", "USER", "WATCH"],
+    "bad": ["ANALYZE", "APPEAL", "AVATAR", "CAPTCHA", "CLEAN", "LANG", "LONG",
+            "MANAGE", "NOFLOOD", "NOPORN", "NOSPAM", "RECHECK", "USER", "WATCH"],
+    "declare": ["ANALYZE", "AVATAR", "CLEAN", "LANG", "LONG",
+                "NOFLOOD", "NOPORN", "NOSPAM", "RECHECK", "USER", "WATCH"],
     "preview": ["CLEAN", "LANG", "NOPORN", "NOSPAM", "RECHECK"]
 }
 
@@ -93,6 +94,7 @@ prefix: List[str] = []
 prefix_str: str = "/!"
 
 # [bots]
+avatar_id: int = 0
 captcha_id: int = 0
 clean_id: int = 0
 lang_id: int = 0
@@ -130,6 +132,7 @@ try:
     # [basic]
     prefix = list(config["basic"].get("prefix", prefix_str))
     # [bots]
+    avatar_id = int(config["bots"].get("avatar_id", avatar_id))
     captcha_id = int(config["bots"].get("captcha_id", captcha_id))
     clean_id = int(config["bots"].get("clean_id", clean_id))
     lang_id = int(config["bots"].get("lang_id", lang_id))
@@ -162,6 +165,7 @@ except Exception as e:
 
 # Check
 if (prefix == []
+        or avatar_id == 0
         or captcha_id == 0
         or clean_id == 0
         or lang_id == 0
@@ -189,7 +193,7 @@ if (prefix == []
     logger.critical("No proper settings")
     raise SystemExit("No proper settings")
 
-bot_ids: Set[int] = {captcha_id, clean_id, lang_id, long_id,
+bot_ids: Set[int] = {avatar_id, captcha_id, clean_id, lang_id, long_id,
                      noflood_id, noporn_id, nospam_id, recheck_id, tip_id, user_id, warn_id}
 
 # Load data from pickle
