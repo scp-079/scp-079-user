@@ -201,24 +201,12 @@ def get_now() -> int:
 
 
 def get_text(message: Message) -> str:
-    # Get message's text, including link and mentioned user's name
+    # Get message's text
     text = ""
     try:
-        if message.text or message.caption:
-            if message.text:
-                text += message.text
-            else:
-                text += message.caption
-
-            if message.entities or message.caption_entities:
-                if message.entities:
-                    entities = message.entities
-                else:
-                    entities = message.caption_entities
-
-                for en in entities:
-                    if en.url:
-                        text += f"\n{en.url}"
+        the_text = message.text or message.caption
+        if the_text:
+            text += the_text
     except Exception as e:
         logger.warning(f"Get text error: {e}", exc_info=True)
 
