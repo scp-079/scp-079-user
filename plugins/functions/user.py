@@ -25,7 +25,7 @@ from .. import glovar
 from .channel import forward_evidence, send_debug
 from .etc import thread
 from .file import save
-from .group import delete_message
+from .group import delete_all_messages, delete_message
 from .ids import init_group_id
 from .telegram import get_common_chats, kick_chat_member, resolve_username, unban_chat_member
 
@@ -76,6 +76,7 @@ def ban_user_globally(client: Client, uid: int) -> bool:
                 if init_group_id(gid):
                     if glovar.configs[gid]["subscribe"]:
                         thread(ban_user, (client, gid, uid))
+                        thread(delete_all_messages, (client, gid, uid))
 
         return True
     except Exception as e:
