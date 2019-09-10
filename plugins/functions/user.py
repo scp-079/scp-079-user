@@ -90,7 +90,12 @@ def terminate_user(client: Client, message: Message) -> bool:
         gid = message.chat.id
         uid = message.from_user.id
         mid = message.message_id
-        if uid not in glovar.recorded_ids[gid]:
+        if gid not in glovar.banned_ids.get(uid, set()):
+            result = forward_evidence(client, message, "自动封禁", "订阅列表")
+            if result:
+                ban_user(client, gid, uid)
+                send_debug(client, message.chat, "自动封禁", uid, mid, result)
+        elif uid not in glovar.recorded_ids[gid]:
             glovar.recorded_ids[gid].add(uid)
             result = forward_evidence(client, message, "自动删除", "订阅列表")
             if result:
