@@ -72,7 +72,7 @@ def ban_user_globally(client: Client, uid: int) -> bool:
         chats = get_common_chats(client, uid)
         if chats:
             for chat in chats:
-                gid = int(f"-100{chat.id}")
+                gid = chat.id
                 if init_group_id(gid):
                     if glovar.configs[gid]["subscribe"]:
                         thread(ban_user, (client, gid, uid))
