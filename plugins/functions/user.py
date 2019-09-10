@@ -25,9 +25,9 @@ from .. import glovar
 from .channel import forward_evidence, send_debug
 from .etc import thread
 from .file import save
-from .group import delete_all_messages, delete_message
+from .group import delete_message
 from .ids import init_group_id
-from .telegram import get_common_chats, kick_chat_member, resolve_username, unban_chat_member
+from .telegram import delete_all_messages, get_common_chats, kick_chat_member, resolve_username, unban_chat_member
 
 # Enable logging
 logger = logging.getLogger(__name__)

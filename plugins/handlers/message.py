@@ -34,7 +34,7 @@ from ..functions.receive import receive_add_bad, receive_add_except, receive_con
 from ..functions.receive import receive_declared_message, receive_help_ban, receive_help_delete, receive_leave_approve
 from ..functions.receive import receive_refresh, receive_remove_bad, receive_remove_except
 from ..functions.receive import receive_status_ask, receive_text_data
-from ..functions.telegram import get_admins, read_history, read_mention, send_message
+from ..functions.telegram import delete_all_messages, get_admins, read_history, read_mention, send_message
 from ..functions.tests import preview_test
 from ..functions.user import ban_user, terminate_user, unban_user, unban_user_globally
 
@@ -113,6 +113,7 @@ def check_join(client: Client, message: Message) -> bool:
                                 result = forward_evidence(client, message, "自动封禁", "订阅列表")
                                 if result:
                                     ban_user(client, gid, message.from_user.username or uid)
+                                    thread(delete_all_messages, (client, gid, uid))
                                     send_debug(client, message.chat, "自动封禁", uid, mid, result)
 
             return True

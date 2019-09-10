@@ -27,9 +27,9 @@ from .. import glovar
 from .channel import get_debug_text, share_data
 from .etc import code, general_link, get_text, thread, user_mention
 from .file import crypt_file, data_to_file, delete_file, get_new_path, get_downloaded_path, save
-from .group import delete_all_messages, delete_messages_globally, leave_group
+from .group import delete_messages_globally, leave_group
 from .ids import init_group_id, init_user_id
-from .telegram import send_message, send_report_message
+from .telegram import delete_all_messages, send_message, send_report_message
 from .timers import update_admins
 from .user import ban_user_globally, unban_user_globally
 
