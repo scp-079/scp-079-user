@@ -32,10 +32,10 @@ from ..functions.group import archive_chat, leave_group
 from ..functions.ids import init_group_id, init_user_id
 from ..functions.receive import receive_add_bad, receive_add_except, receive_config_commit, receive_config_reply
 from ..functions.receive import receive_declared_message, receive_help_ban, receive_help_delete, receive_leave_approve
-from ..functions.receive import receive_remove_bad, receive_remove_except, receive_status_ask, receive_text_data
+from ..functions.receive import receive_refresh, receive_remove_bad, receive_remove_except
+from ..functions.receive import receive_status_ask, receive_text_data
 from ..functions.telegram import get_admins, read_history, read_mention, send_message
 from ..functions.tests import preview_test
-from ..functions.timers import update_admins
 from ..functions.user import ban_user, terminate_user, unban_user, unban_user_globally
 
 # Enable logging
@@ -307,10 +307,9 @@ def process_data(client: Client, message: Message) -> bool:
                         if action_type == "ask":
                             receive_status_ask(client, data)
 
-                    elif action_type == "update":
-                        if action_type == "admin":
-                            if data == "demand":
-                                update_admins(client)
+                    elif action == "update":
+                        if action_type == "refresh":
+                            receive_refresh(client, data)
 
                 elif sender == "NOFLOOD":
 

@@ -30,6 +30,7 @@ from .file import crypt_file, data_to_file, delete_file, get_new_path, get_downl
 from .group import delete_all_messages, delete_messages_globally, leave_group
 from .ids import init_group_id, init_user_id
 from .telegram import send_message, send_report_message
+from .timers import update_admins
 from .user import ban_user_globally, unban_user_globally
 
 # Enable logging
@@ -214,6 +215,23 @@ def receive_leave_approve(client: Client, data: dict) -> bool:
         return True
     except Exception as e:
         logger.warning(f"Receive leave approve error: {e}", exc_info=True)
+
+    return False
+
+
+def receive_refresh(client: Client, data: int) -> bool:
+    # Receive refresh
+    try:
+        aid = data
+        update_admins(client)
+        text = (f"项目编号：{general_link(glovar.project_name, glovar.project_link)}\n"
+                f"项目管理员：{user_mention(aid)}\n"
+                f"执行操作：{code('刷新群管列表')}\n")
+        thread(send_message, (client, glovar.debug_channel_id, text))
+
+        return True
+    except Exception as e:
+        logger.warning(f"Receive refresh error: {e}", exc_info=True)
 
     return False
 
