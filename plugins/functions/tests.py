@@ -20,7 +20,7 @@ import logging
 
 from pyrogram import Client, Message, WebPage
 
-from .etc import code, thread, user_mention
+from .etc import code, code_block, get_text, thread, user_mention
 from .telegram import send_message, send_photo
 
 # Enable logging
@@ -38,6 +38,7 @@ def preview_test(client: Client, message: Message) -> bool:
             mid = message.message_id
             text = f"管理员：{user_mention(aid)}\n\n"
             text += "触发链接：" + "-" * 24 + "\n\n" + code(url) + "\n\n"
+            text += "原始消息：" + "-" * 24 + "\n\n" + code_block(get_text(message)) + "\n\n"
             text += "预览内容：" + "-" * 24 + "\n\n"
             text += code(web_page.display_url) + "\n\n"
 
