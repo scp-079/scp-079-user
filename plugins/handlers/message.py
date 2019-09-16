@@ -245,7 +245,7 @@ def process_data(client: Client, message: Message) -> bool:
                             if action_type == "ban":
                                 receive_help_ban(client, data)
                             elif action_type == "delete":
-                                receive_help_delete(client, data)
+                                receive_help_delete(client, sender, data)
 
                         elif action == "update":
                             if action_type == "declare":
@@ -269,7 +269,7 @@ def process_data(client: Client, message: Message) -> bool:
                             if action_type == "ban":
                                 receive_help_ban(client, data)
                             elif action_type == "delete":
-                                receive_help_delete(client, data)
+                                receive_help_delete(client, sender, data)
 
                         elif action == "update":
                             if action_type == "declare":
@@ -285,7 +285,7 @@ def process_data(client: Client, message: Message) -> bool:
                             if action_type == "ban":
                                 receive_help_ban(client, data)
                             elif action_type == "delete":
-                                receive_help_delete(client, data)
+                                receive_help_delete(client, sender, data)
 
                         elif action == "update":
                             if action_type == "declare":
@@ -328,7 +328,7 @@ def process_data(client: Client, message: Message) -> bool:
                             if action_type == "ban":
                                 receive_help_ban(client, data)
                             elif action_type == "delete":
-                                receive_help_delete(client, data)
+                                receive_help_delete(client, sender, data)
 
                         elif action == "update":
                             if action_type == "declare":
@@ -344,7 +344,7 @@ def process_data(client: Client, message: Message) -> bool:
                             if action_type == "ban":
                                 receive_help_ban(client, data)
                             elif action_type == "delete":
-                                receive_help_delete(client, data)
+                                receive_help_delete(client, sender, data)
 
                         elif action == "update":
                             if action_type == "declare":
@@ -360,7 +360,7 @@ def process_data(client: Client, message: Message) -> bool:
                             if action_type == "ban":
                                 receive_help_ban(client, data)
                             elif action_type == "delete":
-                                receive_help_delete(client, data)
+                                receive_help_delete(client, sender, data)
 
                         elif action == "update":
                             if action_type == "declare":
@@ -376,7 +376,7 @@ def process_data(client: Client, message: Message) -> bool:
                             if action_type == "ban":
                                 receive_help_ban(client, data)
                             elif action_type == "delete":
-                                receive_help_delete(client, data)
+                                receive_help_delete(client, sender, data)
 
                         elif action == "update":
                             if action_type == "declare":
@@ -386,7 +386,7 @@ def process_data(client: Client, message: Message) -> bool:
 
                         if action == "help":
                             if action_type == "delete":
-                                receive_help_delete(client, data)
+                                receive_help_delete(client, sender, data)
 
             return True
         except Exception as e:
