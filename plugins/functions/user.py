@@ -76,7 +76,8 @@ def ban_user_globally(client: Client, uid: int) -> bool:
                 if init_group_id(gid):
                     if glovar.configs[gid]["subscribe"]:
                         thread(ban_user, (client, gid, uid))
-                        thread(delete_all_messages, (client, gid, uid))
+                        if glovar.configs[gid]["delete"]:
+                            thread(delete_all_messages, (client, gid, uid))
 
         return True
     except Exception as e:

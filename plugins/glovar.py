@@ -51,8 +51,8 @@ declared_message_ids: Dict[int, Set[int]] = {}
 
 default_config: Dict[str, Union[bool, int, Dict[str, bool]]] = {
     "default": True,
-    "help": True,
     "lock": 0,
+    "delete": True,
     "subscribe": True
 }
 
@@ -249,8 +249,8 @@ configs: Dict[int, Dict[str, Union[bool, int, Dict[str, bool]]]] = {}
 #     -10012345678: {
 #         "default": True,
 #         "lock": 0,
-#         "channel": True,
-#         "recheck": False
+#         "delete": True,
+#         "subscribe": True
 # }
 
 # Load data

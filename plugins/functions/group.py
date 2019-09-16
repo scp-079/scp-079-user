@@ -64,7 +64,7 @@ def delete_messages_globally(client: Client, uid: int) -> bool:
             for chat in chats:
                 gid = chat.id
                 if init_group_id(gid):
-                    if glovar.configs[gid]["subscribe"]:
+                    if glovar.configs[gid]["subscribe"] and glovar.configs[gid]["delete"]:
                         thread(delete_all_messages, (client, gid, uid))
 
         return True
