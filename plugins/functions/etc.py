@@ -200,10 +200,28 @@ def get_now() -> int:
     return result
 
 
+def get_stripped_link(link: str) -> str:
+    # Get stripped link
+    result = ""
+    try:
+        if link:
+            result = link.replace("http://", "")
+            result = result.replace("https://", "")
+            if result and result[-1] == "/":
+                result = result[:-1]
+    except Exception as e:
+        logger.warning(f"Get stripped link error: {e}", exc_info=True)
+
+    return result
+
+
 def get_text(message: Message) -> str:
     # Get message's text
     text = ""
     try:
+        if not message:
+            return ""
+
         the_text = message.text or message.caption
         if the_text:
             text += the_text

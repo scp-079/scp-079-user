@@ -24,7 +24,7 @@ from pyrogram import Client, Filters, Message, WebPage
 
 from .. import glovar
 from ..functions.channel import forward_evidence, get_debug_text, send_debug, share_data, share_forgiven_user
-from ..functions.etc import code, general_link, thread
+from ..functions.etc import code, general_link, get_channel_link, get_stripped_link, thread
 from ..functions.file import data_to_file, delete_file, get_downloaded_path, save
 from ..functions.filters import class_c, class_d, class_e, declared_message, exchange_channel, from_user, hide_channel
 from ..functions.filters import is_declared_message, is_delete, new_group, test_group
@@ -409,65 +409,72 @@ def share_preview(client: Client, message: Message) -> bool:
                     "media": None
                 }
                 url = web_page.url
-                if url not in glovar.shared_url:
-                    gid = message.chat.id
-                    uid = message.from_user.id
-                    mid = message.message_id
+                if url in glovar.shared_url:
+                    return True
 
-                    # Store image
-                    if web_page.photo:
-                        if web_page.photo.file_size <= glovar.image_size:
-                            file_id = web_page.photo.file_id
-                            image_path = get_downloaded_path(client, file_id)
-                            if is_declared_message(None, message):
-                                return True
-                            elif image_path:
-                                preview["image"] = Image.open(image_path)
-                                delete_file(image_path)
+                # Bypass
+                bypass = get_stripped_link(get_channel_link(message))
+                if f"{bypass}/" in f"{url}/":
+                    return True
 
-                    # Store text
-                    text = ""
-                    if message.text:
-                        text += message.text + "\n\n"
+                gid = message.chat.id
+                uid = message.from_user.id
+                mid = message.message_id
 
-                    text += web_page.display_url + "\n\n"
+                # Store image
+                if web_page.photo:
+                    if web_page.photo.file_size <= glovar.image_size:
+                        file_id = web_page.photo.file_id
+                        image_path = get_downloaded_path(client, file_id)
+                        if is_declared_message(None, message):
+                            return True
+                        elif image_path:
+                            preview["image"] = Image.open(image_path)
+                            delete_file(image_path)
 
-                    if web_page.site_name:
-                        text += web_page.site_name + "\n\n"
+                # Store text
+                text = ""
+                if message.text:
+                    text += message.text + "\n\n"
 
-                    if web_page.title:
-                        text += web_page.title + "\n\n"
+                text += web_page.display_url + "\n\n"
 
-                    if web_page.description:
-                        text += web_page.description + "\n\n"
+                if web_page.site_name:
+                    text += web_page.site_name + "\n\n"
 
-                    preview["text"] = text
+                if web_page.title:
+                    text += web_page.title + "\n\n"
 
-                    # Store url
-                    preview["url"] = url
+                if web_page.description:
+                    text += web_page.description + "\n\n"
 
-                    # Store media
-                    if (web_page.audio
-                            or web_page.document
-                            or web_page.animation
-                            or web_page.video):
-                        preview["media"] = True
+                preview["text"] = text
 
-                    # Save and share
-                    file = data_to_file(preview)
-                    share_data(
-                        client=client,
-                        receivers=glovar.receivers["preview"],
-                        action="update",
-                        action_type="preview",
-                        data={
-                            "group_id": gid,
-                            "user_id": uid,
-                            "message_id": mid
-                        },
-                        file=file
-                    )
-                    glovar.shared_url.add(url)
+                # Store url
+                preview["url"] = url
+
+                # Store media
+                if (web_page.audio
+                        or web_page.document
+                        or web_page.animation
+                        or web_page.video):
+                    preview["media"] = True
+
+                # Save and share
+                file = data_to_file(preview)
+                share_data(
+                    client=client,
+                    receivers=glovar.receivers["preview"],
+                    action="update",
+                    action_type="preview",
+                    data={
+                        "group_id": gid,
+                        "user_id": uid,
+                        "message_id": mid
+                    },
+                    file=file
+                )
+                glovar.shared_url.add(url)
 
             return True
         except Exception as e:
