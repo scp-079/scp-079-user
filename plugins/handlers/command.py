@@ -117,7 +117,7 @@ def config_directly(client: Client, message: Message) -> bool:
                 # Check the config lock
                 if now - new_config["lock"] > 310:
                     if command_type == "default":
-                        if not new_config["default"]:
+                        if not new_config.get("default"):
                             new_config = deepcopy(glovar.default_config)
                     else:
                         if command_context:
