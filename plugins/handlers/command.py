@@ -107,7 +107,8 @@ def config_directly(client: Client, message: Message) -> bool:
                 if command_type == "show":
                     text += (f"操作：{code('查看设置')}\n"
                              f"设置：{code((lambda x: '默认' if x else '自定义')(new_config.get('default')))}\n"
-                             f"订阅名单：{code((lambda x: '启用' if x else '禁用')(new_config.get('channel')))}\n")
+                             f"协助删除：{code((lambda x: '启用' if x else '禁用')(new_config.get('delete')))}\n"
+                             f"订阅名单：{code((lambda x: '启用' if x else '禁用')(new_config.get('subscribe')))}\n")
                     thread(send_report_message, (15, client, gid, text))
                     thread(delete_message, (client, gid, mid))
                     return True
