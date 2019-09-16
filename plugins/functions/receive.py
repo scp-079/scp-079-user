@@ -181,7 +181,7 @@ def receive_help_delete(client: Client, data: dict) -> bool:
 
         if help_type == "global":
             thread(delete_messages_globally, (client, user_id))
-        elif help_type == "single":
+        elif help_type == "single" and glovar.configs[group_id]["subscribe"]:
             thread(delete_all_messages, (client, group_id, user_id))
 
         return True
