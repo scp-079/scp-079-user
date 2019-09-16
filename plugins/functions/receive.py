@@ -183,7 +183,7 @@ def receive_help_delete(client: Client, sender: str, data: dict) -> bool:
 
         if help_type == "global":
             thread(delete_messages_globally, (client, user_id))
-        elif help_type == "single" and (glovar.configs[group_id]["delete"] or sender == "WARN"):
+        elif help_type == "single" and (glovar.configs[group_id]["delete"] or sender in {"CLEAN", "WARN"}):
             thread(delete_all_messages, (client, group_id, user_id))
 
         return True
