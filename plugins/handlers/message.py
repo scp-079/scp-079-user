@@ -222,174 +222,177 @@ def mark_message(client: Client, message: Message) -> bool:
                    & ~Filters.command(glovar.all_commands, glovar.prefix))
 def process_data(client: Client, message: Message) -> bool:
     # Process the data in exchange channel
-    try:
-        data = receive_text_data(message)
-        if data:
-            sender = data["from"]
-            receivers = data["to"]
-            action = data["action"]
-            action_type = data["type"]
-            data = data["data"]
-            # This will look awkward,
-            # seems like it can be simplified,
-            # but this is to ensure that the permissions are clear,
-            # so it is intentionally written like this
-            if glovar.sender in receivers:
-                if sender == "CLEAN":
-                    if action == "add":
-                        if action_type == "bad":
-                            receive_add_bad(sender, data)
-
-                    elif action == "help":
-                        if action_type == "ban":
-                            receive_help_ban(client, data)
-                        elif action_type == "delete":
-                            receive_help_delete(client, data)
-
-                    elif action == "update":
-                        if action_type == "declare":
-                            receive_declared_message(data)
-
-                elif sender == "CONFIG":
-
-                    if action == "config":
-                        if action_type == "commit":
-                            receive_config_commit(data)
-                        elif action_type == "reply":
-                            receive_config_reply(client, data)
-
-                elif sender == "LANG":
-
-                    if action == "add":
-                        if action_type == "bad":
-                            receive_add_bad(sender, data)
-
-                    elif action == "help":
-                        if action_type == "ban":
-                            receive_help_ban(client, data)
-                        elif action_type == "delete":
-                            receive_help_delete(client, data)
-
-                    elif action == "update":
-                        if action_type == "declare":
-                            receive_declared_message(data)
-
-                elif sender == "LONG":
-
-                    if action == "add":
-                        if action_type == "bad":
-                            receive_add_bad(sender, data)
-
-                    elif action == "help":
-                        if action_type == "ban":
-                            receive_help_ban(client, data)
-                        elif action_type == "delete":
-                            receive_help_delete(client, data)
-
-                    elif action == "update":
-                        if action_type == "declare":
-                            receive_declared_message(data)
-
-                elif sender == "MANAGE":
-
-                    if action == "add":
+    if glovar.locks["receive"].acquire():
+        try:
+            data = receive_text_data(message)
+            if data:
+                sender = data["from"]
+                receivers = data["to"]
+                action = data["action"]
+                action_type = data["type"]
+                data = data["data"]
+                # This will look awkward,
+                # seems like it can be simplified,
+                # but this is to ensure that the permissions are clear,
+                # so it is intentionally written like this
+                if glovar.sender in receivers:
+                    if sender == "CLEAN":
                         if action == "add":
                             if action_type == "bad":
                                 receive_add_bad(sender, data)
+
+                        elif action == "help":
+                            if action_type == "ban":
+                                receive_help_ban(client, data)
+                            elif action_type == "delete":
+                                receive_help_delete(client, data)
+
+                        elif action == "update":
+                            if action_type == "declare":
+                                receive_declared_message(data)
+
+                    elif sender == "CONFIG":
+
+                        if action == "config":
+                            if action_type == "commit":
+                                receive_config_commit(data)
+                            elif action_type == "reply":
+                                receive_config_reply(client, data)
+
+                    elif sender == "LANG":
+
+                        if action == "add":
+                            if action_type == "bad":
+                                receive_add_bad(sender, data)
+
+                        elif action == "help":
+                            if action_type == "ban":
+                                receive_help_ban(client, data)
+                            elif action_type == "delete":
+                                receive_help_delete(client, data)
+
+                        elif action == "update":
+                            if action_type == "declare":
+                                receive_declared_message(data)
+
+                    elif sender == "LONG":
+
+                        if action == "add":
+                            if action_type == "bad":
+                                receive_add_bad(sender, data)
+
+                        elif action == "help":
+                            if action_type == "ban":
+                                receive_help_ban(client, data)
+                            elif action_type == "delete":
+                                receive_help_delete(client, data)
+
+                        elif action == "update":
+                            if action_type == "declare":
+                                receive_declared_message(data)
+
+                    elif sender == "MANAGE":
+
+                        if action == "add":
+                            if action == "add":
+                                if action_type == "bad":
+                                    receive_add_bad(sender, data)
+                                elif action_type == "except":
+                                    receive_add_except(client, data)
+
+                        elif action == "leave":
+                            if action_type == "approve":
+                                receive_leave_approve(client, data)
+
+                        elif action == "remove":
+                            if action_type == "bad":
+                                receive_remove_bad(client, sender, data)
                             elif action_type == "except":
-                                receive_add_except(client, data)
+                                receive_remove_except(client, data)
 
-                    elif action == "leave":
-                        if action_type == "approve":
-                            receive_leave_approve(client, data)
+                        elif action == "status":
+                            if action_type == "ask":
+                                receive_status_ask(client, data)
 
-                    elif action == "remove":
-                        if action_type == "bad":
-                            receive_remove_bad(client, sender, data)
-                        elif action_type == "except":
-                            receive_remove_except(client, data)
+                        elif action == "update":
+                            if action_type == "refresh":
+                                receive_refresh(client, data)
 
-                    elif action == "status":
-                        if action_type == "ask":
-                            receive_status_ask(client, data)
+                    elif sender == "NOFLOOD":
 
-                    elif action == "update":
-                        if action_type == "refresh":
-                            receive_refresh(client, data)
+                        if action == "add":
+                            if action_type == "bad":
+                                receive_add_bad(sender, data)
 
-                elif sender == "NOFLOOD":
+                        elif action == "help":
+                            if action_type == "ban":
+                                receive_help_ban(client, data)
+                            elif action_type == "delete":
+                                receive_help_delete(client, data)
 
-                    if action == "add":
-                        if action_type == "bad":
-                            receive_add_bad(sender, data)
+                        elif action == "update":
+                            if action_type == "declare":
+                                receive_declared_message(data)
 
-                    elif action == "help":
-                        if action_type == "ban":
-                            receive_help_ban(client, data)
-                        elif action_type == "delete":
-                            receive_help_delete(client, data)
+                    elif sender == "NOPORN":
 
-                    elif action == "update":
-                        if action_type == "declare":
-                            receive_declared_message(data)
+                        if action == "add":
+                            if action_type == "bad":
+                                receive_add_bad(sender, data)
 
-                elif sender == "NOPORN":
+                        elif action == "help":
+                            if action_type == "ban":
+                                receive_help_ban(client, data)
+                            elif action_type == "delete":
+                                receive_help_delete(client, data)
 
-                    if action == "add":
-                        if action_type == "bad":
-                            receive_add_bad(sender, data)
+                        elif action == "update":
+                            if action_type == "declare":
+                                receive_declared_message(data)
 
-                    elif action == "help":
-                        if action_type == "ban":
-                            receive_help_ban(client, data)
-                        elif action_type == "delete":
-                            receive_help_delete(client, data)
+                    elif sender == "NOSPAM":
 
-                    elif action == "update":
-                        if action_type == "declare":
-                            receive_declared_message(data)
+                        if action == "add":
+                            if action_type == "bad":
+                                receive_add_bad(sender, data)
 
-                elif sender == "NOSPAM":
+                        elif action == "help":
+                            if action_type == "ban":
+                                receive_help_ban(client, data)
+                            elif action_type == "delete":
+                                receive_help_delete(client, data)
 
-                    if action == "add":
-                        if action_type == "bad":
-                            receive_add_bad(sender, data)
+                        elif action == "update":
+                            if action_type == "declare":
+                                receive_declared_message(data)
 
-                    elif action == "help":
-                        if action_type == "ban":
-                            receive_help_ban(client, data)
-                        elif action_type == "delete":
-                            receive_help_delete(client, data)
+                    elif sender == "RECHECK":
 
-                    elif action == "update":
-                        if action_type == "declare":
-                            receive_declared_message(data)
+                        if action == "add":
+                            if action_type == "bad":
+                                receive_add_bad(sender, data)
 
-                elif sender == "RECHECK":
+                        elif action == "help":
+                            if action_type == "ban":
+                                receive_help_ban(client, data)
+                            elif action_type == "delete":
+                                receive_help_delete(client, data)
 
-                    if action == "add":
-                        if action_type == "bad":
-                            receive_add_bad(sender, data)
+                        elif action == "update":
+                            if action_type == "declare":
+                                receive_declared_message(data)
 
-                    elif action == "help":
-                        if action_type == "ban":
-                            receive_help_ban(client, data)
-                        elif action_type == "delete":
-                            receive_help_delete(client, data)
+                    elif sender == "WARN":
 
-                    elif action == "update":
-                        if action_type == "declare":
-                            receive_declared_message(data)
+                        if action == "help":
+                            if action_type == "delete":
+                                receive_help_delete(client, data)
 
-                elif sender == "WARN":
-
-                    if action == "help":
-                        if action_type == "delete":
-                            receive_help_delete(client, data)
-
-        return True
-    except Exception as e:
-        logger.warning(f"Process data error: {e}", exc_info=True)
+            return True
+        except Exception as e:
+            logger.warning(f"Process data error: {e}", exc_info=True)
+        finally:
+            glovar.locks["receive"].release()
 
     return False
 

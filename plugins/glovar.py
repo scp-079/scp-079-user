@@ -63,6 +63,7 @@ locks: Dict[str, Lock] = {
     "admin": Lock(),
     "message": Lock(),
     "preview": Lock(),
+    "receive": Lock(),
     "test": Lock()
 }
 
