@@ -158,7 +158,7 @@ def receive_help_ban(client: Client, data: dict) -> bool:
         if user_id not in glovar.helped_ids:
             if init_user_id(user_id):
                 glovar.helped_ids.add(user_id)
-                if glovar.configs[group_id]["subscribe"]:
+                if glovar.configs[group_id]["help"]:
                     thread(delete_all_messages, (client, group_id, user_id))
 
                 thread(ban_user_globally, (client, user_id))
@@ -183,7 +183,7 @@ def receive_help_delete(client: Client, sender: str, data: dict) -> bool:
 
         if help_type == "global":
             thread(delete_messages_globally, (client, user_id))
-        elif help_type == "single" and (glovar.configs[group_id]["subscribe"] or sender == "WARN"):
+        elif help_type == "single" and (glovar.configs[group_id]["help"] or sender == "WARN"):
             thread(delete_all_messages, (client, group_id, user_id))
 
         return True

@@ -51,6 +51,7 @@ declared_message_ids: Dict[int, Set[int]] = {}
 
 default_config: Dict[str, Union[bool, int, Dict[str, bool]]] = {
     "default": True,
+    "help": True,
     "lock": 0,
     "subscribe": True
 }
