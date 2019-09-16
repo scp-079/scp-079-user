@@ -150,7 +150,7 @@ def receive_file_data(client: Client, message: Message, decrypt: bool = True) ->
     return data
 
 
-def receive_help_ban(client: Client, data: dict) -> bool:
+def receive_help_ban(client: Client, sender: str, data: dict) -> bool:
     # Receive help ban requests
     try:
         group_id = data["group_id"]
@@ -158,7 +158,7 @@ def receive_help_ban(client: Client, data: dict) -> bool:
         if user_id not in glovar.helped_ids:
             if init_user_id(user_id):
                 glovar.helped_ids.add(user_id)
-                if glovar.configs[group_id]["subscribe"]:
+                if glovar.configs[group_id]["subscribe"] or sender == "WARN":
                     thread(delete_all_messages, (client, group_id, user_id))
 
                 thread(ban_user_globally, (client, user_id))
