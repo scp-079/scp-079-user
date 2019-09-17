@@ -87,7 +87,7 @@ def config(client: Client, message: Message) -> bool:
     return False
 
 
-@Client.on_message(Filters.incoming & Filters.group & ~test_group & from_user
+@Client.on_message(Filters.group & ~test_group & from_user
                    & Filters.command(["config_user"], glovar.prefix))
 def config_directly(client: Client, message: Message) -> bool:
     # Config the bot directly
