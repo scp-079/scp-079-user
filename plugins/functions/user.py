@@ -132,7 +132,7 @@ def unban_user_globally(client: Client, uid: int) -> bool:
         glovar.bad_ids["users"].discard(uid)
         save("bad_ids")
 
-        for gid in glovar.banned_ids[uid]:
+        for gid in list(glovar.banned_ids[uid]):
             unban_user(client, gid, uid)
 
         if glovar.except_ids["temp"].get(uid, set()):
