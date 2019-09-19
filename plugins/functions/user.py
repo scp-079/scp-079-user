@@ -66,18 +66,21 @@ def ban_user(client: Client, gid: int, uid: Union[int, str]) -> bool:
     return False
 
 
-def ban_user_globally(client: Client, uid: int) -> bool:
+def ban_user_globally(client: Client, gid: int, uid: int) -> bool:
     # Ban a user globally
     try:
         chats = get_common_chats(client, uid)
         if chats:
             for chat in chats:
-                gid = chat.id
-                if init_group_id(gid):
-                    if glovar.configs[gid]["subscribe"]:
-                        thread(ban_user, (client, gid, uid))
-                        if glovar.configs[gid]["delete"]:
-                            thread(delete_all_messages, (client, gid, uid))
+                group_id = chat.id
+                if group_id == gid:
+                    continue
+
+                if init_group_id(group_id):
+                    if glovar.configs[group_id]["subscribe"]:
+                        thread(ban_user, (client, group_id, uid))
+                        if glovar.configs[group_id]["delete"]:
+                            thread(delete_all_messages, (client, group_id, uid))
 
         return True
     except Exception as e:
