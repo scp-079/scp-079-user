@@ -107,6 +107,7 @@ def check_join(client: Client, message: Message) -> bool:
                                     send_debug(client, message.chat, "自动解禁", uid, mid, message)
                                 else:
                                     unban_user(client, gid, uid)
+                                    send_debug(client, message.chat, "单独解禁", uid, mid, message)
                             else:
                                 glovar.banned_ids[uid].add(gid)
                                 save("banned_ids")
