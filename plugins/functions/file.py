@@ -78,13 +78,13 @@ def delete_file(path: str) -> bool:
     return False
 
 
-def get_downloaded_path(client: Client, file_id: str) -> Optional[str]:
+def get_downloaded_path(client: Client, file_id: str, file_ref: str) -> Optional[str]:
     # Download file, get it's path on local machine
     final_path = None
     try:
-        if file_id:
+        if file_id and file_ref:
             file_path = get_new_path()
-            final_path = download_media(client, file_id, file_path)
+            final_path = download_media(client, file_id, file_ref, file_path)
     except Exception as e:
         logger.warning(f"Get downloaded path error: {e}", exc_info=True)
 

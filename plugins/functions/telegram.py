@@ -97,7 +97,7 @@ def delete_all_messages(client: Client, gid: int, uid: int) -> bool:
     return False
 
 
-def download_media(client: Client, file_id: str, file_path: str):
+def download_media(client: Client, file_id: str, file_ref: str, file_path: str):
     # Download a media file
     result = None
     try:
@@ -105,7 +105,7 @@ def download_media(client: Client, file_id: str, file_path: str):
         while flood_wait:
             flood_wait = False
             try:
-                result = client.download_media(message=file_id, file_name=file_path)
+                result = client.download_media(message=file_id, file_ref=file_ref, file_name=file_path)
             except FloodWait as e:
                 flood_wait = True
                 wait_flood(e)
@@ -320,7 +320,7 @@ def resolve_username(client: Client, username: str) -> (str, int):
     return peer_type, peer_id
 
 
-def send_document(client: Client, cid: int, file: str, text: str = None, mid: int = None,
+def send_document(client: Client, cid: int, file: str, file_ref: str = None, text: str = None, mid: int = None,
                   markup: InlineKeyboardMarkup = None) -> Optional[Union[bool, Message]]:
     # Send a document to a chat
     result = None
@@ -332,6 +332,7 @@ def send_document(client: Client, cid: int, file: str, text: str = None, mid: in
                 result = client.send_document(
                     chat_id=cid,
                     document=file,
+                    file_ref=file_ref,
                     caption=text,
                     parse_mode="html",
                     reply_to_message_id=mid,
@@ -377,7 +378,7 @@ def send_message(client: Client, cid: int, text: str, mid: int = None,
     return result
 
 
-def send_photo(client: Client, cid: int, photo: str, text: str = None, mid: int = None,
+def send_photo(client: Client, cid: int, photo: str, file_ref: str = None, text: str = None, mid: int = None,
                markup: InlineKeyboardMarkup = None) -> Optional[Union[bool, Message]]:
     # Send a photo to a chat
     result = None
@@ -390,6 +391,7 @@ def send_photo(client: Client, cid: int, photo: str, text: str = None, mid: int 
                     result = client.send_photo(
                         chat_id=cid,
                         photo=photo,
+                        file_ref=file_ref,
                         caption=text,
                         parse_mode="html",
                         reply_to_message_id=mid,

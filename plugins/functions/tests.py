@@ -53,7 +53,8 @@ def preview_test(client: Client, message: Message) -> bool:
 
             if web_page.photo:
                 file_id = web_page.photo.file_id
-                thread(send_photo, (client, cid, file_id, text, mid))
+                file_ref = web_page.photo.file_ref
+                thread(send_photo, (client, cid, file_id, file_ref, text, mid))
             else:
                 thread(send_message, (client, cid, text, mid))
 

@@ -34,61 +34,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Init
-
-all_commands: List[str] = [
-    "config",
-    "config_user",
-    "mention",
-    "print",
-    "version"
-]
-
-declared_message_ids: Dict[int, Set[int]] = {}
-# declared_message_ids = {
-#     -10012345678: {123}
-# }
-
-default_config: Dict[str, Union[bool, int, Dict[str, bool]]] = {
-    "default": True,
-    "lock": 0,
-    "delete": True,
-    "subscribe": True
-}
-
-helped_ids: Set[int] = set()
-
-left_group_ids: Set[int] = set()
-
-locks: Dict[str, Lock] = {
-    "admin": Lock(),
-    "message": Lock(),
-    "preview": Lock(),
-    "receive": Lock(),
-    "test": Lock()
-}
-
-receivers: Dict[str, List[str]] = {
-    "bad": ["ANALYZE", "APPLY", "APPEAL", "AVATAR", "CAPTCHA", "CLEAN", "LANG", "LONG",
-            "MANAGE", "NOFLOOD", "NOPORN", "NOSPAM", "RECHECK", "TIP", "USER", "WATCH"],
-    "declare": ["ANALYZE", "AVATAR", "CLEAN", "LANG", "LONG",
-                "NOFLOOD", "NOPORN", "NOSPAM", "RECHECK", "USER", "WATCH"],
-    "preview": ["CLEAN", "LANG", "NOPORN", "NOSPAM", "RECHECK"]
-}
-
-recorded_ids: Dict[int, Set[int]] = {}
-# recorded_ids = {
-#     -10012345678: {12345678}
-# }
-
-sender: str = "USER"
-
-should_hide: bool = False
-
-shared_url: Set[str] = set()
-
-version: str = "0.1.8"
-
 # Read data from config.ini
 
 # [basic]
@@ -197,6 +142,61 @@ if (prefix == []
 
 bot_ids: Set[int] = {avatar_id, captcha_id, clean_id, lang_id, long_id,
                      noflood_id, noporn_id, nospam_id, recheck_id, tip_id, user_id, warn_id}
+
+# Init
+
+all_commands: List[str] = [
+    "config",
+    "config_user",
+    "mention",
+    "print",
+    "version"
+]
+
+declared_message_ids: Dict[int, Set[int]] = {}
+# declared_message_ids = {
+#     -10012345678: {123}
+# }
+
+default_config: Dict[str, Union[bool, int, Dict[str, bool]]] = {
+    "default": True,
+    "lock": 0,
+    "delete": True,
+    "subscribe": True
+}
+
+helped_ids: Set[int] = set()
+
+left_group_ids: Set[int] = set()
+
+locks: Dict[str, Lock] = {
+    "admin": Lock(),
+    "message": Lock(),
+    "preview": Lock(),
+    "receive": Lock(),
+    "test": Lock()
+}
+
+receivers: Dict[str, List[str]] = {
+    "bad": ["ANALYZE", "APPLY", "APPEAL", "AVATAR", "CAPTCHA", "CLEAN", "LANG", "LONG",
+            "MANAGE", "NOFLOOD", "NOPORN", "NOSPAM", "RECHECK", "TIP", "USER", "WATCH"],
+    "declare": ["ANALYZE", "AVATAR", "CLEAN", "LANG", "LONG",
+                "NOFLOOD", "NOPORN", "NOSPAM", "RECHECK", "USER", "WATCH"],
+    "preview": ["CLEAN", "LANG", "NOPORN", "NOSPAM", "RECHECK"]
+}
+
+recorded_ids: Dict[int, Set[int]] = {}
+# recorded_ids = {
+#     -10012345678: {12345678}
+# }
+
+sender: str = "USER"
+
+should_hide: bool = False
+
+shared_url: Set[str] = set()
+
+version: str = "0.1.9"
 
 # Load data from pickle
 

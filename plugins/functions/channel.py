@@ -216,7 +216,7 @@ def share_data(client: Client, receivers: List[str], action: str, action_type: s
                     # Send directly
                     file_path = file
 
-                result = send_document(client, channel_id, file_path, text)
+                result = send_document(client, channel_id, file_path, None, text)
                 # Delete the tmp file
                 if result:
                     for f in {file, file_path}:

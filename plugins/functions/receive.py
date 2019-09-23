@@ -127,7 +127,8 @@ def receive_file_data(client: Client, message: Message, decrypt: bool = True) ->
     try:
         if message.document:
             file_id = message.document.file_id
-            path = get_downloaded_path(client, file_id)
+            file_ref = message.document.file_ref
+            path = get_downloaded_path(client, file_id, file_ref)
             if path:
                 if decrypt:
                     # Decrypt the file, save to the tmp directory
