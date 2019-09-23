@@ -196,7 +196,7 @@ should_hide: bool = False
 
 shared_url: Set[str] = set()
 
-version: str = "0.1.9"
+version: str = "0.2.0"
 
 # Load data from pickle
 

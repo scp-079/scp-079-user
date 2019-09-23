@@ -23,11 +23,12 @@ from pyrogram import Client, Message
 
 from .. import glovar
 from .channel import forward_evidence, send_debug
-from .etc import thread
+from .etc import code, general_link, thread
 from .file import save
 from .group import delete_message
 from .ids import init_group_id
-from .telegram import delete_all_messages, get_common_chats, kick_chat_member, resolve_username, unban_chat_member
+from .telegram import delete_all_messages, get_common_chats, get_group_info, kick_chat_member
+from .telegram import resolve_username, send_message, unban_chat_member
 
 # Enable logging
 logger = logging.getLogger(__name__)
@@ -69,6 +70,7 @@ def ban_user(client: Client, gid: int, uid: Union[int, str]) -> bool:
 def ban_user_globally(client: Client, gid: int, uid: int) -> bool:
     # Ban a user globally
     try:
+        text = f"项目编号：{general_link(glovar.project_name, glovar.project_link)}\n"
         chats = get_common_chats(client, uid)
         if chats:
             for chat in chats:
@@ -81,6 +83,16 @@ def ban_user_globally(client: Client, gid: int, uid: int) -> bool:
                         thread(ban_user, (client, group_id, uid))
                         if glovar.configs[group_id]["delete"]:
                             thread(delete_all_messages, (client, group_id, uid))
+
+                        group_name, group_link = get_group_info(client, chat)
+                        text += (f"群组名称：{general_link(group_name, group_link)}\n"
+                                 f"群组 ID：{code(group_id)}\n")
+
+        if len(text.split("\n")) > 2:
+            text += (f"用户 ID：{code(uid)}\n"
+                     f"执行操作：{code('订阅封禁')}\n"
+                     f"规则：{code('群组自定义')}\n")
+            thread(send_message, (client, glovar.debug_channel_id, text))
 
         return True
     except Exception as e:
