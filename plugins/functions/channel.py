@@ -189,7 +189,7 @@ def send_debug(client: Client, chat: Chat, action: str, uid: int, mid: int, em: 
 
 def share_data(client: Client, receivers: List[str], action: str, action_type: str, data: Union[bool, dict, int, str],
                file: str = None, encrypt: bool = True) -> bool:
-    # Use this function to share data in the exchange channel
+    # Use this function to share data in the channel
     try:
         if glovar.sender in receivers:
             receivers.remove(glovar.sender)
