@@ -54,7 +54,7 @@ def init_user_id(uid: int) -> bool:
     # Init user data
     try:
         if glovar.banned_ids.get(uid) is None:
-            glovar.banned_ids[uid] = set()
+            glovar.banned_ids[uid] = {}
             save("banned_ids")
 
         if glovar.except_ids["temp"].get(uid) is None:

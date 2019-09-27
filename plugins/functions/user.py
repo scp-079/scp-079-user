@@ -23,7 +23,7 @@ from pyrogram import Client, Message
 
 from .. import glovar
 from .channel import forward_evidence, send_debug
-from .etc import code, general_link, thread
+from .etc import code, general_link, get_now, thread
 from .file import save
 from .group import delete_message
 from .ids import init_group_id
@@ -47,19 +47,18 @@ def add_bad_user(uid: int) -> bool:
     return False
 
 
-def ban_user(client: Client, gid: int, uid: Union[int, str], add_id: bool = True) -> bool:
+def ban_user(client: Client, gid: int, uid: Union[int, str]) -> bool:
     # Ban a user
     try:
         thread(kick_chat_member, (client, gid, uid))
-        if add_id:
-            if isinstance(uid, int):
-                glovar.banned_ids[uid].add(gid)
-            else:
-                peer_type, peer_id = resolve_username(client, uid)
-                if peer_type == "user":
-                    glovar.banned_ids[peer_id].add(gid)
+        if isinstance(uid, int):
+            glovar.banned_ids[uid][gid] = get_now()
+        else:
+            peer_type, peer_id = resolve_username(client, uid)
+            if peer_type == "user":
+                glovar.banned_ids[peer_id][gid] = get_now()
 
-            save("banned_ids")
+        save("banned_ids")
 
         return True
     except Exception as e:
@@ -108,16 +107,10 @@ def terminate_user(client: Client, message: Message) -> bool:
         gid = message.chat.id
         uid = message.from_user.id
         mid = message.message_id
-        if gid not in glovar.banned_ids.get(uid, set()):
+        if gid not in glovar.banned_ids.get(uid, {}):
             result = forward_evidence(client, message, "自动封禁", "订阅列表")
             if result:
-                # Avoid receive the normal message before the joined message
-                if message.service:
-                    add_id = True
-                else:
-                    add_id = False
-
-                ban_user(client, gid, uid, add_id)
+                ban_user(client, gid, uid)
                 send_debug(client, message.chat, "自动封禁", uid, mid, result)
         elif uid not in glovar.recorded_ids[gid]:
             glovar.recorded_ids[gid].add(uid)
@@ -138,7 +131,7 @@ def unban_user(client: Client, gid: int, uid: int) -> bool:
     # Unban a user
     try:
         thread(unban_chat_member, (client, gid, uid))
-        glovar.banned_ids[uid].discard(gid)
+        glovar.banned_ids[uid].pop(gid, 0)
         save("banned_ids")
 
         return True

@@ -25,7 +25,7 @@ from pyrogram import Client, Message
 
 from .. import glovar
 from .channel import get_debug_text, share_data
-from .etc import code, general_link, get_text, thread, user_mention
+from .etc import code, general_link, get_now, get_text, thread, user_mention
 from .file import crypt_file, data_to_file, delete_file, get_new_path, get_downloaded_path, save
 from .group import delete_messages_globally, leave_group
 from .ids import init_group_id, init_user_id
@@ -164,7 +164,7 @@ def receive_help_ban(client: Client, data: dict) -> bool:
                         thread(delete_all_messages, (client, group_id, user_id))
 
                     thread(ban_user_globally, (client, group_id, user_id))
-                    glovar.banned_ids[user_id].add(group_id)
+                    glovar.banned_ids[user_id][group_id] = get_now()
                     save("banned_ids")
 
             return True

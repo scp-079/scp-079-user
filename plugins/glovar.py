@@ -196,7 +196,7 @@ should_hide: bool = False
 
 shared_url: Set[str] = set()
 
-version: str = "0.2.1"
+version: str = "0.2.2"
 
 # Load data from pickle
 
@@ -226,9 +226,11 @@ bad_ids: Dict[str, Set[int]] = {
 #     "users": {12345678}
 # }
 
-banned_ids: Dict[int, Set[int]] = {}
+banned_ids: Dict[int, Dict[int, int]] = {}
 # banned_ids = {
-#     12345678: {-10012345678}
+#     12345678: {
+#         -10012345678: 1512345678
+#     }
 # }
 
 except_ids: Dict[str, Union[Dict, Set[int]]] = {

@@ -24,7 +24,7 @@ from pyrogram import Client, Filters, Message, WebPage
 
 from .. import glovar
 from ..functions.channel import forward_evidence, get_debug_text, send_debug, share_data, share_forgiven_user
-from ..functions.etc import code, general_link, get_channel_link, get_stripped_link, thread
+from ..functions.etc import code, general_link, get_channel_link, get_now, get_stripped_link, thread
 from ..functions.file import data_to_file, delete_file, get_downloaded_path, save
 from ..functions.filters import class_c, class_d, class_e, declared_message, exchange_channel, from_user, hide_channel
 from ..functions.filters import is_declared_message, is_delete, new_group, test_group
@@ -97,7 +97,9 @@ def check_join(client: Client, message: Message) -> bool:
                     uid = n.id
                     if init_user_id(uid):
                         if uid in glovar.bad_ids["users"]:
-                            if gid in glovar.banned_ids[uid]:
+                            now = get_now()
+                            banned_time = glovar.banned_ids[uid].get(gid, 0)
+                            if banned_time and now - banned_time > 10:
                                 glovar.except_ids["temp"][uid].add(gid)
                                 save("except_ids")
                                 # If three groups forgive the user, then unban the user automatically
@@ -109,7 +111,7 @@ def check_join(client: Client, message: Message) -> bool:
                                     unban_user(client, gid, uid)
                                     send_debug(client, message.chat, "单独解禁", uid, mid, message)
                             else:
-                                glovar.banned_ids[uid].add(gid)
+                                glovar.banned_ids[uid][gid] = get_now()
                                 save("banned_ids")
                                 result = forward_evidence(client, message, "自动封禁", "订阅列表")
                                 if result:
