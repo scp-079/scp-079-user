@@ -47,18 +47,19 @@ def add_bad_user(uid: int) -> bool:
     return False
 
 
-def ban_user(client: Client, gid: int, uid: Union[int, str]) -> bool:
+def ban_user(client: Client, gid: int, uid: Union[int, str], add_id: bool = True) -> bool:
     # Ban a user
     try:
         thread(kick_chat_member, (client, gid, uid))
-        if isinstance(uid, int):
-            glovar.banned_ids[uid].add(gid)
-        else:
-            peer_type, peer_id = resolve_username(client, uid)
-            if peer_type == "user":
-                glovar.banned_ids[peer_id].add(gid)
+        if add_id:
+            if isinstance(uid, int):
+                glovar.banned_ids[uid].add(gid)
+            else:
+                peer_type, peer_id = resolve_username(client, uid)
+                if peer_type == "user":
+                    glovar.banned_ids[peer_id].add(gid)
 
-        save("banned_ids")
+            save("banned_ids")
 
         return True
     except Exception as e:
@@ -110,7 +111,13 @@ def terminate_user(client: Client, message: Message) -> bool:
         if gid not in glovar.banned_ids.get(uid, set()):
             result = forward_evidence(client, message, "自动封禁", "订阅列表")
             if result:
-                ban_user(client, gid, uid)
+                # Avoid receive the normal message before the joined message
+                if message.service:
+                    add_id = True
+                else:
+                    add_id = False
+
+                ban_user(client, gid, uid, add_id)
                 send_debug(client, message.chat, "自动封禁", uid, mid, result)
         elif uid not in glovar.recorded_ids[gid]:
             glovar.recorded_ids[gid].add(uid)
