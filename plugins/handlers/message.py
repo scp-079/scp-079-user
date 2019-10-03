@@ -76,8 +76,6 @@ def check(client: Client, message: Message) -> bool:
                    & ~class_c & ~class_e & ~declared_message)
 def check_join(client: Client, message: Message) -> bool:
     # Check new joined user
-    logger.warning("check")
-    logger.warning(message)
     glovar.locks["message"].acquire()
     try:
         # Check declare status
@@ -169,7 +167,6 @@ def exchange_emergency(client: Client, message: Message) -> bool:
 def init_group(client: Client, message: Message) -> bool:
     # Initiate new groups
     try:
-        logger.warning(message)
         gid = message.chat.id
         text = get_debug_text(client, message.chat)
         # Check permission
