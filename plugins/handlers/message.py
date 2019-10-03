@@ -46,28 +46,28 @@ logger = logging.getLogger(__name__)
                    & ~class_c & class_d & ~class_e & ~declared_message)
 def check(client: Client, message: Message) -> bool:
     # Check messages from groups
-    if glovar.locks["message"].acquire():
-        try:
-            # Check declare status
-            if is_declared_message(None, message):
+    glovar.locks["message"].acquire()
+    try:
+        # Check declare status
+        if is_declared_message(None, message):
+            return True
+
+        # All groups' admins
+        uid = message.from_user.id
+        admin_ids = deepcopy(glovar.admin_ids)
+        for gid in admin_ids:
+            if uid in admin_ids[gid]:
                 return True
 
-            # All groups' admins
-            uid = message.from_user.id
-            admin_ids = deepcopy(glovar.admin_ids)
-            for gid in admin_ids:
-                if uid in admin_ids[gid]:
-                    return True
+        # Need deletion
+        if is_delete(message):
+            terminate_user(client, message)
 
-            # Need deletion
-            if is_delete(message):
-                terminate_user(client, message)
-
-            return True
-        except Exception as e:
-            logger.warning(f"Check error: {e}", exc_info=True)
-        finally:
-            glovar.locks["message"].release()
+        return True
+    except Exception as e:
+        logger.warning(f"Check error: {e}", exc_info=True)
+    finally:
+        glovar.locks["message"].release()
 
     return False
 
@@ -76,54 +76,54 @@ def check(client: Client, message: Message) -> bool:
                    & ~class_c & ~class_e & ~declared_message)
 def check_join(client: Client, message: Message) -> bool:
     # Check new joined user
-    if glovar.locks["message"].acquire():
-        try:
-            # Check declare status
-            if is_declared_message(None, message):
+    glovar.locks["message"].acquire()
+    try:
+        # Check declare status
+        if is_declared_message(None, message):
+            return True
+
+        # All groups' admins
+        uid = message.from_user.id
+        admin_ids = deepcopy(glovar.admin_ids)
+        for gid in admin_ids:
+            if uid in admin_ids[gid]:
                 return True
 
-            # All groups' admins
-            uid = message.from_user.id
-            admin_ids = deepcopy(glovar.admin_ids)
-            for gid in admin_ids:
-                if uid in admin_ids[gid]:
-                    return True
+        gid = message.chat.id
+        mid = message.message_id
 
-            gid = message.chat.id
-            mid = message.message_id
-
-            if glovar.configs[gid]["subscribe"]:
-                for n in message.new_chat_members:
-                    uid = n.id
-                    if init_user_id(uid):
-                        if uid in glovar.bad_ids["users"]:
-                            now = get_now()
-                            banned_time = glovar.banned_ids[uid].get(gid, 0)
-                            if banned_time and now - banned_time > 10:
-                                glovar.except_ids["temp"][uid].add(gid)
-                                save("except_ids")
-                                # If three groups forgive the user, then unban the user automatically
-                                if len(glovar.except_ids["temp"][uid]) == 3:
-                                    unban_user_globally(client, uid)
-                                    share_forgiven_user(client, uid)
-                                    send_debug(client, message.chat, "自动解禁", uid, mid, message)
-                                else:
-                                    unban_user(client, gid, uid)
-                                    send_debug(client, message.chat, "单独解禁", uid, mid, message)
+        if glovar.configs[gid]["subscribe"]:
+            for n in message.new_chat_members:
+                uid = n.id
+                if init_user_id(uid):
+                    if uid in glovar.bad_ids["users"]:
+                        now = get_now()
+                        banned_time = glovar.banned_ids[uid].get(gid, 0)
+                        if banned_time and now - banned_time > 10:
+                            glovar.except_ids["temp"][uid].add(gid)
+                            save("except_ids")
+                            # If three groups forgive the user, then unban the user automatically
+                            if len(glovar.except_ids["temp"][uid]) == 3:
+                                unban_user_globally(client, uid)
+                                share_forgiven_user(client, uid)
+                                send_debug(client, message.chat, "自动解禁", uid, mid, message)
                             else:
-                                glovar.banned_ids[uid][gid] = get_now()
-                                save("banned_ids")
-                                result = forward_evidence(client, message, "自动封禁", "订阅列表")
-                                if result:
-                                    ban_user(client, gid, message.from_user.username or uid)
-                                    thread(delete_all_messages, (client, gid, uid))
-                                    send_debug(client, message.chat, "自动封禁", uid, mid, result)
+                                unban_user(client, gid, uid)
+                                send_debug(client, message.chat, "单独解禁", uid, mid, message)
+                        else:
+                            glovar.banned_ids[uid][gid] = get_now()
+                            save("banned_ids")
+                            result = forward_evidence(client, message, "自动封禁", "订阅列表")
+                            if result:
+                                ban_user(client, gid, message.from_user.username or uid)
+                                thread(delete_all_messages, (client, gid, uid))
+                                send_debug(client, message.chat, "自动封禁", uid, mid, result)
 
-            return True
-        except Exception as e:
-            logger.warning(f"Check join error: {e}", exc_info=True)
-        finally:
-            glovar.locks["message"].release()
+        return True
+    except Exception as e:
+        logger.warning(f"Check join error: {e}", exc_info=True)
+    finally:
+        glovar.locks["message"].release()
 
     return False
 
@@ -165,24 +165,24 @@ def exchange_emergency(client: Client, message: Message) -> bool:
 def init_group(client: Client, message: Message) -> bool:
     # Initiate new groups
     try:
-        if message.from_user:
-            gid = message.chat.id
-            text = get_debug_text(client, message.chat)
-            # Check permission
-            if init_group_id(gid):
-                admin_members = get_admins(client, gid)
-                if admin_members:
-                    glovar.admin_ids[gid] = {admin.user.id for admin in admin_members
-                                             if not admin.user.is_bot and not admin.user.is_deleted}
-                    save("admin_ids")
-                    archive_chat(client, gid)
-                    text += f"状态：{code('已加入群组')}\n"
-                else:
-                    thread(leave_group, (client, gid))
-                    text += (f"状态：{code('已退出群组')}\n"
-                             f"原因：{code('获取管理员列表失败')}\n")
+        logger.warning(message)
+        gid = message.chat.id
+        text = get_debug_text(client, message.chat)
+        # Check permission
+        if init_group_id(gid):
+            admin_members = get_admins(client, gid)
+            if admin_members:
+                glovar.admin_ids[gid] = {admin.user.id for admin in admin_members
+                                         if not admin.user.is_bot and not admin.user.is_deleted}
+                save("admin_ids")
+                archive_chat(client, gid)
+                text += f"状态：{code('已加入群组')}\n"
+            else:
+                thread(leave_group, (client, gid))
+                text += (f"状态：{code('已退出群组')}\n"
+                         f"原因：{code('获取管理员列表失败')}\n")
 
-            thread(send_message, (client, glovar.debug_channel_id, text))
+        thread(send_message, (client, glovar.debug_channel_id, text))
 
         return True
     except Exception as e:
@@ -441,8 +441,8 @@ def share_preview(client: Client, message: Message) -> bool:
 
                 # Store text
                 text = ""
-                if message.text:
-                    text += message.text + "\n\n"
+
+                text += message.text + "\n\n"
 
                 text += web_page.display_url + "\n\n"
 
