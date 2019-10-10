@@ -414,9 +414,9 @@ def share_preview(client: Client, message: Message) -> bool:
 
         web_page: WebPage = message.web_page
         preview = {
+            "url": None,
             "image": None,
             "text": None,
-            "url": None,
             "media": None
         }
 
@@ -429,14 +429,10 @@ def share_preview(client: Client, message: Message) -> bool:
         if f"{bypass}/" in f"{url}/":
             return True
 
-        logger.warning(url)
-        link_username = re.match(r"t\.me/(.+?)/", f"{url}/")
-        logger.warning(f"link_username: {link_username}")
+        link_username = re.match(r"t\.me/(.+?)/", f"{web_page.display_url}/")
         if link_username:
             link_username = link_username.group(1)
-            logger.warning(link_username)
             _, pid = resolve_username(client, link_username)
-            logger.warning(pid)
             if pid in glovar.except_ids["channels"] or glovar.admin_ids.get(pid, {}):
                 return True
 
