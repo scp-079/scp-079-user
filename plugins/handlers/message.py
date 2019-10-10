@@ -430,9 +430,12 @@ def share_preview(client: Client, message: Message) -> bool:
             return True
 
         link_username = re.match(r"t\.me/(.+?)/", f"{url}/")
+        logger.warning(f"link_username: {link_username}")
         if link_username:
             link_username = link_username.group(1)
+            logger.warning(link_username)
             _, pid = resolve_username(client, link_username)
+            logger.warning(pid)
             if pid in glovar.except_ids["channels"] or glovar.admin_ids.get(pid, {}):
                 return True
 
