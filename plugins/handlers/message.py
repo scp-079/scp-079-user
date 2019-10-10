@@ -429,6 +429,7 @@ def share_preview(client: Client, message: Message) -> bool:
         if f"{bypass}/" in f"{url}/":
             return True
 
+        logger.warning(url)
         link_username = re.match(r"t\.me/(.+?)/", f"{url}/")
         logger.warning(f"link_username: {link_username}")
         if link_username:
