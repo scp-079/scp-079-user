@@ -441,16 +441,15 @@ def share_preview(client: Client, message: Message) -> bool:
         mid = message.message_id
 
         # Store image
-        if web_page.photo:
-            if web_page.photo.file_size <= glovar.image_size:
-                file_id = web_page.photo.file_id
-                file_ref = web_page.photo.file_ref
-                image_path = get_downloaded_path(client, file_id, file_ref)
-                if is_declared_message(None, message):
-                    return True
-                elif image_path:
-                    preview["image"] = Image.open(image_path)
-                    delete_file(image_path)
+        if web_page.photo and web_page.photo.file_size <= glovar.image_size:
+            file_id = web_page.photo.file_id
+            file_ref = web_page.photo.file_ref
+            image_path = get_downloaded_path(client, file_id, file_ref)
+            if is_declared_message(None, message):
+                return True
+            elif image_path:
+                preview["image"] = Image.open(image_path)
+                delete_file(image_path)
 
         # Store text
         text = ""

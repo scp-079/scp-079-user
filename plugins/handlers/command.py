@@ -219,6 +219,7 @@ def print_message(client: Client, message: Message) -> bool:
                 text = (f"管理员：{user_mention(aid)}\n\n"
                         f"消息结构：" + "-" * 24 + "\n\n"
                         f"{code_block(result)}\n")
+                logger.warning(text)
                 send_message(client, cid, text, mid)
 
         return True

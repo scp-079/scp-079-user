@@ -19,7 +19,7 @@
 import logging
 from typing import Iterable, List, Optional, Union
 
-from pyrogram import Chat, ChatMember, Client, InlineKeyboardMarkup, Message
+from pyrogram import Chat, ChatMember, ChatPreview, Client, InlineKeyboardMarkup, Message
 from pyrogram.api.functions.channels import DeleteUserHistory
 from pyrogram.api.functions.messages import ReadMentions
 from pyrogram.api.types import InputPeerUser, InputPeerChannel
@@ -153,7 +153,7 @@ def get_common_chats(client: Client, uid: int) -> Optional[List[Chat]]:
     return result
 
 
-def get_chat(client: Client, cid: Union[int, str]) -> Optional[Chat]:
+def get_chat(client: Client, cid: Union[int, str]) -> Optional[Union[Chat, ChatPreview]]:
     # Get a chat
     result = None
     try:
