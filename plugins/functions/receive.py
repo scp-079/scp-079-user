@@ -157,15 +157,14 @@ def receive_help_ban(client: Client, data: dict) -> bool:
         try:
             group_id = data["group_id"]
             user_id = data["user_id"]
-            if user_id not in glovar.helped_ids:
-                if init_user_id(user_id):
-                    glovar.helped_ids.add(user_id)
-                    if glovar.configs[group_id]["delete"]:
-                        thread(delete_all_messages, (client, group_id, user_id))
+            if init_user_id(user_id):
+                glovar.helped_ids.add(user_id)
+                if glovar.configs[group_id]["delete"]:
+                    thread(delete_all_messages, (client, group_id, user_id))
 
-                    thread(ban_user_globally, (client, group_id, user_id))
-                    glovar.banned_ids[user_id][group_id] = get_now()
-                    save("banned_ids")
+                thread(ban_user_globally, (client, group_id, user_id))
+                glovar.banned_ids[user_id][group_id] = get_now()
+                save("banned_ids")
 
             return True
         except Exception as e:

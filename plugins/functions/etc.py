@@ -61,8 +61,7 @@ def code_block(text: Any) -> str:
     try:
         text = str(text)
         if text.strip():
-            text = text.rstrip()
-            return f"<pre>{escape(str(text))}</pre>"
+            return f"<pre>{escape(text.rstrip())}</pre>"
     except Exception as e:
         logger.warning(f"Code block error: {e}", exc_info=True)
 
