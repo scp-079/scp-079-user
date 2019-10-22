@@ -242,7 +242,17 @@ def process_data(client: Client, message: Message) -> bool:
                 # but this is to ensure that the permissions are clear,
                 # so it is intentionally written like this
                 if glovar.sender in receivers:
-                    if sender == "CLEAN":
+
+                    if sender == "CAPTCHA":
+                        if action == "help":
+                            if action_type == "delete":
+                                receive_help_delete(client, sender, data)
+
+                        elif action == "update":
+                            if action_type == "declare":
+                                receive_declared_message(data)
+
+                    elif sender == "CLEAN":
                         if action == "add":
                             if action_type == "bad":
                                 receive_add_bad(sender, data)
