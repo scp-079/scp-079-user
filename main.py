@@ -25,16 +25,13 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from pyrogram import Client
 
 from plugins import glovar
-from plugins.functions.timers import backup_files, clean_members, interval_min_10, reset_data, update_admins, update_status
+from plugins.functions.timers import backup_files, interval_min_10, reset_data, update_admins, update_status
 
 # Enable logging
 logger = logging.getLogger(__name__)
 
 # Config session
 app = Client(session_name="account")
-app.start()
-
-clean_members(app)
 
 # Timer
 scheduler = BackgroundScheduler()
@@ -46,5 +43,4 @@ scheduler.add_job(update_admins, "cron", [app], hour=22, minute=30)
 scheduler.start()
 
 # Run
-app.idle()
-app.stop()
+app.run()
