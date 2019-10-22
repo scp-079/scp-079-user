@@ -20,13 +20,14 @@ import logging
 from time import sleep
 
 from pyrogram import Client
+from pyrogram.errors import FloodWait
 
 from .. import glovar
 from .channel import share_data
-from .etc import code, general_link, thread
+from .etc import code, general_link, thread, wait_flood
 from .file import save
 from .group import leave_group
-from .telegram import get_admins, get_chat, get_group_info, send_message
+from .telegram import get_admins, get_chat, get_group_info, get_members, send_message
 
 # Enable logging
 logger = logging.getLogger(__name__)
@@ -52,6 +53,68 @@ def backup_files(client: Client) -> bool:
         return True
     except Exception as e:
         logger.warning(f"Backup error: {e}", exc_info=True)
+
+    return False
+
+
+def clean_members(client: Client) -> bool:
+    # Clean deleted accounts in groups
+    try:
+        for gid in list(glovar.configs):
+            # Debug for groups members exceed 10000
+            if gid != -1001116410516:
+                continue
+
+            logger.warning(f"Debug start")
+
+            flood_wait = True
+            while flood_wait:
+                flood_wait = False
+                try:
+                    members = get_members(client, gid, "all")
+
+                    logger.warning(members)
+
+                    if not members:
+                        continue
+
+                    # deleted_members = filter(lambda m: m.user.is_deleted, members)
+
+                    # logger.warning(deleted_members)
+
+                    count = 0
+
+                    total = 0
+
+                    logger.warning("Loop start")
+
+                    for member in members:
+
+                        total += 1
+
+                        if not member or not member.user or not member.user.is_deleted:
+                            continue
+
+                        if member.status not in {"creator", "administrator"}:
+                            count += 1
+
+                    logger.warning(total)
+                    logger.warning(count)
+                    logger.warning("Loop stop")
+
+                    if not count:
+                        continue
+                except FloodWait as e:
+                    flood_wait = True
+                    wait_flood(e)
+                except Exception as e:
+                    logger.warning(f"Clean members in {gid} error: {e}", exc_info=True)
+
+            logger.warning("Debug stop")
+
+        return True
+    except Exception as e:
+        logger.warning(f"Clean members error: {e}", exc_info=True)
 
     return False
 
