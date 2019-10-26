@@ -24,7 +24,7 @@ from PIL import Image
 from pyrogram import Client, Filters, Message, WebPage
 
 from .. import glovar
-from ..functions.channel import forward_evidence, get_debug_text, send_debug, share_data, share_forgiven_user
+from ..functions.channel import forward_evidence, get_debug_text, send_debug, share_data
 from ..functions.etc import code, general_link, get_channel_link, get_now, get_stripped_link, thread
 from ..functions.file import data_to_file, delete_file, get_downloaded_path, save
 from ..functions.filters import class_c, class_d, class_e, declared_message, exchange_channel, from_user, hide_channel
@@ -38,7 +38,7 @@ from ..functions.receive import receive_status_ask, receive_text_data
 from ..functions.telegram import delete_all_messages, get_admins, read_history, read_mention
 from ..functions.telegram import resolve_username, send_message
 from ..functions.tests import preview_test
-from ..functions.user import ban_user, terminate_user, unban_user, unban_user_globally
+from ..functions.user import ban_user, terminate_user
 
 # Enable logging
 logger = logging.getLogger(__name__)
@@ -99,27 +99,27 @@ def check_join(client: Client, message: Message) -> bool:
                 uid = n.id
                 if init_user_id(uid):
                     if uid in glovar.bad_ids["users"]:
-                        now = get_now()
-                        banned_time = glovar.banned_ids[uid].get(gid, 0)
-                        if banned_time and now - banned_time > 10:
-                            glovar.except_ids["temp"][uid].add(gid)
-                            save("except_ids")
-                            # If three groups forgive the user, then unban the user automatically
-                            if len(glovar.except_ids["temp"][uid]) == 3:
-                                unban_user_globally(client, uid)
-                                share_forgiven_user(client, uid)
-                                send_debug(client, message.chat, "自动解禁", uid, mid, message)
-                            else:
-                                unban_user(client, gid, uid)
-                                send_debug(client, message.chat, "单独解禁", uid, mid, message)
-                        else:
-                            glovar.banned_ids[uid][gid] = get_now()
-                            save("banned_ids")
-                            result = forward_evidence(client, message, "自动封禁", "订阅列表")
-                            if result:
-                                ban_user(client, gid, message.from_user.username or uid)
-                                thread(delete_all_messages, (client, gid, uid))
-                                send_debug(client, message.chat, "自动封禁", uid, mid, result)
+                        # now = get_now()
+                        # banned_time = glovar.banned_ids[uid].get(gid, 0)
+                        # if banned_time and now - banned_time > 10:
+                        #     glovar.except_ids["temp"][uid].add(gid)
+                        #     save("except_ids")
+                        #     # If three groups forgive the user, then unban the user automatically
+                        #     if len(glovar.except_ids["temp"][uid]) == 3:
+                        #         unban_user_globally(client, uid)
+                        #         share_forgiven_user(client, uid)
+                        #         send_debug(client, message.chat, "自动解禁", uid, mid, message)
+                        #     else:
+                        #         unban_user(client, gid, uid)
+                        #         send_debug(client, message.chat, "单独解禁", uid, mid, message)
+                        # else:
+                        glovar.banned_ids[uid][gid] = get_now()
+                        save("banned_ids")
+                        result = forward_evidence(client, message, "自动封禁", "订阅列表")
+                        if result:
+                            ban_user(client, gid, message.from_user.username or uid)
+                            thread(delete_all_messages, (client, gid, uid))
+                            send_debug(client, message.chat, "自动封禁", uid, mid, result)
 
         return True
     except Exception as e:
