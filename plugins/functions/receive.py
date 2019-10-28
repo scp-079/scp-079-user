@@ -158,7 +158,6 @@ def receive_help_ban(client: Client, data: dict) -> bool:
             group_id = data["group_id"]
             user_id = data["user_id"]
             if init_user_id(user_id):
-                glovar.helped_ids.add(user_id)
                 if glovar.configs[group_id]["delete"]:
                     thread(delete_all_messages, (client, group_id, user_id))
 

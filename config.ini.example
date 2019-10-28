@@ -49,5 +49,4 @@ project_name = SCP-079-USER
 zh_cn = [DATA EXPUNGED]
 
 [encrypt]
-key = [DATA EXPUNGED]
 password = [DATA EXPUNGED]
