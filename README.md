@@ -28,7 +28,6 @@ See [this article](https://scp-079.org/user/).
         - `filters.py` : Some filters
         - `group.py` : Functions about group
         - `ids.py` : Modify id lists
-        - `image.py` : Functions about image
         - `receive.py` : Receive data from exchange channel
         - `telegram.py` : Some telegram functions
         - `tests.py` : Some test functions

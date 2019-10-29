@@ -20,7 +20,7 @@ import logging
 
 from pyrogram import Client, Message, WebPage
 
-from .etc import code, code_block, get_text, thread, user_mention
+from .etc import code, code_block, get_text, lang, mention_id, thread
 from .telegram import send_message, send_photo
 
 # Enable logging
@@ -30,33 +30,41 @@ logger = logging.getLogger(__name__)
 def preview_test(client: Client, message: Message) -> bool:
     # Test preview
     try:
-        if message.web_page:
-            web_page: WebPage = message.web_page
-            url = web_page.url
-            cid = message.chat.id
-            aid = message.from_user.id
-            mid = message.message_id
-            text = f"管理员：{user_mention(aid)}\n\n"
-            text += "触发链接：" + "-" * 24 + "\n\n" + code(url) + "\n\n"
-            text += "原始消息：" + "-" * 24 + "\n\n" + code_block(get_text(message)) + "\n\n"
-            text += "预览内容：" + "-" * 24 + "\n\n"
-            text += code(web_page.display_url) + "\n\n"
+        if not message.web_page:
+            return True
 
-            if web_page.site_name:
-                text += code(web_page.site_name) + "\n\n"
+        # Basic data
+        web_page: WebPage = message.web_page
+        url = web_page.url
+        cid = message.chat.id
+        aid = message.from_user.id
+        mid = message.message_id
 
-            if web_page.title:
-                text += code(web_page.title) + "\n\n"
+        text = f"{lang('admin')}{lang('colon')}{mention_id(aid)}\n\n"
+        text += f"{lang('preview_link')}{lang('colon')}" + "-" * 24 + "\n\n" + code(url) + "\n\n"
+        text += f"{lang('preview_message')}{lang('colon')}" + "-" * 24 + "\n\n" + code_block(get_text(message)) + "\n\n"
+        text += f"{lang('preview_content')}{lang('colon')}" + "-" * 24 + "\n\n"
 
-            if web_page.description:
-                text += code(web_page.description) + "\n\n"
+        text += code(web_page.display_url) + "\n\n"
 
-            if web_page.photo:
-                file_id = web_page.photo.file_id
-                file_ref = web_page.photo.file_ref
-                thread(send_photo, (client, cid, file_id, file_ref, text, mid))
-            else:
-                thread(send_message, (client, cid, text, mid))
+        if web_page.site_name:
+            text += code(web_page.site_name) + "\n\n"
+
+        if web_page.title:
+            text += code(web_page.title) + "\n\n"
+
+        if web_page.description:
+            if len(web_page.description) > 3000:
+                web_page.description = web_page.description[:3000]
+
+            text += code(web_page.description) + "\n\n"
+
+        if web_page.photo:
+            file_id = web_page.photo.file_id
+            file_ref = web_page.photo.file_ref
+            thread(send_photo, (client, cid, file_id, file_ref, text, mid))
+        else:
+            thread(send_message, (client, cid, text, mid))
 
     except Exception as e:
         logger.warning(f"Preview test error: {e}", exc_info=True)

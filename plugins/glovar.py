@@ -186,6 +186,7 @@ lang: Dict[str, str] = {
     "custom": (zh_cn and "自定义") or "Custom",
     "default": (zh_cn and "默认") or "Default",
     "delete": (zh_cn and "协助删除") or "Help Delete",
+    "config_link": (zh_cn and "请点击此处进行设置") or "Click Here to Config",
     "gb": (zh_cn and "全局封禁") or "Global Ban",
     "gr": (zh_cn and "全局禁言") or "Global Restrict",
     "gd": (zh_cn and "全局删除") or "Global Delete",
@@ -242,6 +243,7 @@ lang: Dict[str, str] = {
     "joined": (zh_cn and "入群时间") or "Joined Time",
     "more": (zh_cn and "附加信息") or "Extra Info",
     # Special
+    "group_count": (zh_cn and "群组数量") or "Total Groups",
     # Terminate
     "auto_ban": (zh_cn and "自动封禁") or "Auto Ban",
     "auto_delete": (zh_cn and "自动删除") or "Auto Delete",
@@ -259,9 +261,9 @@ lang: Dict[str, str] = {
     "watch_delete": (zh_cn and "追踪删除") or "Watch Delete",
     "watch_user": (zh_cn and "敏感追踪") or "Watched User",
     # Test
-    "record_content": (zh_cn and "过滤记录") or "Recorded content",
-    "record_link": (zh_cn and "过滤链接") or "Recorded link",
-    "white_listed": (zh_cn and "白名单") or "White Listed",
+    "preview_content": (zh_cn and "预览内容") or "Preview Content",
+    "preview_link": (zh_cn and "预览链接") or "Preview Link",
+    "preview_message": (zh_cn and "预览消息") or "Preview Message",
     # Unit
     "members": (zh_cn and "名") or "member(s)",
     "messages": (zh_cn and "条") or "message(s)"

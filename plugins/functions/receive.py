@@ -25,9 +25,9 @@ from pyrogram import Client, Message
 
 from .. import glovar
 from .channel import get_debug_text, share_data
-from .etc import code, general_link, get_now, get_text, thread, user_mention
+from .etc import code, general_link, get_text, lang, mention_id, thread
 from .file import crypt_file, data_to_file, delete_file, get_new_path, get_downloaded_path, save
-from .group import delete_messages_globally, leave_group
+from .group import delete_messages_globally, get_config_text, leave_group
 from .ids import init_group_id, init_user_id
 from .telegram import delete_all_messages, send_message, send_report_message
 from .timers import update_admins
@@ -37,34 +37,22 @@ from .user import ban_user_globally, unban_user_globally
 logger = logging.getLogger(__name__)
 
 
-def receive_add_except(_: Client, data: dict) -> bool:
-    # Receive a object and add it to except list
-    try:
-        the_id = data["id"]
-        the_type = data["type"]
-        # Receive except channels
-        if the_type == "channel":
-            glovar.except_ids["channels"].add(the_id)
-            save("except_ids")
-
-        return True
-    except Exception as e:
-        logger.warning(f"Receive add except error: {e}", exc_info=True)
-
-    return False
-
-
 def receive_add_bad(sender: str, data: dict) -> bool:
     # Receive bad users or channels that other bots shared
     try:
+        # Basic data
         the_id = data["id"]
         the_type = data["type"]
+
+        # Receive bad channel
+        if sender == "MANAGE" and the_type == "channel":
+            glovar.bad_ids["channels"].add(the_id)
+
+        # Receive bad user
         if the_type == "user":
             glovar.bad_ids["users"].add(the_id)
-            save("bad_ids")
-        elif sender == "MANAGE" and the_type == "channel":
-            glovar.bad_ids["channels"].add(the_id)
-            save("bad_ids")
+
+        save("bad_ids")
 
         return True
     except Exception as e:
@@ -73,11 +61,78 @@ def receive_add_bad(sender: str, data: dict) -> bool:
     return False
 
 
+def receive_add_except(_: Client, data: dict) -> bool:
+    # Receive a object and add it to except list
+    try:
+        # Basic data
+        the_id = data["id"]
+        the_type = data["type"]
+
+        # Receive except channel
+        if the_type == "channel":
+            glovar.except_ids["channels"].add(the_id)
+
+        save("except_ids")
+
+        return True
+    except Exception as e:
+        logger.warning(f"Receive add except error: {e}", exc_info=True)
+
+    return False
+
+
+def receive_clear_data(client: Client, data_type: str, data: dict) -> bool:
+    # Receive clear data command
+    glovar.locks["message"].acquire()
+    try:
+        # Basic data
+        aid = data["admin_id"]
+        the_type = data["type"]
+
+        # Clear bad data
+        if data_type == "bad":
+            if the_type == "channels":
+                glovar.bad_ids["channels"] = set()
+            elif the_type == "users":
+                glovar.bad_ids["users"] = set()
+
+            save("bad_ids")
+
+        # Clear except data
+        if data_type == "except":
+            if the_type == "channels":
+                glovar.except_ids["channels"] = set()
+
+            save("except_ids")
+
+        # Clear user data
+        if data_type == "user":
+            if the_type == "all":
+                glovar.user_ids = {}
+
+            save("user_ids")
+
+        # Send debug message
+        text = (f"{lang('project')}{lang('colon')}{general_link(glovar.project_name, glovar.project_link)}\n"
+                f"{lang('admin_project')}{lang('colon')}{mention_id(aid)}\n"
+                f"{lang('action')}{lang('colon')}{code(lang('clear'))}\n"
+                f"{lang('more')}{lang('colon')}{code(f'{data_type} {the_type}')}\n")
+        thread(send_message, (client, glovar.debug_channel_id, text))
+    except Exception as e:
+        logger.warning(f"Receive clear data: {e}", exc_info=True)
+    finally:
+        glovar.locks["message"].release()
+
+    return False
+
+
 def receive_config_commit(data: dict) -> bool:
     # Receive config commit
     try:
+        # Basic data
         gid = data["group_id"]
         config = data["config"]
+
         glovar.configs[gid] = config
         save("configs")
 
@@ -91,12 +146,14 @@ def receive_config_commit(data: dict) -> bool:
 def receive_config_reply(client: Client, data: dict) -> bool:
     # Receive config reply
     try:
+        # Basic data
         gid = data["group_id"]
         uid = data["user_id"]
         link = data["config_link"]
-        text = (f"管理员：{code(uid)}\n"
-                f"操作：{code('更改设置')}\n"
-                f"说明：{general_link('请点击此处进行设置', link)}\n")
+
+        text = (f"{lang('admin')}{lang('colon')}{code(uid)}\n"
+                f"{lang('action')}{lang('colon')}{code(lang('config_change'))}\n"
+                f"{lang('description')}{lang('colon')}{general_link(lang('config_link'), link)}\n")
         thread(send_report_message, (180, client, gid, text))
 
         return True
@@ -106,15 +163,61 @@ def receive_config_reply(client: Client, data: dict) -> bool:
     return False
 
 
+def receive_config_show(client: Client, data: dict) -> bool:
+    # Receive config show request
+    try:
+        # Basic Data
+        aid = data["admin_id"]
+        mid = data["message_id"]
+        gid = data["group_id"]
+
+        # Generate report message's text
+        result = (f"{lang('admin')}{lang('colon')}{mention_id(aid)}\n"
+                  f"{lang('action')}{lang('colon')}{code(lang('config_show'))}\n"
+                  f"{lang('group_id')}{lang('colon')}{code(gid)}\n")
+
+        if glovar.configs.get(gid, {}):
+            result += get_config_text(glovar.configs[gid])
+        else:
+            result += (f"{lang('status')}{lang('colon')}{code(lang('status_failed'))}\n"
+                       f"{lang('reason')}{lang('colon')}{code(lang('reason_none'))}\n")
+
+        # Send the text data
+        file = data_to_file(result)
+        share_data(
+            client=client,
+            receivers=["MANAGE"],
+            action="config",
+            action_type="show",
+            data={
+                "admin_id": aid,
+                "message_id": mid,
+                "group_id": gid
+            },
+            file=file
+        )
+
+        return True
+    except Exception as e:
+        logger.warning(f"Receive config show error: {e}", exc_info=True)
+
+    return False
+
+
 def receive_declared_message(data: dict) -> bool:
     # Update declared message's id
     try:
+        # Basic data
         gid = data["group_id"]
         mid = data["message_id"]
-        if glovar.admin_ids.get(gid):
-            if init_group_id(gid):
-                glovar.declared_message_ids[gid].add(mid)
-                return True
+
+        if not glovar.admin_ids.get(gid):
+            return True
+
+        if init_group_id(gid):
+            glovar.declared_message_ids[gid].add(mid)
+
+        return True
     except Exception as e:
         logger.warning(f"Receive declared message error: {e}", exc_info=True)
 
@@ -125,26 +228,31 @@ def receive_file_data(client: Client, message: Message, decrypt: bool = True) ->
     # Receive file's data from exchange channel
     data = None
     try:
-        if message.document:
-            file_id = message.document.file_id
-            file_ref = message.document.file_ref
-            path = get_downloaded_path(client, file_id, file_ref)
-            if path:
-                if decrypt:
-                    # Decrypt the file, save to the tmp directory
-                    path_decrypted = get_new_path()
-                    crypt_file("decrypt", path, path_decrypted)
-                    path_final = path_decrypted
-                else:
-                    # Read the file directly
-                    path_decrypted = ""
-                    path_final = path
+        if not message.document:
+            return None
 
-                with open(path_final, "rb") as f:
-                    data = pickle.load(f)
+        file_id = message.document.file_id
+        file_ref = message.document.file_ref
+        path = get_downloaded_path(client, file_id, file_ref)
 
-                for f in {path, path_decrypted}:
-                    thread(delete_file, (f,))
+        if not path:
+            return None
+
+        if decrypt:
+            # Decrypt the file, save to the tmp directory
+            path_decrypted = get_new_path()
+            crypt_file("decrypt", path, path_decrypted)
+            path_final = path_decrypted
+        else:
+            # Read the file directly
+            path_decrypted = ""
+            path_final = path
+
+        with open(path_final, "rb") as f:
+            data = pickle.load(f)
+
+        for f in {path, path_decrypted}:
+            thread(delete_file, (f,))
     except Exception as e:
         logger.warning(f"Receive file error: {e}", exc_info=True)
 
@@ -153,44 +261,60 @@ def receive_file_data(client: Client, message: Message, decrypt: bool = True) ->
 
 def receive_help_ban(client: Client, data: dict) -> bool:
     # Receive help ban requests
-    if glovar.locks["message"].acquire():
-        try:
-            group_id = data["group_id"]
-            user_id = data["user_id"]
-            if init_user_id(user_id):
-                if glovar.configs[group_id]["delete"]:
-                    thread(delete_all_messages, (client, group_id, user_id))
+    glovar.locks["message"].acquire()
+    try:
+        # Basic data
+        group_id = data["group_id"]
+        user_id = data["user_id"]
+        action_type = data["type"]
+        should_delete = data["delete"]
 
-                thread(ban_user_globally, (client, group_id, user_id))
-                glovar.banned_ids[user_id][group_id] = get_now()
-                save("banned_ids")
-
+        # Init user data
+        if not init_user_id(user_id):
             return True
-        except Exception as e:
-            logger.warning(f"Receive help ban error: {e}", exc_info=True)
-        finally:
-            glovar.locks["message"].release()
+
+        # Save data
+        glovar.user_ids[user_id][action_type].add(group_id)
+        save("user_ids")
+
+        # Delete all messages from the user
+        if glovar.configs[group_id].get("delete") and should_delete:
+            thread(delete_all_messages, (client, group_id, user_id))
+
+        # Ban globally
+        thread(ban_user_globally, (client, group_id, user_id))
+
+        return True
+    except Exception as e:
+        logger.warning(f"Receive help ban error: {e}", exc_info=True)
+    finally:
+        glovar.locks["message"].release()
 
     return False
 
 
-def receive_help_delete(client: Client, sender: str, data: dict) -> bool:
+def receive_help_delete(client: Client, data: dict) -> bool:
     # Receive help delete requests
+    glovar.locks["message"].acquire()
     try:
+        # Basic data
         group_id = data["group_id"]
         user_id = data["user_id"]
-        help_type = data["type"]
-        if group_id and group_id not in glovar.admin_ids:
-            return True
+        action_type = data["type"]
+        should_delete = data["delete"]
 
-        if help_type == "global":
-            thread(delete_messages_globally, (client, user_id))
-        elif help_type == "single" and (glovar.configs[group_id]["delete"] or sender in {"CLEAN", "WARN"}):
-            thread(delete_all_messages, (client, group_id, user_id))
+        # Delete all messages from the user
+        if action_type == "global":
+            thread(delete_messages_globally, (client, user_id, int(not should_delete) and group_id))
+        elif action_type == "single":
+            if glovar.configs[group_id].get("delete") and should_delete:
+                thread(delete_all_messages, (client, group_id, user_id))
 
         return True
     except Exception as e:
         logger.warning(f"Receive help delete error: {e}", exc_info=True)
+    finally:
+        glovar.locks["message"].release()
 
     return False
 
@@ -198,23 +322,26 @@ def receive_help_delete(client: Client, sender: str, data: dict) -> bool:
 def receive_leave_approve(client: Client, data: dict) -> bool:
     # Receive leave approve
     try:
+        # Basic data
         admin_id = data["admin_id"]
         the_id = data["group_id"]
         reason = data["reason"]
-        if reason == "permissions":
-            reason = "权限缺失"
-        elif reason == "user":
-            reason = "缺失 USER"
 
-        if glovar.admin_ids.get(the_id, {}):
-            text = get_debug_text(client, the_id)
-            text += (f"项目管理员：{user_mention(admin_id)}\n"
-                     f"状态：{code('已批准退出该群组')}\n")
-            if reason:
-                text += f"原因：{code(reason)}\n"
+        if reason in {"permissions", "user"}:
+            reason = lang(f"reason_{reason}")
 
-            leave_group(client, the_id)
-            thread(send_message, (client, glovar.debug_channel_id, text))
+        if not glovar.admin_ids.get(the_id):
+            return True
+
+        text = get_debug_text(client, the_id)
+        text += (f"{lang('admin_project')}{lang('colon')}{mention_id(admin_id)}\n"
+                 f"{lang('status')}{lang('colon')}{code(lang('leave_approve'))}\n")
+
+        if reason:
+            text += f"{lang('reason')}{lang('colon')}{code(reason)}\n"
+
+        leave_group(client, the_id)
+        thread(send_message, (client, glovar.debug_channel_id, text))
 
         return True
     except Exception as e:
@@ -226,11 +353,16 @@ def receive_leave_approve(client: Client, data: dict) -> bool:
 def receive_refresh(client: Client, data: int) -> bool:
     # Receive refresh
     try:
+        # Basic data
         aid = data
+
+        # Update admins
         update_admins(client)
-        text = (f"项目编号：{general_link(glovar.project_name, glovar.project_link)}\n"
-                f"项目管理员：{user_mention(aid)}\n"
-                f"执行操作：{code('刷新群管列表')}\n")
+
+        # Send debug message
+        text = (f"{lang('project')}{lang('colon')}{general_link(glovar.project_name, glovar.project_link)}\n"
+                f"{lang('admin_project')}{lang('colon')}{mention_id(aid)}\n"
+                f"{lang('action')}{lang('colon')}{code(lang('refresh'))}\n")
         thread(send_message, (client, glovar.debug_channel_id, text))
 
         return True
@@ -243,11 +375,16 @@ def receive_refresh(client: Client, data: int) -> bool:
 def receive_remove_bad(client: Client, sender: str, data: dict) -> bool:
     # Receive removed bad objects
     try:
+        # Basic data
         the_id = data["id"]
         the_type = data["type"]
+
+        # Remove bad channel
         if sender == "MANAGE" and the_type == "channel":
             glovar.bad_ids["channels"].discard(the_id)
-        elif the_type == "user":
+
+        # Remove bad user
+        if the_type == "user":
             glovar.bad_ids["users"].discard(the_id)
             unban_user_globally(client, the_id)
 
@@ -263,12 +400,15 @@ def receive_remove_bad(client: Client, sender: str, data: dict) -> bool:
 def receive_remove_except(_: Client, data: dict) -> bool:
     # Receive a object and remove it from except list
     try:
+        # Basic data
         the_id = data["id"]
         the_type = data["type"]
-        # Receive except channels
+
+        # Remove except channel
         if the_type == "channel":
             glovar.except_ids["channels"].discard(the_id)
-            save("except_ids")
+
+        save("except_ids")
 
         return True
     except Exception as e:
@@ -280,11 +420,14 @@ def receive_remove_except(_: Client, data: dict) -> bool:
 def receive_status_ask(client: Client, data: dict) -> bool:
     # Receive version info request
     try:
+        # Basic data
         aid = data["admin_id"]
         mid = data["message_id"]
+
         group_count = len(glovar.admin_ids)
+
         status = {
-            "群组数量": f"{group_count} 个"
+            lang("group_count"): f"{group_count}"
         }
         file = data_to_file(status)
         share_data(
@@ -306,14 +449,41 @@ def receive_status_ask(client: Client, data: dict) -> bool:
     return False
 
 
+def receive_rollback(client: Client, message: Message, data: dict) -> bool:
+    # Receive rollback data
+    try:
+        # Basic data
+        aid = data["admin_id"]
+        the_type = data["type"]
+        the_data = receive_file_data(client, message)
+
+        if the_data:
+            exec(f"glovar.{the_type} = the_data")
+            save(the_type)
+
+        # Send debug message
+        text = (f"{lang('project')}{lang('colon')}{general_link(glovar.project_name, glovar.project_link)}\n"
+                f"{lang('admin_project')}{lang('colon')}{mention_id(aid)}\n"
+                f"{lang('action')}{lang('colon')}{code(lang('rollback'))}\n"
+                f"{lang('more')}{lang('colon')}{code(the_type)}\n")
+        thread(send_message, (client, glovar.debug_channel_id, text))
+    except Exception as e:
+        logger.warning(f"Receive rollback error: {e}", exc_info=True)
+
+    return False
+
+
 def receive_text_data(message: Message) -> dict:
     # Receive text's data from exchange channel
     data = {}
     try:
         text = get_text(message)
-        if text:
-            data = loads(text)
+
+        if not text:
+            return {}
+
+        data = loads(text)
     except Exception as e:
-        logger.warning(f"Receive data error: {e}")
+        logger.warning(f"Receive text data error: {e}")
 
     return data

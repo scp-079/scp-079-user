@@ -28,6 +28,8 @@ from cryptography.fernet import Fernet
 from pyrogram import Message, User
 from pyrogram.errors import FloodWait
 
+from .. import glovar
+
 # Enable logging
 logger = logging.getLogger(__name__)
 
@@ -35,9 +37,9 @@ logger = logging.getLogger(__name__)
 def bold(text: Any) -> str:
     # Get a bold text
     try:
-        text = str(text)
-        if text.strip():
-            return f"<b>{escape(str(text))}</b>"
+        text = str(text).strip()
+        if text:
+            return f"<b>{escape(text)}</b>"
     except Exception as e:
         logger.warning(f"Bold error: {e}", exc_info=True)
 
@@ -47,9 +49,9 @@ def bold(text: Any) -> str:
 def code(text: Any) -> str:
     # Get a code text
     try:
-        text = str(text)
-        if text.strip():
-            return f"<code>{escape(str(text))}</code>"
+        text = str(text).strip()
+        if text:
+            return f"<code>{escape(text)}</code>"
     except Exception as e:
         logger.warning(f"Code error: {e}", exc_info=True)
 
@@ -59,9 +61,9 @@ def code(text: Any) -> str:
 def code_block(text: Any) -> str:
     # Get a code block text
     try:
-        text = str(text)
-        if text.strip():
-            return f"<pre>{escape(text.rstrip())}</pre>"
+        text = str(text).rstrip()
+        if text:
+            return f"<pre>{escape(text)}</pre>"
     except Exception as e:
         logger.warning(f"Code block error: {e}", exc_info=True)
 
@@ -74,6 +76,7 @@ def crypt_str(operation: str, text: str, key: str) -> str:
     try:
         f = Fernet(key)
         text = text.encode("utf-8")
+
         if operation == "decrypt":
             result = f.decrypt(text)
         else:
@@ -101,10 +104,13 @@ def delay(secs: int, target: Callable, args: list) -> bool:
 
 
 def general_link(text: Union[int, str], link: str) -> str:
-    # Get a general markdown link
+    # Get a general link
     result = ""
     try:
-        result = f'<a href="{link}">{escape(str(text))}</a>'
+        text = str(text).strip()
+        link = link.strip()
+        if text and link:
+            result = f'<a href="{link}">{escape(text)}</a>'
     except Exception as e:
         logger.warning(f"General link error: {e}", exc_info=True)
 
@@ -204,11 +210,16 @@ def get_stripped_link(link: str) -> str:
     # Get stripped link
     result = ""
     try:
-        if link:
-            result = link.replace("http://", "")
-            result = result.replace("https://", "")
-            if result and result[-1] == "/":
-                result = result[:-1]
+        link = link.strip()
+
+        if not link:
+            return ""
+
+        result = link.replace("http://", "")
+        result = result.replace("https://", "")
+
+        if result and result[-1] == "/":
+            result = result[:-1]
     except Exception as e:
         logger.warning(f"Get stripped link error: {e}", exc_info=True)
 
@@ -229,6 +240,28 @@ def get_text(message: Message) -> str:
         logger.warning(f"Get text error: {e}", exc_info=True)
 
     return text
+
+
+def lang(text: str) -> str:
+    # Get the text
+    result = ""
+    try:
+        result = glovar.lang.get(text, text)
+    except Exception as e:
+        logger.warning(f"Lang error: {e}", exc_info=True)
+
+    return result
+
+
+def mention_id(uid: int) -> str:
+    # Get a ID mention string
+    result = ""
+    try:
+        result = general_link(f"{uid}", f"tg://user?id={uid}")
+    except Exception as e:
+        logger.warning(f"Mention id error: {e}", exc_info=True)
+
+    return result
 
 
 def message_link(message: Message) -> str:
@@ -266,17 +299,6 @@ def thread(target: Callable, args: tuple) -> bool:
         logger.warning(f"Thread error: {e}", exc_info=True)
 
     return False
-
-
-def user_mention(uid: int) -> str:
-    # Get a mention text
-    text = ""
-    try:
-        text = general_link(f"{uid}", f"tg://user?id={uid}")
-    except Exception as e:
-        logger.warning(f"User mention error: {e}", exc_info=True)
-
-    return text
 
 
 def wait_flood(e: FloodWait) -> bool:

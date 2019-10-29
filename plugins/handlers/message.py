@@ -54,13 +54,6 @@ def check(client: Client, message: Message) -> bool:
         if is_declared_message(None, message):
             return True
 
-        # All groups' admins
-        uid = message.from_user.id
-        admin_ids = deepcopy(glovar.admin_ids)
-        for gid in admin_ids:
-            if uid in admin_ids[gid]:
-                return True
-
         # Need deletion
         if is_delete(message):
             terminate_user(client, message)

@@ -24,7 +24,7 @@ from pyrogram import Chat, Client, Message
 from pyrogram.errors import FloodWait
 
 from .. import glovar
-from .etc import code, code_block, general_link, message_link, thread, wait_flood
+from .etc import code, code_block, general_link, lang, message_link, thread, wait_flood
 from .file import crypt_file, delete_file, get_new_path
 from .telegram import get_group_info, send_document, send_message
 
@@ -65,9 +65,11 @@ def exchange_to_hide(client: Client) -> bool:
             action_type="hide",
             data=True
         )
-        text = (f"项目编号：{code(glovar.sender)}\n"
-                f"发现状况：{code('数据交换频道失效')}\n"
-                f"自动处理：{code('启用 1 号协议')}\n")
+
+        # Send debug message
+        text = (f"{lang('project')}{lang('colon')}{code(glovar.sender)}\n"
+                f"{lang('issue')}{lang('colon')}{code(lang('exchange_invalid'))}\n"
+                f"{lang('auto_fix')}{lang('colon')}{code(lang('protocol_1'))}\n")
         thread(send_message, (client, glovar.critical_channel_id, text))
 
         return True
@@ -101,26 +103,28 @@ def forward_evidence(client: Client, message: Message, level: str, rule: str,
     # Forward the message to the logging channel as evidence
     result = None
     try:
+        # Basic information
         uid = message.from_user.id
-        text = (f"项目编号：{code(glovar.sender)}\n"
-                f"用户 ID：{code(uid)}\n"
-                f"操作等级：{code(level)}\n"
-                f"规则：{code(rule)}\n")
+        text = (f"{lang('project')}{lang('colon')}{code(glovar.sender)}\n"
+                f"{lang('user_id')}{lang('colon')}{code(uid)}\n"
+                f"{lang('level')}{lang('colon')}{code(level)}\n"
+                f"{lang('rule')}{lang('colon')}{code(rule)}\n")
 
         if message.game:
-            text += f"消息类别：{code('游戏')}\n"
+            text += f"{lang('message_type')}{lang('colon')}{code(lang('gam'))}\n"
         elif message.service:
-            text += f"消息类别：{code('服务消息')}\n"
+            text += f"{lang('message_type')}{lang('colon')}{code(lang('ser'))}\n"
 
         if message.contact or message.location or message.venue or message.video_note or message.voice:
-            text += f"附加信息：{code('可能涉及隐私而未转发')}\n"
+            text += f"{lang('more')}{lang('colon')}{code(lang('privacy'))}\n"
         elif message.game or message.service:
-            text += f"附加信息：{code('此类消息无法转发至频道')}\n"
+            text += f"{lang('more')}{lang('colon')}{code(lang('cannot_forward'))}\n"
         elif more:
-            text += f"附加信息：{code(more)}\n"
+            text += f"{lang('more')}{lang('colon')}{code(more)}\n"
 
         # DO NOT try to forward these types of message
-        if (message.contact or message.location
+        if (message.contact
+                or message.location
                 or message.venue
                 or message.video_note
                 or message.voice
@@ -152,19 +156,32 @@ def forward_evidence(client: Client, message: Message, level: str, rule: str,
     return result
 
 
-def get_debug_text(client: Client, context: Union[int, Chat]) -> str:
-    # Get a debug message text prefix, accept int or Chat
+def get_debug_text(client: Client, context: Union[int, Chat, List[int]]) -> str:
+    # Get a debug message text prefix
     text = ""
     try:
-        if isinstance(context, int):
-            group_id = context
-        else:
-            group_id = context.id
+        # Prefix
+        text = f"{lang('project')}{lang('colon')}{general_link(glovar.project_name, glovar.project_link)}\n"
 
-        group_name, group_link = get_group_info(client, context)
-        text = (f"项目编号：{general_link(glovar.project_name, glovar.project_link)}\n"
-                f"群组名称：{general_link(group_name, group_link)}\n"
-                f"群组 ID：{code(group_id)}\n")
+        # List of group ids
+        if isinstance(context, list):
+            for group_id in context:
+                group_name, group_link = get_group_info(client, group_id)
+                text += (f"{lang('group_name')}{lang('colon')}{general_link(group_name, group_link)}\n"
+                         f"{lang('group_id')}{lang('colon')}{code(group_id)}\n")
+
+        # One group
+        else:
+            # Get group id
+            if isinstance(context, int):
+                group_id = context
+            else:
+                group_id = context.id
+
+            # Generate the group info text
+            group_name, group_link = get_group_info(client, context)
+            text += (f"{lang('group_name')}{lang('colon')}{general_link(group_name, group_link)}\n"
+                     f"{lang('group_id')}{lang('colon')}{code(group_id)}\n")
     except Exception as e:
         logger.warning(f"Get debug text error: {e}", exc_info=True)
 
@@ -175,9 +192,9 @@ def send_debug(client: Client, chat: Chat, action: str, uid: int, mid: int, em: 
     # Send the debug message
     try:
         text = get_debug_text(client, chat)
-        text += (f"用户 ID：{code(uid)}\n"
-                 f"执行操作：{code(action)}\n"
-                 f"触发消息：{general_link(mid, message_link(em))}\n")
+        text += (f"{lang('user_id')}{lang('colon')}{code(uid)}\n"
+                 f"{lang('action')}{lang('colon')}{code(action)}\n"
+                 f"{lang('triggered_by')}{lang('colon')}{general_link(mid, message_link(em))}\n")
         thread(send_message, (client, glovar.debug_channel_id, text))
 
         return True
@@ -187,80 +204,77 @@ def send_debug(client: Client, chat: Chat, action: str, uid: int, mid: int, em: 
     return False
 
 
-def share_data(client: Client, receivers: List[str], action: str, action_type: str, data: Union[bool, dict, int, str],
-               file: str = None, encrypt: bool = True) -> bool:
+def share_data(client: Client, receivers: List[str], action: str, action_type: str,
+               data: Union[bool, dict, int, str] = None, file: str = None, encrypt: bool = True) -> bool:
     # Use this function to share data in the channel
     try:
-        if glovar.sender in receivers:
-            receivers.remove(glovar.sender)
+        thread(
+            target=share_data_thread,
+            args=(client, receivers, action, action_type, data, file, encrypt)
+        )
 
-        if receivers:
-            if glovar.should_hide:
-                channel_id = glovar.hide_channel_id
-            else:
-                channel_id = glovar.exchange_channel_id
-
-            if file:
-                text = format_data(
-                    sender=glovar.sender,
-                    receivers=receivers,
-                    action=action,
-                    action_type=action_type,
-                    data=data
-                )
-                if encrypt:
-                    # Encrypt the file, save to the tmp directory
-                    file_path = get_new_path()
-                    crypt_file("encrypt", file, file_path)
-                else:
-                    # Send directly
-                    file_path = file
-
-                result = send_document(client, channel_id, file_path, None, text)
-                # Delete the tmp file
-                if result:
-                    for f in {file, file_path}:
-                        if "tmp/" in f:
-                            thread(delete_file, (f,))
-            else:
-                text = format_data(
-                    sender=glovar.sender,
-                    receivers=receivers,
-                    action=action,
-                    action_type=action_type,
-                    data=data
-                )
-                result = send_message(client, channel_id, text)
-
-            # Sending failed due to channel issue
-            if result is False and not glovar.should_hide:
-                # Use hide channel instead
-                exchange_to_hide(client)
-                thread(share_data, (client, receivers, action, action_type, data, file, encrypt))
-
-            return True
+        return True
     except Exception as e:
         logger.warning(f"Share data error: {e}", exc_info=True)
 
     return False
 
 
-def share_forgiven_user(client: Client, uid: int) -> bool:
-    # Share the automatically forgiven user with other bots
+def share_data_thread(client: Client, receivers: List[str], action: str, action_type: str,
+                      data: Union[bool, dict, int, str] = None, file: str = None, encrypt: bool = True) -> bool:
+    # Share data thread
     try:
-        share_data(
-            client=client,
-            receivers=glovar.receivers["bad"],
-            action="remove",
-            action_type="bad",
-            data={
-                "id": uid,
-                "type": "user"
-            }
-        )
+        if glovar.sender in receivers:
+            receivers.remove(glovar.sender)
+
+        if not receivers:
+            return True
+
+        if glovar.should_hide:
+            channel_id = glovar.hide_channel_id
+        else:
+            channel_id = glovar.exchange_channel_id
+
+        if file:
+            text = format_data(
+                sender=glovar.sender,
+                receivers=receivers,
+                action=action,
+                action_type=action_type,
+                data=data
+            )
+            if encrypt:
+                # Encrypt the file, save to the tmp directory
+                file_path = get_new_path()
+                crypt_file("encrypt", file, file_path)
+            else:
+                # Send directly
+                file_path = file
+
+            result = send_document(client, channel_id, file_path, None, text)
+            # Delete the tmp file
+            if result:
+                for f in {file, file_path}:
+                    if "tmp/" in f:
+                        thread(delete_file, (f,))
+        else:
+            text = format_data(
+                sender=glovar.sender,
+                receivers=receivers,
+                action=action,
+                action_type=action_type,
+                data=data
+            )
+            result = send_message(client, channel_id, text)
+
+        # Sending failed due to channel issue
+        if result is False and not glovar.should_hide:
+            # Use hide channel instead
+            exchange_to_hide(client)
+            thread(share_data, (client, receivers, action, action_type, data, file, encrypt))
 
         return True
     except Exception as e:
-        logger.warning(f"Share forgive user error: {e}", exc_info=True)
+        logger.warning(f"Share data thread error: {e}", exc_info=True)
 
     return False

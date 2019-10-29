@@ -25,7 +25,7 @@ from pyrogram import Client, Filters, Message
 from .. import glovar
 from ..functions.channel import get_debug_text, share_data
 from ..functions.etc import bold, code, delay, code_block, get_command_context, get_command_type, get_int, get_now
-from ..functions.etc import thread, user_mention
+from ..functions.etc import thread, mention_id
 from ..functions.file import save
 from ..functions.filters import from_user, is_class_c, test_group
 from ..functions.group import delete_message
@@ -171,7 +171,7 @@ def mention(client: Client, message: Message) -> bool:
         cid = message.chat.id
         aid = message.from_user.id
         mid = message.message_id
-        text = f"管理员：{user_mention(aid)}\n\n"
+        text = f"管理员：{mention_id(aid)}\n\n"
         uid = 0
         id_text = get_command_type(message)
         the_type = ""
@@ -190,7 +190,7 @@ def mention(client: Client, message: Message) -> bool:
             if the_type:
                 text += f"查询用户：{code(uid)}\n"
             else:
-                text += f"查询用户：{user_mention(uid)}\n"
+                text += f"查询用户：{mention_id(uid)}\n"
         else:
             text += f"错误：{code('用户参数有误')}\n"
 
@@ -216,7 +216,7 @@ def print_message(client: Client, message: Message) -> bool:
             result = re.sub('"phone_number": ".*?"', '"phone_number": "███████████"', result)
             result_list = [result[i:i + 3000] for i in range(0, len(result), 3000)]
             for result in result_list:
-                text = (f"管理员：{user_mention(aid)}\n\n"
+                text = (f"管理员：{mention_id(aid)}\n\n"
                         f"消息结构：" + "-" * 24 + "\n\n"
                         f"{code_block(result.rstrip())}\n")
                 send_message(client, cid, text, mid)
@@ -236,7 +236,7 @@ def version(client: Client, message: Message) -> bool:
         cid = message.chat.id
         aid = message.from_user.id
         mid = message.message_id
-        text = (f"管理员：{user_mention(aid)}\n\n"
+        text = (f"管理员：{mention_id(aid)}\n\n"
                 f"版本：{bold(glovar.version)}\n")
         thread(send_message, (client, cid, text, mid))
 
