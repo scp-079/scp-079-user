@@ -20,7 +20,7 @@ import logging
 from json import dumps
 from typing import List, Optional, Union
 
-from pyrogram import Chat, Client, Message
+from pyrogram import Chat, Client, Message, User
 from pyrogram.errors import FloodWait
 
 from .. import glovar
@@ -98,13 +98,13 @@ def format_data(sender: str, receivers: List[str], action: str, action_type: str
     return text
 
 
-def forward_evidence(client: Client, message: Message, level: str, rule: str,
+def forward_evidence(client: Client, message: Message, user: User, level: str, rule: str,
                      more: str = None) -> Optional[Union[bool, Message]]:
     # Forward the message to the logging channel as evidence
     result = None
     try:
         # Basic information
-        uid = message.from_user.id
+        uid = user.id
         text = (f"{lang('project')}{lang('colon')}{code(glovar.sender)}\n"
                 f"{lang('user_id')}{lang('colon')}{code(uid)}\n"
                 f"{lang('level')}{lang('colon')}{code(level)}\n"

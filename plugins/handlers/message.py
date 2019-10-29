@@ -50,10 +50,6 @@ def check(client: Client, message: Message) -> bool:
     # Check messages from groups
     glovar.locks["message"].acquire()
     try:
-        # Check declare status
-        if is_declared_message(None, message):
-            return True
-
         # Need deletion
         if is_delete(message):
             terminate_user(client, message)
