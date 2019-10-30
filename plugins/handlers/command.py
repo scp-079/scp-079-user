@@ -207,7 +207,7 @@ def config_directly(client: Client, message: Message) -> bool:
     return False
 
 
-@Client.on_message(Filters.incoming & Filters.group & Filters.command(["mention"], glovar.prefix)
+@Client.on_message(Filters.incoming & Filters.group & Filters.command(["id", "mention"], glovar.prefix)
                    & test_group
                    & from_user)
 def mention(client: Client, message: Message) -> bool:

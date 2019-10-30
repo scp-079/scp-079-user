@@ -277,6 +277,7 @@ lang: Dict[str, str] = {
 all_commands: List[str] = [
     "config",
     "config_user",
+    "id",
     "mention",
     "print",
     "version"
