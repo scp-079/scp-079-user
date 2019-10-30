@@ -199,6 +199,8 @@ def get_messages(client: Client, cid: int, mids: Iterable[int]) -> Optional[List
             except FloodWait as e:
                 flood_wait = True
                 wait_flood(e)
+            except PeerIdInvalid:
+                return None
     except Exception as e:
         logger.warning(f"Get messages {mids} in {cid} error: {e}", exc_info=True)
 
