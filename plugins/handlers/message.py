@@ -99,7 +99,6 @@ def check_join(client: Client, message: Message) -> bool:
                    & ~declared_message)
 def delete_service(client: Client, message: Message) -> bool:
     # Delete service messages sent by SCP-079
-    glovar.locks["message"].acquire()
     try:
         # Basic data
         gid = message.chat.id
@@ -113,8 +112,6 @@ def delete_service(client: Client, message: Message) -> bool:
         return True
     except Exception as e:
         logger.warning(f"Delete service error: {e}", exc_info=True)
-    finally:
-        glovar.locks["message"].release()
 
     return False
 
