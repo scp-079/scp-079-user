@@ -235,6 +235,7 @@ def mention(client: Client, message: Message) -> bool:
 
                 if len(link_list) > 2:
                     if link_list[1] == "c":
+                        the_type = "channel"
                         the_gid = get_int("-100" + link_list[2])
                         the_mid = get_int(link_list[3])
                     else:
