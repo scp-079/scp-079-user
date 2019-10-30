@@ -219,7 +219,8 @@ def mention(client: Client, message: Message) -> bool:
         mid = message.message_id
 
         # Generate the report message text
-        text = f"{lang('admin')}{lang('colon')}{mention_id(aid)}\n\n"
+        text = (f"{lang('admin')}{lang('colon')}{mention_id(aid)}\n\n"
+                f"{lang('action')}{lang('colon')}{code(lang('action_mention'))}\n")
 
         # Get the user's id
         uid = 0
@@ -266,11 +267,12 @@ def mention(client: Client, message: Message) -> bool:
         # Show the result
         if uid:
             if the_type:
-                text += f"{lang('mention_user')}{lang('colon')}{code(uid)}\n"
+                text += f"{lang('result')}{lang('colon')}{code(uid)}\n"
             else:
-                text += f"{lang('mention_user')}{lang('colon')}{mention_id(uid)}\n"
+                text += f"{lang('result')}{lang('colon')}{mention_id(uid)}\n"
         else:
-            text += f"{lang('error')}{lang('colon')}{code(lang('command_para'))}\n"
+            text += (f"{lang('status')}{lang('colon')}{code(lang('status_failed'))}\n"
+                     f"{lang('reason')}{lang('colon')}{code(lang('command_para'))}\n")
 
         # Send the report message
         thread(send_message, (client, cid, text, mid))

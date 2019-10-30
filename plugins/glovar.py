@@ -166,9 +166,10 @@ lang: Dict[str, str] = {
     "error": (zh_cn and "错误") or "Error",
     "reason": (zh_cn and "原因") or "Reason",
     "reset": (zh_cn and "重置数据") or "Reset Data",
+    "result": (zh_cn and "结果") or "Result",
     "rollback": (zh_cn and "数据回滚") or "Rollback",
     "status_failed": (zh_cn and "未执行") or "Failed",
-    "status_succeed": (zh_cn and "成功执行") or "Succeed",
+    "status_succeeded": (zh_cn and "成功执行") or "Succeeded",
     "version": (zh_cn and "版本") or "Version",
     # Command
     "command_lack": (zh_cn and "命令参数缺失") or "Lack of Parameter",
@@ -245,7 +246,7 @@ lang: Dict[str, str] = {
     "more": (zh_cn and "附加信息") or "Extra Info",
     # Special
     "group_count": (zh_cn and "群组数量") or "Total Groups",
-    "mention_user": (zh_cn and "查询用户") or "Mention User",
+    "action_mention": (zh_cn and "查询用户") or "Mention User",
     "message_print": (zh_cn and "消息结构") or "Print the Message",
     # Terminate
     "auto_ban": (zh_cn and "自动封禁") or "Auto Ban",
@@ -280,7 +281,8 @@ all_commands: List[str] = [
     "id",
     "mention",
     "print",
-    "version"
+    "version",
+    "white"
 ]
 
 bot_ids: Set[int] = {avatar_id, captcha_id, clean_id, lang_id, long_id, noflood_id,
