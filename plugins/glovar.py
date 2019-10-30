@@ -163,6 +163,7 @@ lang: Dict[str, str] = {
     "description": (zh_cn and "说明") or "Description",
     "disabled": (zh_cn and "禁用") or "Disabled",
     "enabled": (zh_cn and "启用") or "Enabled",
+    "error": (zh_cn and "错误") or "Error",
     "reason": (zh_cn and "原因") or "Reason",
     "reset": (zh_cn and "重置数据") or "Reset Data",
     "rollback": (zh_cn and "数据回滚") or "Rollback",
@@ -244,6 +245,8 @@ lang: Dict[str, str] = {
     "more": (zh_cn and "附加信息") or "Extra Info",
     # Special
     "group_count": (zh_cn and "群组数量") or "Total Groups",
+    "mention_user": (zh_cn and "查询用户") or "Mention User",
+    "message_print": (zh_cn and "消息结构") or "Print the Message",
     # Terminate
     "auto_ban": (zh_cn and "自动封禁") or "Auto Ban",
     "auto_delete": (zh_cn and "自动删除") or "Auto Delete",
