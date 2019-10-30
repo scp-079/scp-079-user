@@ -25,23 +25,10 @@ from .. import glovar
 from .etc import code, lang, thread
 from .file import save
 from .ids import init_group_id
-from .telegram import archive_chats, delete_messages, delete_all_messages, get_common_chats, get_messages, leave_chat
+from .telegram import delete_messages, delete_all_messages, get_common_chats, get_messages, leave_chat
 
 # Enable logging
 logger = logging.getLogger(__name__)
-
-
-def archive_chat(client: Client, cid: int) -> bool:
-    # Archive a chat
-    try:
-        cids = [cid]
-        thread(archive_chats, (client, cids))
-
-        return True
-    except Exception as e:
-        logger.warning(f"Archive chat error: {e}", exc_info=True)
-
-    return False
 
 
 def delete_message(client: Client, gid: int, mid: int) -> bool:

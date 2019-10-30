@@ -125,7 +125,7 @@ def restrict_user(client: Client, gid: int, uid: Union[int, str]) -> bool:
     return False
 
 
-def terminate_user(client: Client, message: Message, user: User) -> bool:
+def terminate_user(client: Client, message: Message, user: User, the_type: str) -> bool:
     # Delete user's message
     try:
         # Check if it is necessary
@@ -141,7 +141,7 @@ def terminate_user(client: Client, message: Message, user: User) -> bool:
             return True
 
         # Subscribe ban
-        if glovar.configs[gid].get("sb"):
+        if the_type == "sb":
             if gid not in glovar.user_ids[uid]["ban"]:
                 result = forward_evidence(
                     client=client,
@@ -165,7 +165,7 @@ def terminate_user(client: Client, message: Message, user: User) -> bool:
                 delete_message(client, gid, mid)
 
         # Subscribe restrict
-        elif glovar.configs[gid].get("sr"):
+        elif the_type == "sr":
             if gid not in glovar.user_ids[uid]["restrict"]:
                 result = forward_evidence(
                     client=client,
@@ -189,7 +189,7 @@ def terminate_user(client: Client, message: Message, user: User) -> bool:
                 delete_message(client, gid, mid)
 
         # Subscribe delete
-        elif glovar.configs[gid].get("sd"):
+        elif the_type == "sd":
             if uid not in glovar.recorded_ids[gid]:
                 glovar.recorded_ids[gid].add(uid)
                 result = forward_evidence(

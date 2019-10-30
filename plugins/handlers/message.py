@@ -18,41 +18,45 @@
 
 import logging
 import re
-from copy import deepcopy
 
 from PIL import Image
 from pyrogram import Client, Filters, Message, WebPage
 
 from .. import glovar
-from ..functions.channel import forward_evidence, get_debug_text, send_debug, share_data
-from ..functions.etc import code, general_link, get_channel_link, get_now, get_stripped_link, thread
+from ..functions.channel import get_debug_text, share_data
+from ..functions.etc import code, general_link, get_channel_link, get_stripped_link, lang, mention_id, thread
 from ..functions.file import data_to_file, delete_file, get_downloaded_path, save
-from ..functions.filters import class_c, class_d, class_e, declared_message, exchange_channel, from_user, hide_channel
-from ..functions.filters import is_declared_message, is_delete, new_group, test_group
-from ..functions.group import archive_chat, leave_group
-from ..functions.ids import init_group_id, init_user_id
-from ..functions.receive import receive_add_bad, receive_add_except, receive_config_commit, receive_config_reply
-from ..functions.receive import receive_declared_message, receive_help_ban, receive_help_delete, receive_leave_approve
-from ..functions.receive import receive_refresh, receive_remove_bad, receive_remove_except
-from ..functions.receive import receive_status_ask, receive_text_data
-from ..functions.telegram import delete_all_messages, get_admins, read_history, read_mention
+from ..functions.filters import authorized_group, captcha_group, class_c, class_d, class_e, declared_message
+from ..functions.filters import exchange_channel, from_user, hide_channel, is_class_d_user, is_declared_message
+from ..functions.filters import is_not_allowed, new_group, test_group
+from ..functions.group import leave_group
+from ..functions.ids import init_group_id
+from ..functions.receive import receive_add_bad, receive_add_except, receive_clear_data, receive_config_commit
+from ..functions.receive import receive_config_reply, receive_config_show, receive_declared_message, receive_help_ban
+from ..functions.receive import receive_help_delete, receive_leave_approve, receive_refresh, receive_remove_bad
+from ..functions.receive import receive_remove_except, receive_rollback, receive_status_ask, receive_text_data
+from ..functions.telegram import get_admins, read_history, read_mention
 from ..functions.telegram import resolve_username, send_message
 from ..functions.tests import preview_test
-from ..functions.user import ban_user, terminate_user
+from ..functions.timers import backup_files
+from ..functions.user import terminate_user
 
 # Enable logging
 logger = logging.getLogger(__name__)
 
 
-@Client.on_message(Filters.incoming & Filters.group & ~test_group & from_user & ~Filters.service
-                   & ~class_c & class_d & ~class_e & ~declared_message)
+@Client.on_message(Filters.incoming & Filters.group & ~Filters.new_chat_members
+                   & ~captcha_group & ~test_group & authorized_group
+                   & from_user & ~class_c & class_d & ~class_e
+                   & ~declared_message)
 def check(client: Client, message: Message) -> bool:
     # Check messages from groups
     glovar.locks["message"].acquire()
     try:
-        # Need deletion
-        if is_delete(message):
-            terminate_user(client, message)
+        # Not allowed message
+        detection = is_not_allowed(message)
+        if is_not_allowed(message):
+            terminate_user(client, message, message.from_user, detection)
 
         return True
     except Exception as e:
@@ -63,52 +67,22 @@ def check(client: Client, message: Message) -> bool:
     return False
 
 
-@Client.on_message(Filters.incoming & Filters.group & ~test_group & from_user & Filters.new_chat_members & ~new_group
-                   & ~class_c & ~class_e & ~declared_message)
+@Client.on_message(Filters.incoming & Filters.group & Filters.new_chat_members
+                   & ~captcha_group & ~test_group & ~new_group & authorized_group
+                   & from_user & ~class_c & ~class_e
+                   & ~declared_message)
 def check_join(client: Client, message: Message) -> bool:
     # Check new joined user
     glovar.locks["message"].acquire()
     try:
-        # Check declare status
-        if is_declared_message(None, message):
-            return True
+        for new in message.new_chat_members:
+            # Check if the user is Class D personnel
+            if not is_class_d_user(new):
+                continue
 
-        # All groups' admins
-        uid = message.from_user.id
-        admin_ids = deepcopy(glovar.admin_ids)
-        for gid in admin_ids:
-            if uid in admin_ids[gid]:
-                return True
-
-        gid = message.chat.id
-        mid = message.message_id
-
-        if glovar.configs[gid]["subscribe"]:
-            for n in message.new_chat_members:
-                uid = n.id
-                if init_user_id(uid):
-                    if uid in glovar.bad_ids["users"]:
-                        # now = get_now()
-                        # banned_time = glovar.banned_ids[uid].get(gid, 0)
-                        # if banned_time and now - banned_time > 10:
-                        #     glovar.except_ids["temp"][uid].add(gid)
-                        #     save("except_ids")
-                        #     # If three groups forgive the user, then unban the user automatically
-                        #     if len(glovar.except_ids["temp"][uid]) == 3:
-                        #         unban_user_globally(client, uid)
-                        #         share_forgiven_user(client, uid)
-                        #         send_debug(client, message.chat, "自动解禁", uid, mid, message)
-                        #     else:
-                        #         unban_user(client, gid, uid)
-                        #         send_debug(client, message.chat, "单独解禁", uid, mid, message)
-                        # else:
-                        glovar.banned_ids[uid][gid] = get_now()
-                        save("banned_ids")
-                        result = forward_evidence(client, message, "自动封禁", "订阅列表")
-                        if result:
-                            ban_user(client, gid, message.from_user.username or uid)
-                            thread(delete_all_messages, (client, gid, uid))
-                            send_debug(client, message.chat, "自动封禁", uid, mid, result)
+            detection = is_not_allowed(message)
+            if detection:
+                terminate_user(client, message, new, detection)
 
         return True
     except Exception as e:
@@ -119,31 +93,42 @@ def check_join(client: Client, message: Message) -> bool:
     return False
 
 
-@Client.on_message(Filters.incoming & Filters.channel & hide_channel
-                   & ~Filters.command(glovar.all_commands, glovar.prefix), group=-1)
+@Client.on_message(Filters.incoming & Filters.channel & ~Filters.command(glovar.all_commands, glovar.prefix)
+                   & hide_channel, group=-1)
 def exchange_emergency(client: Client, message: Message) -> bool:
     # Sent emergency channel transfer request
     try:
         # Read basic information
         data = receive_text_data(message)
-        if data:
-            sender = data["from"]
-            receivers = data["to"]
-            action = data["action"]
-            action_type = data["type"]
-            data = data["data"]
-            if "EMERGENCY" in receivers:
-                if action == "backup":
-                    if action_type == "hide":
-                        if data is True:
-                            glovar.should_hide = data
-                        elif data is False and sender == "MANAGE":
-                            glovar.should_hide = data
+        if not data:
+            return True
 
-                        text = (f"项目编号：{general_link(glovar.project_name, glovar.project_link)}\n"
-                                f"执行操作：{code('频道转移')}\n"
-                                f"应急频道：{code((lambda x: '启用' if x else '禁用')(glovar.should_hide))}\n")
-                        thread(send_message, (client, glovar.debug_channel_id, text))
+        sender = data["from"]
+        receivers = data["to"]
+        action = data["action"]
+        action_type = data["type"]
+        data = data["data"]
+
+        if "EMERGENCY" not in receivers:
+            return True
+
+        if action != "backup":
+            return True
+
+        if action_type != "hide":
+            return True
+
+        if data is True:
+            glovar.should_hide = data
+        elif data is False and sender == "MANAGE":
+            glovar.should_hide = data
+
+        project_text = general_link(glovar.project_name, glovar.project_link)
+        hide_text = (lambda x: lang("enabled") if x else "disabled")(glovar.should_hide)
+        text = (f"{lang('project')}{lang('colon')}{project_text}\n"
+                f"{lang('action')}{lang('colon')}{code(lang('transfer_channel'))}\n"
+                f"{lang('emergency_channel')}{lang('colon')}{code(hide_text)}\n")
+        thread(send_message, (client, glovar.debug_channel_id, text))
 
         return True
     except Exception as e:
@@ -152,27 +137,49 @@ def exchange_emergency(client: Client, message: Message) -> bool:
     return False
 
 
-@Client.on_message(Filters.incoming & Filters.group & ~test_group & from_user
+@Client.on_message(Filters.incoming & Filters.group
                    & (Filters.new_chat_members | Filters.group_chat_created | Filters.supergroup_chat_created)
-                   & new_group)
+                   & ~captcha_group & ~test_group & new_group
+                   & from_user)
 def init_group(client: Client, message: Message) -> bool:
     # Initiate new groups
     try:
         gid = message.chat.id
         text = get_debug_text(client, message.chat)
+        invited_by = message.from_user.id
+
         # Check permission
-        if init_group_id(gid):
+        if invited_by == glovar.user_id:
+            # Remove the left status
+            if gid in glovar.left_group_ids:
+                glovar.left_group_ids.discard(gid)
+                save("left_group_ids")
+
+            # Update group's admin list
+            if not init_group_id(gid):
+                return True
+
             admin_members = get_admins(client, gid)
             if admin_members:
                 glovar.admin_ids[gid] = {admin.user.id for admin in admin_members
                                          if not admin.user.is_bot and not admin.user.is_deleted}
                 save("admin_ids")
-                archive_chat(client, gid)
-                text += f"状态：{code('已加入群组')}\n"
+                text += f"{lang('status')}{lang('colon')}{code(lang('status_joined'))}\n"
             else:
                 thread(leave_group, (client, gid))
-                text += (f"状态：{code('已退出群组')}\n"
-                         f"原因：{code('获取管理员列表失败')}\n")
+                text += (f"{lang('status')}{lang('colon')}{code(lang('status_left'))}\n"
+                         f"{lang('reason')}{lang('colon')}{code(lang('reason_admin'))}\n")
+        else:
+            if gid in glovar.left_group_ids:
+                return leave_group(client, gid)
+
+            leave_group(client, gid)
+            text += (f"{lang('status')}{lang('colon')}{code(lang('status_left'))}\n"
+                     f"{lang('reason')}{lang('colon')}{code(lang('reason_unauthorized'))}\n")
+            if message.from_user.username:
+                text += f"{lang('inviter')}{lang('colon')}{mention_id(invited_by)}\n"
+            else:
+                text += f"{lang('inviter')}{lang('colon')}{code(invited_by)}\n"
 
         thread(send_message, (client, glovar.debug_channel_id, text))
 
@@ -183,13 +190,15 @@ def init_group(client: Client, message: Message) -> bool:
     return False
 
 
-@Client.on_message(~Filters.private & Filters.incoming & Filters.mentioned, group=1)
+@Client.on_message(Filters.incoming & ~Filters.private & Filters.mentioned, group=1)
 def mark_mention(client: Client, message: Message) -> bool:
     # Mark mention as read
     try:
-        if message.chat:
-            cid = message.chat.id
-            thread(read_mention, (client, cid))
+        if not message.chat:
+            return True
+
+        cid = message.chat.id
+        thread(read_mention, (client, cid))
 
         return True
     except Exception as e:
@@ -198,13 +207,15 @@ def mark_mention(client: Client, message: Message) -> bool:
     return False
 
 
-@Client.on_message(~Filters.private & Filters.incoming, group=2)
+@Client.on_message(Filters.incoming & ~Filters.private, group=2)
 def mark_message(client: Client, message: Message) -> bool:
     # Mark messages from groups and channels as read
     try:
-        if message.chat:
-            cid = message.chat.id
-            thread(read_history, (client, cid))
+        if not message.chat:
+            return True
+
+        cid = message.chat.id
+        thread(read_history, (client, cid))
 
         return True
     except Exception as e:
@@ -213,197 +224,216 @@ def mark_message(client: Client, message: Message) -> bool:
     return False
 
 
-@Client.on_message(Filters.incoming & Filters.channel & exchange_channel
-                   & ~Filters.command(glovar.all_commands, glovar.prefix))
+@Client.on_message(Filters.incoming & Filters.channel & ~Filters.command(glovar.all_commands, glovar.prefix)
+                   & exchange_channel)
 def process_data(client: Client, message: Message) -> bool:
     # Process the data in exchange channel
-    if glovar.locks["receive"].acquire():
-        try:
-            data = receive_text_data(message)
-            if data:
-                sender = data["from"]
-                receivers = data["to"]
-                action = data["action"]
-                action_type = data["type"]
-                data = data["data"]
-                # This will look awkward,
-                # seems like it can be simplified,
-                # but this is to ensure that the permissions are clear,
-                # so it is intentionally written like this
-                if glovar.sender in receivers:
+    glovar.locks["receive"].acquire()
+    try:
+        data = receive_text_data(message)
 
-                    if sender == "CAPTCHA":
-                        if action == "help":
-                            if action_type == "delete":
-                                receive_help_delete(client, sender, data)
-
-                        elif action == "update":
-                            if action_type == "declare":
-                                receive_declared_message(data)
-
-                    elif sender == "CLEAN":
-                        if action == "add":
-                            if action_type == "bad":
-                                receive_add_bad(sender, data)
-
-                        elif action == "help":
-                            if action_type == "ban":
-                                receive_help_ban(client, data)
-                            elif action_type == "delete":
-                                receive_help_delete(client, sender, data)
-
-                        elif action == "update":
-                            if action_type == "declare":
-                                receive_declared_message(data)
-
-                    elif sender == "CONFIG":
-
-                        if action == "config":
-                            if action_type == "commit":
-                                receive_config_commit(data)
-                            elif action_type == "reply":
-                                receive_config_reply(client, data)
-
-                    elif sender == "LANG":
-
-                        if action == "add":
-                            if action_type == "bad":
-                                receive_add_bad(sender, data)
-
-                        elif action == "help":
-                            if action_type == "ban":
-                                receive_help_ban(client, data)
-                            elif action_type == "delete":
-                                receive_help_delete(client, sender, data)
-
-                        elif action == "update":
-                            if action_type == "declare":
-                                receive_declared_message(data)
-
-                    elif sender == "LONG":
-
-                        if action == "add":
-                            if action_type == "bad":
-                                receive_add_bad(sender, data)
-
-                        elif action == "help":
-                            if action_type == "ban":
-                                receive_help_ban(client, data)
-                            elif action_type == "delete":
-                                receive_help_delete(client, sender, data)
-
-                        elif action == "update":
-                            if action_type == "declare":
-                                receive_declared_message(data)
-
-                    elif sender == "MANAGE":
-
-                        if action == "add":
-                            if action == "add":
-                                if action_type == "bad":
-                                    receive_add_bad(sender, data)
-                                elif action_type == "except":
-                                    receive_add_except(client, data)
-
-                        elif action == "leave":
-                            if action_type == "approve":
-                                receive_leave_approve(client, data)
-
-                        elif action == "remove":
-                            if action_type == "bad":
-                                receive_remove_bad(client, sender, data)
-                            elif action_type == "except":
-                                receive_remove_except(client, data)
-
-                        elif action == "status":
-                            if action_type == "ask":
-                                receive_status_ask(client, data)
-
-                        elif action == "update":
-                            if action_type == "refresh":
-                                receive_refresh(client, data)
-
-                    elif sender == "NOFLOOD":
-
-                        if action == "add":
-                            if action_type == "bad":
-                                receive_add_bad(sender, data)
-
-                        elif action == "help":
-                            if action_type == "ban":
-                                receive_help_ban(client, data)
-                            elif action_type == "delete":
-                                receive_help_delete(client, sender, data)
-
-                        elif action == "update":
-                            if action_type == "declare":
-                                receive_declared_message(data)
-
-                    elif sender == "NOPORN":
-
-                        if action == "add":
-                            if action_type == "bad":
-                                receive_add_bad(sender, data)
-
-                        elif action == "help":
-                            if action_type == "ban":
-                                receive_help_ban(client, data)
-                            elif action_type == "delete":
-                                receive_help_delete(client, sender, data)
-
-                        elif action == "update":
-                            if action_type == "declare":
-                                receive_declared_message(data)
-
-                    elif sender == "NOSPAM":
-
-                        if action == "add":
-                            if action_type == "bad":
-                                receive_add_bad(sender, data)
-
-                        elif action == "help":
-                            if action_type == "ban":
-                                receive_help_ban(client, data)
-                            elif action_type == "delete":
-                                receive_help_delete(client, sender, data)
-
-                        elif action == "update":
-                            if action_type == "declare":
-                                receive_declared_message(data)
-
-                    elif sender == "RECHECK":
-
-                        if action == "add":
-                            if action_type == "bad":
-                                receive_add_bad(sender, data)
-
-                        elif action == "help":
-                            if action_type == "ban":
-                                receive_help_ban(client, data)
-                            elif action_type == "delete":
-                                receive_help_delete(client, sender, data)
-
-                        elif action == "update":
-                            if action_type == "declare":
-                                receive_declared_message(data)
-
-                    elif sender == "WARN":
-
-                        if action == "help":
-                            if action_type == "delete":
-                                receive_help_delete(client, sender, data)
-
+        if not data:
             return True
-        except Exception as e:
-            logger.warning(f"Process data error: {e}", exc_info=True)
-        finally:
-            glovar.locks["receive"].release()
+
+        sender = data["from"]
+        receivers = data["to"]
+        action = data["action"]
+        action_type = data["type"]
+        data = data["data"]
+        
+        # This will look awkward,
+        # seems like it can be simplified,
+        # but this is to ensure that the permissions are clear,
+        # so it is intentionally written like this
+        if glovar.sender in receivers:
+
+            if sender == "CAPTCHA":
+                if action == "help":
+                    if action_type == "delete":
+                        receive_help_delete(client, data)
+
+                elif action == "update":
+                    if action_type == "declare":
+                        receive_declared_message(data)
+
+            elif sender == "CLEAN":
+                if action == "add":
+                    if action_type == "bad":
+                        receive_add_bad(sender, data)
+
+                elif action == "help":
+                    if action_type == "ban":
+                        receive_help_ban(client, data)
+                    elif action_type == "delete":
+                        receive_help_delete(client, data)
+
+                elif action == "update":
+                    if action_type == "declare":
+                        receive_declared_message(data)
+
+            elif sender == "CONFIG":
+
+                if action == "config":
+                    if action_type == "commit":
+                        receive_config_commit(data)
+                    elif action_type == "reply":
+                        receive_config_reply(client, data)
+
+            elif sender == "LANG":
+
+                if action == "add":
+                    if action_type == "bad":
+                        receive_add_bad(sender, data)
+
+                elif action == "help":
+                    if action_type == "ban":
+                        receive_help_ban(client, data)
+                    elif action_type == "delete":
+                        receive_help_delete(client, data)
+
+                elif action == "update":
+                    if action_type == "declare":
+                        receive_declared_message(data)
+
+            elif sender == "LONG":
+
+                if action == "add":
+                    if action_type == "bad":
+                        receive_add_bad(sender, data)
+
+                elif action == "help":
+                    if action_type == "ban":
+                        receive_help_ban(client, data)
+                    elif action_type == "delete":
+                        receive_help_delete(client, data)
+
+                elif action == "update":
+                    if action_type == "declare":
+                        receive_declared_message(data)
+
+            elif sender == "MANAGE":
+
+                if action == "add":
+                    if action == "add":
+                        if action_type == "bad":
+                            receive_add_bad(sender, data)
+                        elif action_type == "except":
+                            receive_add_except(client, data)
+
+                elif action == "backup":
+                    if action_type == "now":
+                        thread(backup_files, (client,))
+                    elif action_type == "rollback":
+                        receive_rollback(client, message, data)
+
+                elif action == "clear":
+                    receive_clear_data(client, action_type, data)
+
+                elif action == "config":
+                    if action_type == "show":
+                        receive_config_show(client, data)
+
+                elif action == "leave":
+                    if action_type == "approve":
+                        receive_leave_approve(client, data)
+
+                elif action == "remove":
+                    if action_type == "bad":
+                        receive_remove_bad(client, sender, data)
+                    elif action_type == "except":
+                        receive_remove_except(client, data)
+
+                elif action == "status":
+                    if action_type == "ask":
+                        receive_status_ask(client, data)
+
+                elif action == "update":
+                    if action_type == "refresh":
+                        receive_refresh(client, data)
+
+            elif sender == "NOFLOOD":
+
+                if action == "add":
+                    if action_type == "bad":
+                        receive_add_bad(sender, data)
+
+                elif action == "help":
+                    if action_type == "ban":
+                        receive_help_ban(client, data)
+                    elif action_type == "delete":
+                        receive_help_delete(client, data)
+
+                elif action == "update":
+                    if action_type == "declare":
+                        receive_declared_message(data)
+
+            elif sender == "NOPORN":
+
+                if action == "add":
+                    if action_type == "bad":
+                        receive_add_bad(sender, data)
+
+                elif action == "help":
+                    if action_type == "ban":
+                        receive_help_ban(client, data)
+                    elif action_type == "delete":
+                        receive_help_delete(client, data)
+
+                elif action == "update":
+                    if action_type == "declare":
+                        receive_declared_message(data)
+
+            elif sender == "NOSPAM":
+
+                if action == "add":
+                    if action_type == "bad":
+                        receive_add_bad(sender, data)
+
+                elif action == "help":
+                    if action_type == "ban":
+                        receive_help_ban(client, data)
+                    elif action_type == "delete":
+                        receive_help_delete(client, data)
+
+                elif action == "update":
+                    if action_type == "declare":
+                        receive_declared_message(data)
+
+            elif sender == "RECHECK":
+
+                if action == "add":
+                    if action_type == "bad":
+                        receive_add_bad(sender, data)
+
+                elif action == "help":
+                    if action_type == "ban":
+                        receive_help_ban(client, data)
+                    elif action_type == "delete":
+                        receive_help_delete(client, data)
+
+                elif action == "update":
+                    if action_type == "declare":
+                        receive_declared_message(data)
+
+            elif sender == "WARN":
+
+                if action == "help":
+                    if action_type == "delete":
+                        receive_help_delete(client, data)
+
+        return True
+    except Exception as e:
+        logger.warning(f"Process data error: {e}", exc_info=True)
+    finally:
+        glovar.locks["receive"].release()
 
     return False
 
 
-@Client.on_message(Filters.incoming & Filters.group & ~test_group & from_user & ~Filters.service
-                   & ~class_d & ~class_e & ~declared_message)
+@Client.on_message(Filters.incoming & Filters.group & ~Filters.service
+                   & ~captcha_group & ~test_group & authorized_group
+                   & from_user & ~class_c & ~class_d & ~class_e
+                   & ~declared_message)
 def share_preview(client: Client, message: Message) -> bool:
     # Share the message's preview with other bots
     glovar.locks["preview"].acquire()
@@ -503,18 +533,20 @@ def share_preview(client: Client, message: Message) -> bool:
     return False
 
 
-@Client.on_message(Filters.incoming & Filters.group & test_group & from_user & ~Filters.service & ~Filters.bot
-                   & ~Filters.command(glovar.all_commands, glovar.prefix))
+@Client.on_message(Filters.incoming & Filters.group & ~Filters.bot & ~Filters.service
+                   & ~Filters.command(glovar.all_commands, glovar.prefix)
+                   & test_group
+                   & from_user)
 def test(client: Client, message: Message) -> bool:
     # Show test results in TEST group
-    if glovar.locks["test"].acquire():
-        try:
-            preview_test(client, message)
+    glovar.locks["test"].acquire()
+    try:
+        preview_test(client, message)
 
-            return True
-        except Exception as e:
-            logger.warning(f"Test error: {e}", exc_info=True)
-        finally:
-            glovar.locks["test"].release()
+        return True
+    except Exception as e:
+        logger.warning(f"Test error: {e}", exc_info=True)
+    finally:
+        glovar.locks["test"].release()
 
     return False

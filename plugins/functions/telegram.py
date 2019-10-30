@@ -33,24 +33,6 @@ from .etc import delay, get_int, wait_flood
 logger = logging.getLogger(__name__)
 
 
-def archive_chats(client: Client, cids: List[Union[int, str]]) -> Optional[bool]:
-    # Archive chats
-    result = None
-    try:
-        flood_wait = True
-        while flood_wait:
-            flood_wait = False
-            try:
-                result = client.archive_chats(chat_ids=cids)
-            except FloodWait as e:
-                flood_wait = True
-                wait_flood(e)
-    except Exception as e:
-        logger.warning(f"Archive chats {cids} error: {e}", exc_info=True)
-
-    return result
-
-
 def delete_messages(client: Client, cid: int, mids: Iterable[int]) -> Optional[bool]:
     # Delete some messages
     result = None
