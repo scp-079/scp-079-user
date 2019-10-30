@@ -29,7 +29,7 @@ from ..functions.file import data_to_file, delete_file, get_downloaded_path, sav
 from ..functions.filters import authorized_group, captcha_group, class_c, class_d, class_e, declared_message
 from ..functions.filters import exchange_channel, from_user, hide_channel, is_class_d_user, is_declared_message
 from ..functions.filters import is_not_allowed, new_group, test_group
-from ..functions.group import leave_group
+from ..functions.group import delete_message, leave_group
 from ..functions.ids import init_group_id
 from ..functions.receive import receive_add_bad, receive_add_except, receive_clear_data, receive_config_commit
 from ..functions.receive import receive_config_reply, receive_config_show, receive_declared_message, receive_help_ban
@@ -87,6 +87,32 @@ def check_join(client: Client, message: Message) -> bool:
         return True
     except Exception as e:
         logger.warning(f"Check join error: {e}", exc_info=True)
+    finally:
+        glovar.locks["message"].release()
+
+    return False
+
+
+@Client.on_message(Filters.incoming & Filters.group & Filters.service
+                   & captcha_group & ~test_group
+                   & from_user
+                   & ~declared_message)
+def delete_service(client: Client, message: Message) -> bool:
+    # Delete service messages sent by SCP-079
+    glovar.locks["message"].acquire()
+    try:
+        # Basic data
+        gid = message.chat.id
+        uid = message.from_user.id
+        mid = message.message_id
+
+        # Check if the message is sent by SCP-079
+        if uid in glovar.bot_ids:
+            delete_message(client, gid, mid)
+
+        return True
+    except Exception as e:
+        logger.warning(f"Delete service error: {e}", exc_info=True)
     finally:
         glovar.locks["message"].release()
 
