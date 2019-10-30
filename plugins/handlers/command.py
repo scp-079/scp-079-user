@@ -232,17 +232,21 @@ def mention(client: Client, message: Message) -> bool:
             if "t.me" in id_text:
                 link = get_stripped_link(id_text)
                 link_list = link.split("/")
-
+                logger.warning(link_list)
                 if len(link_list) > 2:
                     if link_list[1] == "c":
-                        the_id = get_int("-100" + link_list[2])
+                        the_gid = get_int("-100" + link_list[2])
                         the_mid = get_int(link_list[3])
                     else:
-                        _, the_id = resolve_username(client, link_list[1])
+                        _, the_gid = resolve_username(client, link_list[1])
                         the_mid = get_int(link_list[2])
 
-                    if the_id and the_mid:
-                        the_message = get_message(client, the_id, mid)
+                    logger.warning(the_gid)
+                    logger.warning(the_mid)
+
+                    if the_gid and the_mid:
+                        the_message = get_message(client, the_gid, mid)
+                        logger.warning(the_message)
                         if the_message and the_message.from_user:
                             uid = the_message.from_user.id
 
