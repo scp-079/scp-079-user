@@ -245,8 +245,10 @@ lang: Dict[str, str] = {
     "joined": (zh_cn and "入群时间") or "Joined Time",
     "more": (zh_cn and "附加信息") or "Extra Info",
     # Special
-    "group_count": (zh_cn and "群组数量") or "Total Groups",
     "action_mention": (zh_cn and "查询用户") or "Mention User",
+    "action_undo_white": (zh_cn and "撤销白名单") or "Remove from Whitelist",
+    "action_white": (zh_cn and "临时白名单") or "Add to Whitelist",
+    "group_count": (zh_cn and "群组数量") or "Total Groups",
     "message_print": (zh_cn and "消息结构") or "Print the Message",
     # Terminate
     "auto_ban": (zh_cn and "自动封禁") or "Auto Ban",
@@ -351,7 +353,7 @@ usernames: Dict[str, Dict[str, Union[int, str]]] = {}
 #     }
 # }
 
-version: str = "0.2.4"
+version: str = "0.2.5"
 
 # Load data from pickle
 

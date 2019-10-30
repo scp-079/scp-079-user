@@ -29,6 +29,7 @@ from ..functions.etc import get_stripped_link, lang, mention_id, thread
 from ..functions.file import save
 from ..functions.filters import authorized_group, captcha_group, from_user, is_class_c, test_group
 from ..functions.group import delete_message, get_config_text, get_message
+from ..functions.ids import init_user_id
 from ..functions.telegram import get_group_info, resolve_username, send_message, send_report_message
 
 # Enable logging
@@ -331,5 +332,99 @@ def version(client: Client, message: Message) -> bool:
         return True
     except Exception as e:
         logger.warning(f"Version error: {e}", exc_info=True)
+
+    return False
+
+
+@Client.on_message(Filters.incoming & Filters.group & Filters.command(["white"], glovar.prefix)
+                   & ~captcha_group & ~test_group & authorized_group
+                   & from_user)
+def white(client: Client, message: Message) -> bool:
+    # White list a user
+
+    if not message or not message.chat:
+        return True
+
+    # Basic data
+    gid = message.chat.id
+    mid = message.message_id
+
+    try:
+        # Check permission
+        if not is_class_c(None, message):
+            return True
+
+        # Generate the report message's text
+        aid = message.from_user.id
+        text = f"{lang('admin')}{lang('colon')}{code(aid)}\n"
+
+        # Proceed
+        if message.reply_to_message and message.reply_to_message.from_user:
+            if message.reply_to_message.from_user.is_self:
+                return True
+
+            if message.new_chat_members:
+                uid = message.new_chat_members[0].id
+            else:
+                uid = message.reply_to_message.from_user.id
+        else:
+            uid = 0
+            id_text, _ = get_command_context(message)
+            if id_text:
+                uid = get_int(id_text)
+
+            if not uid and id_text:
+                peer_id, peer_type = resolve_username(client, id_text)
+                if peer_type == "user":
+                    uid = peer_id
+
+        if uid and init_user_id(uid):
+            if gid not in glovar.except_ids["temp"][uid]:
+                # Add except
+                glovar.except_ids["temp"][uid].add(gid)
+                save("except_ids")
+
+                text += (f"{lang('action')}{lang('colon')}{code(lang('action_white'))}\n"
+                         f"{lang('user_id')}{lang('colon')}{mention_id(uid)}\n"
+                         f"{lang('status')}{lang('colon')}{code(lang('status_succeeded'))}\n")
+
+                # Send debug message
+                debug_text = get_debug_text(client, message.chat)
+                debug_text += (f"{lang('user_id')}{lang('colon')}{code(uid)}"
+                               f"{lang('admin_group')}{lang('colon')}{code(aid)}\n"
+                               f"{lang('action')}{lang('colon')}{code(lang('action_white'))}\n")
+                thread(send_message, (client, glovar.debug_channel_id, debug_text))
+            elif gid in glovar.except_ids["temp"][uid]:
+                # Remove except
+                glovar.except_ids["temp"][uid].discard(gid)
+                save("except_ids")
+
+                text += (f"{lang('action')}{lang('colon')}{code(lang('action_undo_white'))}\n"
+                         f"{lang('user_id')}{lang('colon')}{mention_id(uid)}\n"
+                         f"{lang('status')}{lang('colon')}{code(lang('status_succeeded'))}\n")
+
+                # Send debug message
+                debug_text = get_debug_text(client, message.chat)
+                debug_text += (f"{lang('user_id')}{lang('colon')}{code(uid)}"
+                               f"{lang('admin_group')}{lang('colon')}{code(aid)}\n"
+                               f"{lang('action')}{lang('colon')}{code(lang('action_undo_white'))}\n")
+                thread(send_message, (client, glovar.debug_channel_id, debug_text))
+            else:
+                text += (f"{lang('action')}{lang('colon')}{code(lang('action_white'))}\n"
+                         f"{lang('status')}{lang('colon')}{code(lang('status_failed'))}\n"
+                         f"{lang('reason')}{lang('colon')}{code(lang('reason_none'))}\n")
+        else:
+            text += (f"{lang('action')}{lang('colon')}{code(lang('action_white'))}\n"
+                     f"{lang('status')}{lang('colon')}{code(lang('status_failed'))}\n"
+                     f"{lang('reason')}{lang('colon')}{code(lang('command_usage'))}\n")
+
+        # Send the report message
+        thread(send_report_message, (30, client, gid, text))
+
+        return True
+    except Exception as e:
+        logger.warning(f"White error: {e}", exc_info=True)
+    finally:
+        delete_message(client, gid, mid)
 
     return False

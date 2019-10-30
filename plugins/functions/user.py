@@ -148,7 +148,7 @@ def terminate_user(client: Client, message: Message, user: User, the_type: str) 
                     message=message,
                     user=user,
                     level=lang("auto_ban"),
-                    rule=lang("gb")
+                    rule=lang(the_type)
                 )
                 if result:
                     ban_user(client, gid, uid)
@@ -172,7 +172,7 @@ def terminate_user(client: Client, message: Message, user: User, the_type: str) 
                     message=message,
                     user=user,
                     level=lang("auto_ban"),
-                    rule=lang("sr")
+                    rule=lang(the_type)
                 )
                 if result:
                     restrict_user(client, gid, uid)
@@ -197,7 +197,7 @@ def terminate_user(client: Client, message: Message, user: User, the_type: str) 
                     message=message,
                     user=user,
                     level=lang("auto_delete"),
-                    rule=lang("sd")
+                    rule=lang(the_type)
                 )
                 if result:
                     delete_message(client, gid, mid)
