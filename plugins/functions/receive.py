@@ -61,7 +61,7 @@ def receive_add_bad(sender: str, data: dict) -> bool:
     return False
 
 
-def receive_add_except(_: Client, data: dict) -> bool:
+def receive_add_except(data: dict) -> bool:
     # Receive a object and add it to except list
     try:
         # Basic data
@@ -397,7 +397,7 @@ def receive_remove_bad(client: Client, sender: str, data: dict) -> bool:
     return False
 
 
-def receive_remove_except(_: Client, data: dict) -> bool:
+def receive_remove_except(data: dict) -> bool:
     # Receive a object and remove it from except list
     try:
         # Basic data

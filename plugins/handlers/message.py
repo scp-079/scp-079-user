@@ -341,7 +341,7 @@ def process_data(client: Client, message: Message) -> bool:
                         if action_type == "bad":
                             receive_add_bad(sender, data)
                         elif action_type == "except":
-                            receive_add_except(client, data)
+                            receive_add_except(data)
 
                 elif action == "backup":
                     if action_type == "now":
@@ -364,7 +364,7 @@ def process_data(client: Client, message: Message) -> bool:
                     if action_type == "bad":
                         receive_remove_bad(client, sender, data)
                     elif action_type == "except":
-                        receive_remove_except(client, data)
+                        receive_remove_except(data)
 
                 elif action == "status":
                     if action_type == "ask":

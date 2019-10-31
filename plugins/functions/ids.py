@@ -29,6 +29,9 @@ logger = logging.getLogger(__name__)
 def init_group_id(gid: int) -> bool:
     # Init group data
     try:
+        if gid in glovar.left_group_ids:
+            return False
+
         if glovar.admin_ids.get(gid) is None:
             glovar.admin_ids[gid] = set()
             save("admin_ids")
