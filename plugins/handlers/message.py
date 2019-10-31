@@ -95,8 +95,7 @@ def check_join(client: Client, message: Message) -> bool:
 
 @Client.on_message(Filters.incoming & Filters.group & Filters.service
                    & captcha_group & ~test_group
-                   & from_user
-                   & ~declared_message)
+                   & from_user)
 def delete_service(client: Client, message: Message) -> bool:
     # Delete service messages sent by SCP-079
     try:
