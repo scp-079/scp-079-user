@@ -151,6 +151,8 @@ def terminate_user(client: Client, message: Message, user: User, the_type: str) 
                     rule=lang(the_type)
                 )
                 if result:
+                    glovar.user_ids[uid]["ban"].add(gid)
+                    save("user_ids")
                     ban_user(client, gid, uid)
                     delete_message(client, gid, mid)
                     send_debug(
@@ -175,6 +177,8 @@ def terminate_user(client: Client, message: Message, user: User, the_type: str) 
                     rule=lang(the_type)
                 )
                 if result:
+                    glovar.user_ids[uid]["restrict"].add(gid)
+                    save("user_ids")
                     restrict_user(client, gid, uid)
                     delete_message(client, gid, mid)
                     send_debug(
@@ -191,7 +195,6 @@ def terminate_user(client: Client, message: Message, user: User, the_type: str) 
         # Subscribe delete
         elif the_type == "sd":
             if uid not in glovar.recorded_ids[gid]:
-                glovar.recorded_ids[gid].add(uid)
                 result = forward_evidence(
                     client=client,
                     message=message,
@@ -200,6 +203,7 @@ def terminate_user(client: Client, message: Message, user: User, the_type: str) 
                     rule=lang(the_type)
                 )
                 if result:
+                    glovar.recorded_ids[gid].add(uid)
                     delete_message(client, gid, mid)
                     send_debug(
                         client=client,
