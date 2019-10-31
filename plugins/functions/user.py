@@ -99,9 +99,10 @@ def ban_user_globally(client: Client, gid: int, uid: int) -> bool:
                 glovar.configs[group_id].get("delete") and thread(delete_all_messages, (client, group_id, uid))
                 text += f"{lang('action')}{lang('colon')}{code(lang('gd'))}\n"
 
-        text += (f"{lang('user_id')}{lang('colon')}{code(uid)}\n"
-                 f"{lang('rule')}{lang('colon')}{code(lang('rule_custom'))}\n")
-        thread(send_message, (client, glovar.debug_channel_id, text))
+        if len(text.split("\n")) > 2:
+            text += (f"{lang('user_id')}{lang('colon')}{code(uid)}\n"
+                     f"{lang('rule')}{lang('colon')}{code(lang('rule_custom'))}\n")
+            thread(send_message, (client, glovar.debug_channel_id, text))
 
         return True
     except Exception as e:
