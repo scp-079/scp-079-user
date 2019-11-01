@@ -36,7 +36,7 @@ from ..functions.telegram import get_group_info, resolve_username, send_message,
 logger = logging.getLogger(__name__)
 
 
-@Client.on_message(Filters.incoming & Filters.group & Filters.command(["config"], glovar.prefix)
+@Client.on_message(Filters.group & Filters.command(["config"], glovar.prefix)
                    & ~captcha_group & ~test_group & authorized_group
                    & from_user)
 def config(client: Client, message: Message) -> bool:
