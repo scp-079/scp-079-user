@@ -116,7 +116,7 @@ def leave_group(client: Client, gid: int) -> bool:
     try:
         glovar.left_group_ids.add(gid)
         save("left_group_ids")
-        thread(leave_chat, (client, gid))
+        thread(leave_chat, (client, gid, True))
 
         glovar.admin_ids.pop(gid, set())
         save("admin_ids")

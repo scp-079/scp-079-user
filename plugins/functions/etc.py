@@ -143,14 +143,18 @@ def get_command_context(message: Message) -> (str, str):
     try:
         text = get_text(message)
         command_list = text.split(" ")
-        if len(list(filter(None, command_list))) > 1:
-            i = 1
-            command_type = command_list[i]
-            while command_type == "" and i < len(command_list):
-                i += 1
-                command_type = command_list[i]
 
-            command_context = text[1 + len(command_list[0]) + i + len(command_type):].strip()
+        if len(list(filter(None, command_list))) <= 1:
+            return "", ""
+
+        i = 1
+        command_type = command_list[i]
+
+        while command_type == "" and i < len(command_list):
+            i += 1
+            command_type = command_list[i]
+
+        command_context = text[1 + len(command_list[0]) + i + len(command_type):].strip()
     except Exception as e:
         logger.warning(f"Get command context error: {e}", exc_info=True)
 
@@ -174,10 +178,12 @@ def get_full_name(user: User) -> str:
     # Get user's full name
     text = ""
     try:
-        if user and not user.is_deleted:
-            text = user.first_name
-            if user.last_name:
-                text += f" {user.last_name}"
+        if not user or user.is_deleted:
+            return ""
+
+        text = user.first_name
+        if user.last_name:
+            text += f" {user.last_name}"
     except Exception as e:
         logger.warning(f"Get full name error: {e}", exc_info=True)
 

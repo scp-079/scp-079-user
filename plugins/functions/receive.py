@@ -417,6 +417,32 @@ def receive_remove_except(data: dict) -> bool:
     return False
 
 
+def receive_rollback(client: Client, message: Message, data: dict) -> bool:
+    # Receive rollback data
+    try:
+        # Basic data
+        aid = data["admin_id"]
+        the_type = data["type"]
+        the_data = receive_file_data(client, message)
+
+        if not the_data:
+            return True
+
+        exec(f"glovar.{the_type} = the_data")
+        save(the_type)
+
+        # Send debug message
+        text = (f"{lang('project')}{lang('colon')}{general_link(glovar.project_name, glovar.project_link)}\n"
+                f"{lang('admin_project')}{lang('colon')}{mention_id(aid)}\n"
+                f"{lang('action')}{lang('colon')}{code(lang('rollback'))}\n"
+                f"{lang('more')}{lang('colon')}{code(the_type)}\n")
+        thread(send_message, (client, glovar.debug_channel_id, text))
+    except Exception as e:
+        logger.warning(f"Receive rollback error: {e}", exc_info=True)
+
+    return False
+
+
 def receive_status_ask(client: Client, data: dict) -> bool:
     # Receive version info request
     try:
@@ -445,30 +471,6 @@ def receive_status_ask(client: Client, data: dict) -> bool:
         return True
     except Exception as e:
         logger.warning(f"Receive version ask error: {e}", exc_info=True)
-
-    return False
-
-
-def receive_rollback(client: Client, message: Message, data: dict) -> bool:
-    # Receive rollback data
-    try:
-        # Basic data
-        aid = data["admin_id"]
-        the_type = data["type"]
-        the_data = receive_file_data(client, message)
-
-        if the_data:
-            exec(f"glovar.{the_type} = the_data")
-            save(the_type)
-
-        # Send debug message
-        text = (f"{lang('project')}{lang('colon')}{general_link(glovar.project_name, glovar.project_link)}\n"
-                f"{lang('admin_project')}{lang('colon')}{mention_id(aid)}\n"
-                f"{lang('action')}{lang('colon')}{code(lang('rollback'))}\n"
-                f"{lang('more')}{lang('colon')}{code(the_type)}\n")
-        thread(send_message, (client, glovar.debug_channel_id, text))
-    except Exception as e:
-        logger.warning(f"Receive rollback error: {e}", exc_info=True)
 
     return False
 
