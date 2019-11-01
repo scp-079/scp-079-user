@@ -245,9 +245,7 @@ def mention(client: Client, message: Message) -> bool:
                         the_mid = get_int(link_list[2])
 
                     if the_gid and the_mid:
-                        logger.warning(the_gid)
-                        logger.warning(the_mid)
-                        the_message = get_message(client, the_gid, mid)
+                        the_message = get_message(client, the_gid, the_mid)
                         if the_message and the_message.from_user:
                             uid = the_message.from_user.id
 
