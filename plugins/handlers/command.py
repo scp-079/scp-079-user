@@ -141,6 +141,7 @@ def config_directly(client: Client, message: Message) -> bool:
                 return True
 
             now = get_now()
+
             # Check the config lock
             if now - new_config["lock"] > 310:
                 if command_type == "default":
