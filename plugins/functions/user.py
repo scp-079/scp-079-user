@@ -69,8 +69,8 @@ def ban_user_globally(client: Client, gid: int, uid: int) -> bool:
                 continue
 
             if (not glovar.configs[group_id].get("gb")
-                    or not glovar.configs[group_id].get("gr")
-                    or not glovar.configs[group_id].get("gd")):
+                    and not glovar.configs[group_id].get("gr")
+                    and not glovar.configs[group_id].get("gd")):
                 continue
 
             group_name, group_link = get_group_info(client, chat)
