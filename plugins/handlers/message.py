@@ -232,7 +232,7 @@ def mark_mention(client: Client, message: Message) -> bool:
 
 @Client.on_message(Filters.incoming & ~Filters.private, group=2)
 def mark_message(client: Client, message: Message) -> bool:
-    # Mark messages from groups and channels as read
+    # Mark messages as read
     try:
         if not message.chat:
             return True
