@@ -364,10 +364,14 @@ def white(client: Client, message: Message) -> bool:
             if message.reply_to_message.from_user.is_self:
                 return True
 
+            logger.warning(message)
+
             if message.new_chat_members:
                 uid = message.new_chat_members[0].id
             else:
                 uid = message.reply_to_message.from_user.id
+
+            logger.warning(uid)
         else:
             uid = 0
             id_text, _ = get_command_context(message)
@@ -379,6 +383,7 @@ def white(client: Client, message: Message) -> bool:
                 if peer_type == "user":
                     uid = peer_id
 
+        logger.warning(uid)
         if uid and init_user_id(uid):
             if gid not in glovar.except_ids["temp"][uid]:
                 # Add except
@@ -391,7 +396,7 @@ def white(client: Client, message: Message) -> bool:
 
                 # Send debug message
                 debug_text = get_debug_text(client, message.chat)
-                debug_text += (f"{lang('user_id')}{lang('colon')}{code(uid)}"
+                debug_text += (f"{lang('user_id')}{lang('colon')}{code(uid)}\n"
                                f"{lang('admin_group')}{lang('colon')}{code(aid)}\n"
                                f"{lang('action')}{lang('colon')}{code(lang('action_white'))}\n")
                 thread(send_message, (client, glovar.debug_channel_id, debug_text))
@@ -406,7 +411,7 @@ def white(client: Client, message: Message) -> bool:
 
                 # Send debug message
                 debug_text = get_debug_text(client, message.chat)
-                debug_text += (f"{lang('user_id')}{lang('colon')}{code(uid)}"
+                debug_text += (f"{lang('user_id')}{lang('colon')}{code(uid)}\n"
                                f"{lang('admin_group')}{lang('colon')}{code(aid)}\n"
                                f"{lang('action')}{lang('colon')}{code(lang('action_undo_white'))}\n")
                 thread(send_message, (client, glovar.debug_channel_id, debug_text))
