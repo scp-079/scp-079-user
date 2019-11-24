@@ -337,7 +337,7 @@ def version(client: Client, message: Message) -> bool:
     return False
 
 
-@Client.on_message(Filters.incoming & Filters.group & Filters.command(["white"], glovar.prefix)
+@Client.on_message(Filters.group & Filters.command(["white"], glovar.prefix)
                    & ~captcha_group & ~test_group & authorized_group
                    & from_user)
 def white(client: Client, message: Message) -> bool:
