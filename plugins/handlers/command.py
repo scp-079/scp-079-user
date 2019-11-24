@@ -360,18 +360,15 @@ def white(client: Client, message: Message) -> bool:
         text = f"{lang('admin')}{lang('colon')}{code(aid)}\n"
 
         # Proceed
-        if message.reply_to_message and message.reply_to_message.from_user:
-            if message.reply_to_message.from_user.is_self:
+        r_message = message.reply_to_message
+        if r_message and r_message.from_user:
+            if r_message.from_user.is_self:
                 return True
 
-            logger.warning(message)
-
-            if message.new_chat_members:
-                uid = message.new_chat_members[0].id
+            if r_message.new_chat_members:
+                uid = r_message.new_chat_members[0].id
             else:
-                uid = message.reply_to_message.from_user.id
-
-            logger.warning(uid)
+                uid = r_message.from_user.id
         else:
             uid = 0
             id_text, _ = get_command_context(message)
@@ -383,7 +380,6 @@ def white(client: Client, message: Message) -> bool:
                 if peer_type == "user":
                     uid = peer_id
 
-        logger.warning(uid)
         if uid and init_user_id(uid):
             if gid not in glovar.except_ids["temp"][uid]:
                 # Add except
