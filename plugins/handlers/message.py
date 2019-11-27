@@ -271,6 +271,7 @@ def process_data(client: Client, message: Message) -> bool:
         if glovar.sender in receivers:
 
             if sender == "CAPTCHA":
+
                 if action == "help":
                     if action_type == "delete":
                         receive_help_delete(client, data)
@@ -280,6 +281,7 @@ def process_data(client: Client, message: Message) -> bool:
                         receive_declared_message(data)
 
             elif sender == "CLEAN":
+
                 if action == "add":
                     if action_type == "bad":
                         receive_add_bad(sender, data)
