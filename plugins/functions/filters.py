@@ -110,9 +110,9 @@ def is_class_d(_, message: Message) -> bool:
 def is_class_e(_, message: Message, test: bool = False) -> bool:
     # Check if the message is Class E object
     try:
-        if message.from_user:
+        if message.from_user and not test:
             # All groups' admins
-            if not test and is_class_e_user(message.from_user):
+            if is_class_e_user(message.from_user):
                 return True
 
             # The group's temp exception
