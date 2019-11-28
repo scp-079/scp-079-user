@@ -31,6 +31,7 @@ from ..functions.filters import authorized_group, captcha_group, from_user, is_c
 from ..functions.group import delete_message, get_config_text, get_message
 from ..functions.ids import init_user_id
 from ..functions.telegram import get_group_info, resolve_username, send_message, send_report_message
+from ..functions.user import unban_user, unrestrict_user
 
 # Enable logging
 logger = logging.getLogger(__name__)
@@ -385,6 +386,14 @@ def white(client: Client, message: Message) -> bool:
                 # Add except
                 glovar.except_ids["temp"][uid].add(gid)
                 save("except_ids")
+
+                # Unban the user
+                if gid in glovar.user_ids[uid]["ban"]:
+                    glovar.user_ids[uid]["ban"].discard(gid)
+                    unban_user(client, gid, uid)
+                elif gid in glovar.user_ids[uid]["restrict"]:
+                    glovar.user_ids[uid]["restrict"].discard(gid)
+                    unrestrict_user(client, gid, uid)
 
                 text += (f"{lang('action')}{lang('colon')}{code(lang('action_white'))}\n"
                          f"{lang('user_id')}{lang('colon')}{mention_id(uid)}\n"
