@@ -326,8 +326,6 @@ locks: Dict[str, Lock] = {
 }
 
 receivers: Dict[str, List[str]] = {
-    "bad": ["ANALYZE", "APPLY", "APPEAL", "AVATAR", "CAPTCHA", "CLEAN", "LANG", "LONG",
-            "MANAGE", "NOFLOOD", "NOPORN", "NOSPAM", "RECHECK", "TIP", "USER", "WATCH"],
     "declare": ["ANALYZE", "AVATAR", "CAPTCHA", "CLEAN", "LANG", "LONG",
                 "NOFLOOD", "NOPORN", "NOSPAM", "RECHECK", "USER", "WATCH"],
     "preview": ["CLEAN", "LANG", "NOPORN", "NOSPAM", "RECHECK"]
