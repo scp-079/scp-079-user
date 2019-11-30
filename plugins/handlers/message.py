@@ -24,17 +24,20 @@ from pyrogram import Client, Filters, Message, WebPage
 
 from .. import glovar
 from ..functions.channel import get_debug_text, share_data
-from ..functions.etc import code, general_link, get_channel_link, get_stripped_link, get_text, lang, mention_id, thread
+from ..functions.etc import code, general_link, get_channel_link, get_stripped_link, get_text, get_now, lang
+from ..functions.etc import mention_id, thread
 from ..functions.file import data_to_file, delete_file, get_downloaded_path, save
 from ..functions.filters import authorized_group, captcha_group, class_c, class_d, class_e, declared_message
 from ..functions.filters import exchange_channel, from_user, hide_channel, is_class_d_user, is_declared_message
-from ..functions.filters import is_friend_username, is_not_allowed, new_group, test_group
+from ..functions.filters import is_friend_username, is_high_score_user, is_not_allowed, is_watch_user
+from ..functions.filters import new_group, test_group
 from ..functions.group import delete_message, get_description, get_pinned, leave_group
 from ..functions.ids import init_group_id
 from ..functions.receive import receive_add_bad, receive_add_except, receive_clear_data, receive_config_commit
 from ..functions.receive import receive_config_reply, receive_config_show, receive_declared_message, receive_help_ban
 from ..functions.receive import receive_help_delete, receive_leave_approve, receive_refresh, receive_remove_bad
-from ..functions.receive import receive_remove_except, receive_rollback, receive_status_ask, receive_text_data
+from ..functions.receive import receive_remove_except, receive_remove_score, receive_remove_watch, receive_rollback
+from ..functions.receive import receive_status_ask, receive_text_data, receive_user_score, receive_watch_user
 from ..functions.telegram import get_admins, read_history, read_mention, send_message
 from ..functions.tests import preview_test
 from ..functions.timers import backup_files
@@ -168,10 +171,14 @@ def init_group(client: Client, message: Message) -> bool:
     try:
         gid = message.chat.id
         text = get_debug_text(client, message.chat)
-        invited_by = message.from_user.id
+        invited_by = message.from_user
+        now = message.date or get_now()
 
         # Check permission
-        if invited_by not in glovar.bad_ids["users"]:
+        if (not is_class_d_user(invited_by)
+                and not is_watch_user(invited_by, "ban", now)
+                and not is_watch_user(invited_by, "delete", now)
+                and not is_high_score_user(invited_by)):
             # Remove the left status
             if gid in glovar.left_group_ids:
                 glovar.left_group_ids.discard(gid)
@@ -278,12 +285,16 @@ def process_data(client: Client, message: Message) -> bool:
                 elif action == "update":
                     if action_type == "declare":
                         receive_declared_message(data)
+                    elif action_type == "score":
+                        receive_user_score(sender, data)
 
             elif sender == "CLEAN":
 
                 if action == "add":
                     if action_type == "bad":
                         receive_add_bad(sender, data)
+                    elif action_type == "watch":
+                        receive_watch_user(data)
 
                 elif action == "help":
                     if action_type == "ban":
@@ -294,6 +305,8 @@ def process_data(client: Client, message: Message) -> bool:
                 elif action == "update":
                     if action_type == "declare":
                         receive_declared_message(data)
+                    elif action_type == "score":
+                        receive_user_score(sender, data)
 
             elif sender == "CONFIG":
 
@@ -308,6 +321,8 @@ def process_data(client: Client, message: Message) -> bool:
                 if action == "add":
                     if action_type == "bad":
                         receive_add_bad(sender, data)
+                    elif action_type == "watch":
+                        receive_watch_user(data)
 
                 elif action == "help":
                     if action_type == "ban":
@@ -318,12 +333,16 @@ def process_data(client: Client, message: Message) -> bool:
                 elif action == "update":
                     if action_type == "declare":
                         receive_declared_message(data)
+                    elif action_type == "score":
+                        receive_user_score(sender, data)
 
             elif sender == "LONG":
 
                 if action == "add":
                     if action_type == "bad":
                         receive_add_bad(sender, data)
+                    elif action_type == "watch":
+                        receive_watch_user(data)
 
                 elif action == "help":
                     if action_type == "ban":
@@ -334,6 +353,8 @@ def process_data(client: Client, message: Message) -> bool:
                 elif action == "update":
                     if action_type == "declare":
                         receive_declared_message(data)
+                    elif action_type == "score":
+                        receive_user_score(sender, data)
 
             elif sender == "MANAGE":
 
@@ -366,6 +387,10 @@ def process_data(client: Client, message: Message) -> bool:
                         receive_remove_bad(client, sender, data)
                     elif action_type == "except":
                         receive_remove_except(data)
+                    elif action_type == "score":
+                        receive_remove_score(data)
+                    elif action_type == "watch":
+                        receive_remove_watch(data)
 
                 elif action == "status":
                     if action_type == "ask":
@@ -380,6 +405,8 @@ def process_data(client: Client, message: Message) -> bool:
                 if action == "add":
                     if action_type == "bad":
                         receive_add_bad(sender, data)
+                    elif action_type == "watch":
+                        receive_watch_user(data)
 
                 elif action == "help":
                     if action_type == "ban":
@@ -390,12 +417,16 @@ def process_data(client: Client, message: Message) -> bool:
                 elif action == "update":
                     if action_type == "declare":
                         receive_declared_message(data)
+                    elif action_type == "score":
+                        receive_user_score(sender, data)
 
             elif sender == "NOPORN":
 
                 if action == "add":
                     if action_type == "bad":
                         receive_add_bad(sender, data)
+                    elif action_type == "watch":
+                        receive_watch_user(data)
 
                 elif action == "help":
                     if action_type == "ban":
@@ -406,6 +437,8 @@ def process_data(client: Client, message: Message) -> bool:
                 elif action == "update":
                     if action_type == "declare":
                         receive_declared_message(data)
+                    elif action_type == "score":
+                        receive_user_score(sender, data)
 
             elif sender == "NOSPAM":
 
@@ -422,12 +455,16 @@ def process_data(client: Client, message: Message) -> bool:
                 elif action == "update":
                     if action_type == "declare":
                         receive_declared_message(data)
+                    elif action_type == "score":
+                        receive_user_score(sender, data)
 
             elif sender == "RECHECK":
 
                 if action == "add":
                     if action_type == "bad":
                         receive_add_bad(sender, data)
+                    elif action_type == "watch":
+                        receive_watch_user(data)
 
                 elif action == "help":
                     if action_type == "ban":
@@ -438,6 +475,8 @@ def process_data(client: Client, message: Message) -> bool:
                 elif action == "update":
                     if action_type == "declare":
                         receive_declared_message(data)
+                    elif action_type == "score":
+                        receive_user_score(sender, data)
 
             elif sender == "WARN":
 

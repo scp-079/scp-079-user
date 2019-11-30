@@ -361,6 +361,27 @@ def is_friend_username(client: Client, gid: int, username: str, friend: bool, fr
     return False
 
 
+def is_high_score_user(user: User) -> float:
+    # Check if the message is sent by a high score user
+    try:
+        if is_class_e_user(user):
+            return 0.0
+
+        uid = user.id
+        user_status = glovar.user_ids.get(uid, {})
+
+        if not user_status:
+            return 0.0
+
+        score = sum(user_status["score"].values())
+        if score >= 3.0:
+            return score
+    except Exception as e:
+        logger.warning(f"Is high score user error: {e}", exc_info=True)
+
+    return 0.0
+
+
 def is_not_allowed(message: Message) -> str:
     # Check if the message is not allowed in the group
     try:
@@ -382,3 +403,19 @@ def is_not_allowed(message: Message) -> str:
         logger.warning(f"Is not allowed error: {e}", exc_info=True)
 
     return ""
+
+
+def is_watch_user(user: User, the_type: str, now: int) -> bool:
+    # Check if the message is sent by a watch user
+    try:
+        if is_class_e_user(user):
+            return False
+
+        uid = user.id
+        until = glovar.watch_ids[the_type].get(uid, 0)
+        if now < until:
+            return True
+    except Exception as e:
+        logger.warning(f"Is watch user error: {e}", exc_info=True)
+
+    return False

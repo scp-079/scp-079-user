@@ -75,6 +75,7 @@ project_name: str = ""
 zh_cn: Union[bool, str] = ""
 
 # [encrypt]
+key: Union[str, bytes] = ""
 password: str = ""
 
 try:
@@ -114,6 +115,8 @@ try:
     zh_cn = config["custom"].get("zh_cn", zh_cn)
     zh_cn = eval(zh_cn)
     # [encrypt]
+    key = config["encrypt"].get("key", key)
+    key = key.encode("utf-8")
     password = config["encrypt"].get("password", password)
 except Exception as e:
     logger.warning(f"Read data from config.ini error: {e}", exc_info=True)
@@ -146,6 +149,7 @@ if (prefix == []
         or project_link in {"", "[DATA EXPUNGED]"}
         or project_name in {"", "[DATA EXPUNGED]"}
         or zh_cn not in {False, True}
+        or key in {b"", b"[DATA EXPUNGED]", "", "[DATA EXPUNGED]"}
         or password in {"", "[DATA EXPUNGED]"}):
     logger.critical("No proper settings")
     raise SystemExit("No proper settings")
@@ -312,9 +316,20 @@ default_config: Dict[str, Union[bool, int, Dict[str, bool]]] = {
     "sd": False
 }
 
-default_user_status: Dict[str, Set[int]] = {
+default_user_status: Dict[str, Union[Dict[str, float], Set[int]]] = {
     "ban": set(),
-    "restrict": set()
+    "restrict": set(),
+    "score": {
+        "captcha": 0.0,
+        "clean": 0.0,
+        "lang": 0.0,
+        "long": 0.0,
+        "noflood": 0.0,
+        "noporn": 0.0,
+        "nospam": 0.0,
+        "recheck": 0.0,
+        "warn": 0.0
+    }
 }
 
 locks: Dict[str, Lock] = {
@@ -358,7 +373,7 @@ usernames: Dict[str, Dict[str, Union[int, str]]] = {}
 #     }
 # }
 
-version: str = "0.2.6"
+version: str = "0.2.7"
 
 # Load data from pickle
 
@@ -402,11 +417,35 @@ except_ids: Dict[str, Union[Dict, Set[int]]] = {
 left_group_ids: Set[int] = set()
 # left_group_ids = {-10012345678}
 
-user_ids: Dict[int, Dict[str, Set[int]]] = {}
+user_ids: Dict[int, Dict[str, Union[Dict[str, float], Set[int]]]] = {}
 # user_ids = {
 #     12345678: {
 #         "ban": {-10012345678},
-#         "restrict": {-10012345679}
+#         "restrict": {-10012345679},
+#         "score": {
+#             "captcha": 0.0,
+#             "clean": 0.0,
+#             "lang": 0.0,
+#             "long": 0.0,
+#             "noflood": 0.0,
+#             "noporn": 0.0,
+#             "nospam": 0.0,
+#             "recheck": 0.0,
+#             "warn": 0.0
+#         }
+#     }
+# }
+
+watch_ids: Dict[str, Dict[int, int]] = {
+    "ban": {},
+    "delete": {}
+}
+# watch_ids = {
+#     "ban": {
+#         12345678: 0
+#     },
+#     "delete": {
+#         12345678: 0
 #     }
 # }
 
@@ -422,7 +461,7 @@ configs: Dict[int, Dict[str, Union[bool, int, Dict[str, bool]]]] = {}
 # }
 
 # Load data
-file_list: List[str] = ["admin_ids", "bad_ids", "except_ids", "left_group_ids", "user_ids",
+file_list: List[str] = ["admin_ids", "bad_ids", "except_ids", "left_group_ids", "user_ids", "watch_ids",
                         "configs"]
 for file in file_list:
     try:

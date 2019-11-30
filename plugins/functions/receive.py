@@ -18,6 +18,7 @@
 
 import logging
 import pickle
+from copy import deepcopy
 from json import loads
 from typing import Any
 
@@ -25,7 +26,7 @@ from pyrogram import Client, Message
 
 from .. import glovar
 from .channel import get_debug_text, share_data
-from .etc import code, general_link, get_text, lang, mention_id, thread
+from .etc import code, crypt_str, general_link, get_int, get_text, lang, mention_id, thread
 from .file import crypt_file, data_to_file, delete_file, get_new_path, get_downloaded_path, save
 from .group import delete_messages_globally, get_config_text, leave_group
 from .ids import init_group_id, init_user_id
@@ -417,6 +418,48 @@ def receive_remove_except(data: dict) -> bool:
     return False
 
 
+def receive_remove_score(data: int) -> bool:
+    # Receive remove user's score
+    glovar.locks["message"].acquire()
+    try:
+        # Basic data
+        uid = data
+
+        if not glovar.user_ids.get(uid):
+            return True
+
+        glovar.user_ids[uid] = deepcopy(glovar.default_user_status)
+        save("user_ids")
+
+        return True
+    except Exception as e:
+        logger.warning(f"Receive remove score error: {e}", exc_info=True)
+    finally:
+        glovar.locks["message"].release()
+
+    return False
+
+
+def receive_remove_watch(data: dict) -> bool:
+    # Receive removed watching users
+    try:
+        # Basic data
+        uid = data["id"]
+        the_type = data["type"]
+
+        if the_type == "all":
+            glovar.watch_ids["ban"].pop(uid, 0)
+            glovar.watch_ids["delete"].pop(uid, 0)
+
+        save("watch_ids")
+
+        return True
+    except Exception as e:
+        logger.warning(f"Receive remove watch error: {e}", exc_info=True)
+
+    return False
+
+
 def receive_rollback(client: Client, message: Message, data: dict) -> bool:
     # Receive rollback data
     try:
@@ -489,3 +532,56 @@ def receive_text_data(message: Message) -> dict:
         logger.warning(f"Receive text data error: {e}")
 
     return data
+
+
+def receive_user_score(project: str, data: dict) -> bool:
+    # Receive and update user's score
+    glovar.locks["message"].acquire()
+    try:
+        # Basic data
+        project = project.lower()
+        uid = data["id"]
+
+        if not init_user_id(uid):
+            return True
+
+        score = data["score"]
+        glovar.user_ids[uid]["score"][project] = score
+        save("user_ids")
+
+        return True
+    except Exception as e:
+        logger.warning(f"Receive user score error: {e}", exc_info=True)
+    finally:
+        glovar.locks["message"].release()
+
+    return False
+
+
+def receive_watch_user(data: dict) -> bool:
+    # Receive watch users that other bots shared
+    try:
+        # Basic data
+        the_type = data["type"]
+        uid = data["id"]
+        until = data["until"]
+
+        # Decrypt the data
+        until = crypt_str("decrypt", until, glovar.key)
+        until = get_int(until)
+
+        # Add to list
+        if the_type == "ban":
+            glovar.watch_ids["ban"][uid] = until
+        elif the_type == "delete":
+            glovar.watch_ids["delete"][uid] = until
+        else:
+            return False
+
+        save("watch_ids")
+
+        return True
+    except Exception as e:
+        logger.warning(f"Receive watch user error: {e}", exc_info=True)
+
+    return False
