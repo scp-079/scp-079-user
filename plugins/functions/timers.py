@@ -26,7 +26,7 @@ from .channel import share_data
 from .etc import code, general_link, lang, thread
 from .file import save
 from .group import leave_group
-from .telegram import get_admins, get_chat, get_group_info, send_message
+from .telegram import get_admins, get_group_info, send_message
 
 # Enable logging
 logger = logging.getLogger(__name__)
@@ -118,8 +118,7 @@ def update_admins(client: Client) -> bool:
                     if admin.user.is_self:
                         if (admin.can_delete_messages
                                 and admin.can_restrict_members
-                                and (admin.can_invite_users
-                                     or get_chat(client, gid).permissions.can_invite_users)
+                                and admin.can_invite_users
                                 and admin.can_promote_members):
                             should_leave = False
 

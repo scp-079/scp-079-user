@@ -17,12 +17,15 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
+import re
 from typing import Union
 
-from pyrogram import CallbackQuery, Filters, Message, User
+from pyrogram import CallbackQuery, Client, Filters, Message, User
 
 from .. import glovar
+from .group import get_member
 from .ids import init_group_id
+from .telegram import resolve_username
 
 # Enable logging
 logger = logging.getLogger(__name__)
@@ -318,6 +321,42 @@ def is_declared_message_id(gid: int, mid: int) -> bool:
             return True
     except Exception as e:
         logger.warning(f"Is declared message id error: {e}", exc_info=True)
+
+    return False
+
+
+def is_friend_username(client: Client, gid: int, username: str, friend: bool, friend_user: bool = False) -> bool:
+    # Check if it is a friend username
+    try:
+        username = username.strip()
+        if not username:
+            return False
+
+        if username[0] != "@":
+            username = "@" + username
+
+        if not re.search(r"\B@([a-z][0-9a-z_]{4,31})", username, re.I | re.M | re.S):
+            return False
+
+        peer_type, peer_id = resolve_username(client, username)
+        if peer_type == "channel":
+            if friend or glovar.configs[gid].get("friend"):
+                if peer_id in glovar.except_ids["channels"] or glovar.admin_ids.get(peer_id, {}):
+                    return True
+
+        if peer_type == "user":
+            if friend and friend_user:
+                return True
+
+            if friend or glovar.configs[gid].get("friend"):
+                if is_class_e_user(peer_id):
+                    return True
+
+            member = get_member(client, gid, peer_id)
+            if member and member.status in {"creator", "administrator", "member"}:
+                return True
+    except Exception as e:
+        logger.warning(f"Is friend username: {e}", exc_info=True)
 
     return False
 

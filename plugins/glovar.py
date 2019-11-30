@@ -25,7 +25,7 @@ from shutil import rmtree
 from threading import Lock
 from typing import Dict, List, Set, Union
 
-from pyrogram import Chat
+from pyrogram import Chat, ChatMember
 
 # Enable logging
 logging.basicConfig(
@@ -325,6 +325,13 @@ locks: Dict[str, Lock] = {
     "test": Lock()
 }
 
+members: Dict[int, Dict[int, ChatMember]] = {}
+# members = {
+#     -10012345678: {
+#         12345678: ChatMember
+#     }
+# }
+
 receivers: Dict[str, List[str]] = {
     "declare": ["ANALYZE", "AVATAR", "CAPTCHA", "CLEAN", "LANG", "LONG",
                 "NOFLOOD", "NOPORN", "NOSPAM", "RECHECK", "TIP", "USER", "WARN", "WATCH"],
@@ -351,7 +358,7 @@ usernames: Dict[str, Dict[str, Union[int, str]]] = {}
 #     }
 # }
 
-version: str = "0.2.5"
+version: str = "0.2.6"
 
 # Load data from pickle
 

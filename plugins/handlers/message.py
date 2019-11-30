@@ -24,19 +24,18 @@ from pyrogram import Client, Filters, Message, WebPage
 
 from .. import glovar
 from ..functions.channel import get_debug_text, share_data
-from ..functions.etc import code, general_link, get_channel_link, get_stripped_link, lang, mention_id, thread
+from ..functions.etc import code, general_link, get_channel_link, get_stripped_link, get_text, lang, mention_id, thread
 from ..functions.file import data_to_file, delete_file, get_downloaded_path, save
 from ..functions.filters import authorized_group, captcha_group, class_c, class_d, class_e, declared_message
 from ..functions.filters import exchange_channel, from_user, hide_channel, is_class_d_user, is_declared_message
-from ..functions.filters import is_not_allowed, new_group, test_group
-from ..functions.group import delete_message, leave_group
+from ..functions.filters import is_friend_username, is_not_allowed, new_group, test_group
+from ..functions.group import delete_message, get_description, get_pinned, leave_group
 from ..functions.ids import init_group_id
 from ..functions.receive import receive_add_bad, receive_add_except, receive_clear_data, receive_config_commit
 from ..functions.receive import receive_config_reply, receive_config_show, receive_declared_message, receive_help_ban
 from ..functions.receive import receive_help_delete, receive_leave_approve, receive_refresh, receive_remove_bad
 from ..functions.receive import receive_remove_except, receive_rollback, receive_status_ask, receive_text_data
-from ..functions.telegram import get_admins, read_history, read_mention
-from ..functions.telegram import resolve_username, send_message
+from ..functions.telegram import get_admins, read_history, read_mention, send_message
 from ..functions.tests import preview_test
 from ..functions.timers import backup_files
 from ..functions.user import terminate_user
@@ -172,7 +171,7 @@ def init_group(client: Client, message: Message) -> bool:
         invited_by = message.from_user.id
 
         # Check permission
-        if invited_by == glovar.user_id:
+        if invited_by not in glovar.bad_ids["users"]:
             # Remove the left status
             if gid in glovar.left_group_ids:
                 glovar.left_group_ids.discard(gid)
@@ -463,6 +462,11 @@ def share_preview(client: Client, message: Message) -> bool:
     # Share the message's preview with other bots
     glovar.locks["preview"].acquire()
     try:
+        # Basic data
+        gid = message.chat.id
+        uid = message.from_user.id
+        mid = message.message_id
+
         if not message.web_page:
             return True
 
@@ -475,24 +479,38 @@ def share_preview(client: Client, message: Message) -> bool:
         }
 
         url = web_page.url
+
         if url in glovar.shared_url:
             return True
 
+        # Bypass prepare
+        link = web_page.display_url
+        description = get_description(client, gid).lower()
+        pinned_message = get_pinned(client, gid)
+        pinned_text = get_text(pinned_message).lower()
+
         # Bypass
         bypass = get_stripped_link(get_channel_link(message))
-        if f"{bypass}/" in f"{url}/":
-            return True
+        link_username = re.match(r"t\.me/([a-z][0-9a-z_]{4,31})/", f"{link}/")
 
-        link_username = re.match(r"t\.me/(.+?)/", f"{web_page.display_url}/")
         if link_username:
-            link_username = link_username.group(1)
-            _, pid = resolve_username(client, link_username)
-            if pid in glovar.except_ids["channels"] or glovar.admin_ids.get(pid, {}):
-                return True
+            link_username = link_username.group(1).lower()
 
-        gid = message.chat.id
-        uid = message.from_user.id
-        mid = message.message_id
+            if link_username == "joinchat":
+                link_username = ""
+            else:
+                if is_friend_username(client, gid, link_username, True):
+                    return True
+
+        if (f"{bypass}/" in f"{link}/"
+                or f"{bypass}/" in f"{url}/"
+                or link in description
+                or url in description
+                or (link_username and link_username in description)
+                or link in pinned_text
+                or url in pinned_text
+                or (link_username and link_username in pinned_text)):
+            return True
 
         # Store image
         if web_page.photo and web_page.photo.file_size <= glovar.image_size:
