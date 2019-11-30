@@ -82,7 +82,7 @@ def delete_all_messages(client: Client, gid: int, uid: int) -> bool:
     return False
 
 
-def download_media(client: Client, file_id: str, file_ref: str, file_path: str):
+def download_media(client: Client, file_id: str, file_ref: str, file_path: str) -> Optional[str]:
     # Download a media file
     result = None
     try:
@@ -158,7 +158,7 @@ def get_chat(client: Client, cid: Union[int, str]) -> Union[Chat, ChatPreview, N
     return result
 
 
-def get_chat_member(client: Client, cid: int, uid: int) -> Optional[ChatMember]:
+def get_chat_member(client: Client, cid: int, uid: int) -> Union[bool, ChatMember, None]:
     # Get information about one member of a chat
     result = None
     try:
