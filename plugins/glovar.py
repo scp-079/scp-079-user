@@ -254,6 +254,7 @@ lang: Dict[str, str] = {
     "action_white": (zh_cn and "临时白名单") or "Add to Whitelist",
     "group_count": (zh_cn and "群组数量") or "Total Groups",
     "message_print": (zh_cn and "消息结构") or "Print the Message",
+    "queue_count": (zh_cn and "队列数量") or "Updates Queue Size",
     # Terminate
     "auto_ban": (zh_cn and "自动封禁") or "Auto Ban",
     "auto_delete": (zh_cn and "自动删除") or "Auto Delete",
@@ -316,7 +317,7 @@ default_config: Dict[str, Union[bool, int, Dict[str, bool]]] = {
     "sd": False
 }
 
-default_user_status: Dict[str, Union[Dict[str, float], Set[int]]] = {
+default_user_status: Dict[str, Union[Set[int], Dict[str, float]]] = {
     "ban": set(),
     "restrict": set(),
     "score": {
@@ -417,7 +418,7 @@ except_ids: Dict[str, Union[Dict, Set[int]]] = {
 left_group_ids: Set[int] = set()
 # left_group_ids = {-10012345678}
 
-user_ids: Dict[int, Dict[str, Union[Dict[str, float], Set[int]]]] = {}
+user_ids: Dict[int, Dict[str, Union[Set[int], Dict[str, float]]]] = {}
 # user_ids = {
 #     12345678: {
 #         "ban": {-10012345678},
