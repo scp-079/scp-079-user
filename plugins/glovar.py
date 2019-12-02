@@ -254,7 +254,6 @@ lang: Dict[str, str] = {
     "action_white": (zh_cn and "临时白名单") or "Add to Whitelist",
     "group_count": (zh_cn and "群组数量") or "Total Groups",
     "message_print": (zh_cn and "消息结构") or "Print the Message",
-    "queue_count": (zh_cn and "队列数量") or "Updates Queue Size",
     # Terminate
     "auto_ban": (zh_cn and "自动封禁") or "Auto Ban",
     "auto_delete": (zh_cn and "自动删除") or "Auto Delete",

@@ -494,11 +494,9 @@ def receive_status_ask(client: Client, data: dict) -> bool:
         mid = data["message_id"]
 
         group_count = len(glovar.admin_ids)
-        queue_count = client.updates_queue.qsize()
 
         status = {
-            lang("group_count"): f"{group_count}",
-            lang("queue_count"): f"{queue_count}"
+            lang("group_count"): f"{group_count}"
         }
         file = data_to_file(status)
         share_data(
