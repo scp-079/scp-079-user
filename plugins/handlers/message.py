@@ -560,7 +560,7 @@ def share_preview(client: Client, message: Message) -> bool:
                 return True
             elif image_path:
                 preview["image"] = Image.open(image_path)
-                delete_file(image_path)
+                thread(delete_file, (image_path,))
 
         # Store text
         text = ""
