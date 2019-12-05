@@ -169,16 +169,19 @@ def exchange_emergency(client: Client, message: Message) -> bool:
 def init_group(client: Client, message: Message) -> bool:
     # Initiate new groups
     try:
+        # Basic data
         gid = message.chat.id
-        text = get_debug_text(client, message.chat)
-        invited_by = message.from_user
+        inviter = message.from_user
         now = message.date or get_now()
 
+        # Text prefix
+        text = get_debug_text(client, message.chat)
+
         # Check permission
-        if (not is_class_d_user(invited_by)
-                and not is_watch_user(invited_by, "ban", now)
-                and not is_watch_user(invited_by, "delete", now)
-                and not is_high_score_user(invited_by)):
+        if (not is_class_d_user(inviter)
+                and not is_watch_user(inviter, "ban", now)
+                and not is_watch_user(inviter, "delete", now)
+                and not is_high_score_user(inviter)) or inviter.is_self:
             # Remove the left status
             if gid in glovar.left_group_ids:
                 glovar.left_group_ids.discard(gid)
@@ -189,6 +192,7 @@ def init_group(client: Client, message: Message) -> bool:
                 return True
 
             admin_members = get_admins(client, gid)
+
             if admin_members:
                 glovar.admin_ids[gid] = {admin.user.id for admin in admin_members
                                          if not admin.user.is_bot and not admin.user.is_deleted}
@@ -203,13 +207,17 @@ def init_group(client: Client, message: Message) -> bool:
                 return leave_group(client, gid)
 
             leave_group(client, gid)
+
             text += (f"{lang('status')}{lang('colon')}{code(lang('status_left'))}\n"
                      f"{lang('reason')}{lang('colon')}{code(lang('reason_unauthorized'))}\n")
-            if message.from_user.username:
-                text += f"{lang('inviter')}{lang('colon')}{mention_id(invited_by)}\n"
-            else:
-                text += f"{lang('inviter')}{lang('colon')}{code(invited_by)}\n"
 
+        # Add inviter info
+        if message.from_user.username:
+            text += f"{lang('inviter')}{lang('colon')}{mention_id(inviter.id)}\n"
+        else:
+            text += f"{lang('inviter')}{lang('colon')}{code(inviter.id)}\n"
+
+        # Send debug message
         thread(send_message, (client, glovar.debug_channel_id, text))
 
         return True
@@ -253,7 +261,8 @@ def mark_message(client: Client, message: Message) -> bool:
     return False
 
 
-@Client.on_message(Filters.incoming & Filters.channel & ~Filters.command(glovar.all_commands, glovar.prefix)
+@Client.on_message((Filters.incoming or glovar.aio) & Filters.channel
+                   & ~Filters.command(glovar.all_commands, glovar.prefix)
                    & exchange_channel)
 def process_data(client: Client, message: Message) -> bool:
     # Process the data in exchange channel
