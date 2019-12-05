@@ -178,10 +178,11 @@ def init_group(client: Client, message: Message) -> bool:
         text = get_debug_text(client, message.chat)
 
         # Check permission
-        if (not is_class_d_user(inviter)
+        if ((not is_class_d_user(inviter)
                 and not is_watch_user(inviter, "ban", now)
                 and not is_watch_user(inviter, "delete", now)
-                and not is_high_score_user(inviter)) or inviter.is_self:
+                and not is_high_score_user(inviter))
+                or inviter.is_self) and message.chat.type == "supergroup":
             # Remove the left status
             if gid in glovar.left_group_ids:
                 glovar.left_group_ids.discard(gid)
