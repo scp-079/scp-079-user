@@ -162,7 +162,7 @@ def exchange_emergency(client: Client, message: Message) -> bool:
     return False
 
 
-@Client.on_message(Filters.incoming & Filters.group
+@Client.on_message(Filters.group
                    & (Filters.new_chat_members | Filters.group_chat_created | Filters.supergroup_chat_created)
                    & ~captcha_group & ~test_group & new_group
                    & from_user)
