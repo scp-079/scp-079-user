@@ -114,10 +114,6 @@ def is_class_e(_, message: Message, test: bool = False) -> bool:
     # Check if the message is Class E object
     try:
         if message.from_user and not test:
-            # All groups' admins
-            if is_class_e_user(message.from_user):
-                return True
-
             # The group's temp exception
             gid = message.chat.id
             uid = message.from_user.id
