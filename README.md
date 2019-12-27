@@ -4,7 +4,9 @@ This bot is used to invite and help other bots.
 
 ## How to use
 
-See [this article](https://scp-079.org/user/).
+- See the [manual](https://telegra.ph/SCP-079-USER-12-04)
+- See [this article](https://scp-079.org/user/) to build a bot by yourself
+- Discuss [group](https://t.me/SCP_079_CHAT)
 
 ## To Do List
 

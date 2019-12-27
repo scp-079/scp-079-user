@@ -29,10 +29,10 @@ from pyrogram import Chat, ChatMember
 
 # Enable logging
 logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     level=logging.WARNING,
-    filename='log',
-    filemode='w'
+    filename="log",
+    filemode="w"
 )
 logger = logging.getLogger(__name__)
 
@@ -377,7 +377,7 @@ usernames: Dict[str, Dict[str, Union[int, str]]] = {}
 #     }
 # }
 
-version: str = "0.2.7"
+version: str = "0.2.8"
 
 # Load data from pickle
 
