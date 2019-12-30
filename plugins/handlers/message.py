@@ -24,7 +24,7 @@ from pyrogram import Client, Filters, Message, WebPage
 
 from .. import glovar
 from ..functions.channel import get_debug_text, share_data
-from ..functions.etc import code, general_link, get_channel_link, get_stripped_link, get_text, get_now, lang
+from ..functions.etc import code, delay, general_link, get_channel_link, get_stripped_link, get_text, get_now, lang
 from ..functions.etc import mention_id, thread
 from ..functions.file import data_to_file, delete_file, get_downloaded_path, save
 from ..functions.filters import authorized_group, captcha_group, class_c, class_d, class_e, declared_message
@@ -108,7 +108,7 @@ def delete_service(client: Client, message: Message) -> bool:
 
         # Check if the message is sent by SCP-079
         if uid in glovar.bot_ids:
-            delete_message(client, gid, mid)
+            delay(10, delete_message, [client, gid, mid])
 
         return True
     except Exception as e:
