@@ -1,5 +1,5 @@
 # SCP-079-USER - Invite and help other bots
-# Copyright (C) 2019 SCP-079 <https://scp-079.org>
+# Copyright (C) 2019-2020 SCP-079 <https://scp-079.org>
 #
 # This file is part of SCP-079-USER.
 #
@@ -200,6 +200,27 @@ def send_debug(client: Client, chat: Chat, action: str, uid: int, mid: int, em: 
         return True
     except Exception as e:
         logger.warning(f"Send debug error: {e}", exc_info=True)
+
+    return False
+
+
+def share_bad_user(client: Client, uid: int) -> bool:
+    # Share a bad user with other bots
+    try:
+        share_data(
+            client=client,
+            receivers=glovar.receivers["bad"],
+            action="add",
+            action_type="bad",
+            data={
+                "id": uid,
+                "type": "user"
+            }
+        )
+
+        return True
+    except Exception as e:
+        logger.warning(f"Share bad user error: {e}", exc_info=True)
 
     return False
 

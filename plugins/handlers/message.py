@@ -1,5 +1,5 @@
 # SCP-079-USER - Invite and help other bots
-# Copyright (C) 2019 SCP-079 <https://scp-079.org>
+# Copyright (C) 2019-2020 SCP-079 <https://scp-079.org>
 #
 # This file is part of SCP-079-USER.
 #
@@ -57,7 +57,8 @@ def check(client: Client, message: Message) -> bool:
     try:
         # Not allowed message
         detection = is_not_allowed(message)
-        if is_not_allowed(message):
+
+        if detection:
             terminate_user(client, message, message.from_user, detection)
 
         return True
@@ -83,6 +84,7 @@ def check_join(client: Client, message: Message) -> bool:
                 continue
 
             detection = is_not_allowed(message)
+
             if detection:
                 terminate_user(client, message, new, detection)
 
@@ -107,8 +109,10 @@ def delete_service(client: Client, message: Message) -> bool:
         mid = message.message_id
 
         # Check if the message is sent by SCP-079
-        if uid in glovar.bot_ids:
+        if uid == glovar.user_ids:
             delay(10, delete_message, [client, gid, mid])
+        elif uid in glovar.bot_ids:
+            delete_message(client, gid, mid)
 
         return True
     except Exception as e:
@@ -195,10 +199,22 @@ def init_group(client: Client, message: Message) -> bool:
             admin_members = get_admins(client, gid)
 
             if admin_members:
+                # Admin list
                 glovar.admin_ids[gid] = {admin.user.id for admin in admin_members
-                                         if ((not admin.user.is_bot and not admin.user.is_deleted)
+                                         if (((not admin.user.is_bot and not admin.user.is_deleted)
+                                              and admin.can_delete_messages
+                                              and admin.can_restrict_members)
+                                             or admin.status == "creator"
                                              or admin.user.id in glovar.bot_ids)}
                 save("admin_ids")
+
+                # Trust list
+                glovar.trust_ids[gid] = {admin.user.id for admin in admin_members
+                                         if ((not admin.user.is_bot and not admin.user.is_deleted)
+                                             or admin.user.id in glovar.bot_ids)}
+                save("trust_ids")
+
+                # Text
                 text += f"{lang('status')}{lang('colon')}{code(lang('status_joined'))}\n"
             else:
                 thread(leave_group, (client, gid))
@@ -567,6 +583,7 @@ def share_preview(client: Client, message: Message) -> bool:
             file_id = web_page.photo.file_id
             file_ref = web_page.photo.file_ref
             image_path = get_downloaded_path(client, file_id, file_ref)
+
             if is_declared_message(None, message):
                 return True
             elif image_path:

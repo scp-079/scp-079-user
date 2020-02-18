@@ -1,5 +1,5 @@
 # SCP-079-USER - Invite and help other bots
-# Copyright (C) 2019 SCP-079 <https://scp-079.org>
+# Copyright (C) 2019-2020 SCP-079 <https://scp-079.org>
 #
 # This file is part of SCP-079-USER.
 #
@@ -40,6 +40,7 @@ def delete_messages(client: Client, cid: int, mids: Iterable[int]) -> Optional[b
     try:
         mids = list(mids)
         mids_list = [mids[i:i + 100] for i in range(0, len(mids), 100)]
+
         for mids in mids_list:
             try:
                 flood_wait = True
@@ -123,26 +124,6 @@ def get_admins(client: Client, cid: int) -> Union[bool, List[ChatMember], None]:
     return result
 
 
-def get_common_chats(client: Client, uid: int) -> Optional[List[Chat]]:
-    # Get the common chats with a user
-    result = None
-    try:
-        flood_wait = True
-        while flood_wait:
-            flood_wait = False
-            try:
-                result = client.get_common_chats(user_id=uid)
-            except FloodWait as e:
-                flood_wait = True
-                wait_flood(e)
-            except PeerIdInvalid:
-                return None
-    except Exception as e:
-        logger.warning(f"Get common chats with {uid} error: {e}", exc_info=True)
-
-    return result
-
-
 def get_chat(client: Client, cid: Union[int, str]) -> Union[Chat, ChatPreview, None]:
     # Get a chat
     result = None
@@ -183,6 +164,26 @@ def get_chat_member(client: Client, cid: int, uid: int) -> Union[bool, ChatMembe
     return result
 
 
+def get_common_chats(client: Client, uid: int) -> Optional[List[Chat]]:
+    # Get the common chats with a user
+    result = None
+    try:
+        flood_wait = True
+        while flood_wait:
+            flood_wait = False
+            try:
+                result = client.get_common_chats(user_id=uid)
+            except FloodWait as e:
+                flood_wait = True
+                wait_flood(e)
+            except PeerIdInvalid:
+                return None
+    except Exception as e:
+        logger.warning(f"Get common chats with {uid} error: {e}", exc_info=True)
+
+    return result
+
+
 def get_group_info(client: Client, chat: Union[int, Chat], cache: bool = True) -> (str, str):
     # Get a group's name and link
     group_name = "Unknown Group"
@@ -190,6 +191,7 @@ def get_group_info(client: Client, chat: Union[int, Chat], cache: bool = True) -
     try:
         if isinstance(chat, int):
             the_cache = glovar.chats.get(chat)
+
             if the_cache:
                 chat = the_cache
             else:
@@ -342,14 +344,17 @@ def resolve_username(client: Client, username: str, cache: bool = True) -> (str,
     peer_id = 0
     try:
         username = username.strip("@")
+
         if not username:
             return "", 0
 
         result = glovar.usernames.get(username)
+
         if result and cache:
             return result["peer_type"], result["peer_id"]
 
         result = resolve_peer(client, username)
+
         if result:
             if isinstance(result, InputPeerChannel):
                 peer_type = "channel"

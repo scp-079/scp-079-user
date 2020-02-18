@@ -1,5 +1,5 @@
 # SCP-079-USER - Invite and help other bots
-# Copyright (C) 2019 SCP-079 <https://scp-079.org>
+# Copyright (C) 2019-2020 SCP-079 <https://scp-079.org>
 #
 # This file is part of SCP-079-USER.
 #
@@ -82,8 +82,10 @@ password: str = ""
 try:
     config = RawConfigParser()
     config.read("config.ini")
+
     # [basic]
     prefix = list(config["basic"].get("prefix", prefix_str))
+
     # [bots]
     avatar_id = int(config["bots"].get("avatar_id", avatar_id))
     captcha_id = int(config["bots"].get("captcha_id", captcha_id))
@@ -97,6 +99,7 @@ try:
     tip_id = int(config["bots"].get("tip_id", tip_id))
     user_id = int(config["bots"].get("user_id", user_id))
     warn_id = int(config["bots"].get("warn_id", warn_id))
+
     # [channels]
     captcha_group_id = int(config["channels"].get("captcha_group_id", captcha_group_id))
     critical_channel_id = int(config["channels"].get("critical_channel_id", critical_channel_id))
@@ -105,6 +108,7 @@ try:
     hide_channel_id = int(config["channels"].get("hide_channel_id", hide_channel_id))
     logging_channel_id = int(config["channels"].get("logging_channel_id", logging_channel_id))
     test_group_id = int(config["channels"].get("test_group_id", test_group_id))
+
     # [custom]
     aio = config["custom"].get("aio", aio)
     aio = eval(aio)
@@ -117,6 +121,7 @@ try:
     project_name = config["custom"].get("project_name", project_name)
     zh_cn = config["custom"].get("zh_cn", zh_cn)
     zh_cn = eval(zh_cn)
+
     # [encrypt]
     key = config["encrypt"].get("key", key)
     key = key.encode("utf-8")
@@ -377,7 +382,7 @@ usernames: Dict[str, Dict[str, Union[int, str]]] = {}
 #     }
 # }
 
-version: str = "0.2.8"
+version: str = "0.2.9"
 
 # Load data from pickle
 
@@ -420,6 +425,11 @@ except_ids: Dict[str, Union[Dict, Set[int]]] = {
 
 left_group_ids: Set[int] = set()
 # left_group_ids = {-10012345678}
+
+trust_ids: Dict[int, Set[int]] = {}
+# trust_ids = {
+#     -10012345678: {12345678}
+# }
 
 user_ids: Dict[int, Dict[str, Union[Set[int], Dict[str, float]]]] = {}
 # user_ids = {
@@ -465,8 +475,9 @@ configs: Dict[int, Dict[str, Union[bool, int, Dict[str, bool]]]] = {}
 # }
 
 # Load data
-file_list: List[str] = ["admin_ids", "bad_ids", "except_ids", "left_group_ids", "user_ids", "watch_ids",
+file_list: List[str] = ["admin_ids", "bad_ids", "except_ids", "left_group_ids", "trust_ids", "user_ids", "watch_ids",
                         "configs"]
+
 for file in file_list:
     try:
         try:
@@ -478,6 +489,7 @@ for file in file_list:
                     pickle.dump(eval(f"{file}"), f)
         except Exception as e:
             logger.error(f"Load data {file} error: {e}", exc_info=True)
+
             with open(f"data/.{file}", "rb") as f:
                 locals()[f"{file}"] = pickle.load(f)
     except Exception as e:
@@ -485,6 +497,6 @@ for file in file_list:
         raise SystemExit("[DATA CORRUPTION]")
 
 # Start program
-copyright_text = (f"SCP-079-{sender} v{version}, Copyright (C) 2019 SCP-079 <https://scp-079.org>\n"
+copyright_text = (f"SCP-079-{sender} v{version}, Copyright (C) 2019-2020 SCP-079 <https://scp-079.org>\n"
                   "Licensed under the terms of the GNU General Public License v3 or later (GPLv3+)\n")
 print(copyright_text)

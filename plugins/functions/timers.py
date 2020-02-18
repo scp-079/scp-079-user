@@ -1,5 +1,5 @@
 # SCP-079-USER - Invite and help other bots
-# Copyright (C) 2019 SCP-079 <https://scp-079.org>
+# Copyright (C) 2019-2020 SCP-079 <https://scp-079.org>
 #
 # This file is part of SCP-079-USER.
 #
@@ -58,13 +58,16 @@ def backup_files(client: Client) -> bool:
     return False
 
 
-def interval_min_10() -> bool:
+def interval_min_10(client: Client) -> bool:
     # Execute every 10 minutes
     glovar.locks["message"].acquire()
     try:
         # Clear recorded users
         for gid in list(glovar.recorded_ids):
             glovar.recorded_ids[gid] = set()
+
+        # Send /long
+        thread(send_message, (client, glovar.captcha_group_id, "/long"))
 
         return True
     except Exception as e:
@@ -104,43 +107,57 @@ def update_admins(client: Client) -> bool:
     glovar.locks["admin"].acquire()
     try:
         group_list = list(glovar.admin_ids)
+
         for gid in group_list:
             should_leave = True
             admin_members = get_admins(client, gid)
+
             if admin_members and any([admin.user.is_self for admin in admin_members]):
+                # Admin list
                 glovar.admin_ids[gid] = {admin.user.id for admin in admin_members
+                                         if (((not admin.user.is_bot and not admin.user.is_deleted)
+                                              and admin.can_delete_messages
+                                              and admin.can_restrict_members)
+                                             or admin.status == "creator"
+                                             or admin.user.id in glovar.bot_ids)}
+                save("admin_ids")
+
+                # Trust list
+                glovar.trust_ids[gid] = {admin.user.id for admin in admin_members
                                          if ((not admin.user.is_bot and not admin.user.is_deleted)
                                              or admin.user.id in glovar.bot_ids)}
-                for admin in admin_members:
-                    if admin.user.is_self:
-                        if (admin.can_delete_messages
-                                and admin.can_restrict_members
-                                and admin.can_invite_users
-                                and admin.can_promote_members):
-                            should_leave = False
+                save("trust_ids")
 
-                if should_leave:
-                    group_name, group_link = get_group_info(client, gid)
-                    share_data(
-                        client=client,
-                        receivers=["MANAGE"],
-                        action="leave",
-                        action_type="request",
-                        data={
-                            "group_id": gid,
-                            "group_name": group_name,
-                            "group_link": group_link,
-                            "reason": "permissions"
-                        }
-                    )
-                    project_link = general_link(glovar.project_name, glovar.project_link)
-                    debug_text = (f"{lang('project')}{lang('colon')}{project_link}\n"
-                                  f"{lang('group_name')}{lang('colon')}{general_link(group_name, group_link)}\n"
-                                  f"{lang('group_id')}{lang('colon')}{code(gid)}\n"
-                                  f"{lang('status')}{lang('colon')}{code(lang('reason_permissions'))}\n")
-                    thread(send_message, (client, glovar.debug_channel_id, debug_text))
-                else:
-                    save("admin_ids")
+                for admin in admin_members:
+                    if (admin.user.is_self
+                            and admin.can_delete_messages
+                            and admin.can_restrict_members
+                            and admin.can_invite_users
+                            and admin.can_promote_members):
+                        should_leave = False
+
+                if not should_leave:
+                    continue
+
+                group_name, group_link = get_group_info(client, gid)
+                share_data(
+                    client=client,
+                    receivers=["MANAGE"],
+                    action="leave",
+                    action_type="request",
+                    data={
+                        "group_id": gid,
+                        "group_name": group_name,
+                        "group_link": group_link,
+                        "reason": "permissions"
+                    }
+                )
+                project_link = general_link(glovar.project_name, glovar.project_link)
+                debug_text = (f"{lang('project')}{lang('colon')}{project_link}\n"
+                              f"{lang('group_name')}{lang('colon')}{general_link(group_name, group_link)}\n"
+                              f"{lang('group_id')}{lang('colon')}{code(gid)}\n"
+                              f"{lang('status')}{lang('colon')}{code(lang('reason_permissions'))}\n")
+                thread(send_message, (client, glovar.debug_channel_id, debug_text))
             elif admin_members is False or any([admin.user.is_self for admin in admin_members]) is False:
                 # Bot is not in the chat, leave automatically without approve
                 group_name, group_link = get_group_info(client, gid)

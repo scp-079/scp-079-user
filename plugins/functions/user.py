@@ -1,5 +1,5 @@
 # SCP-079-USER - Invite and help other bots
-# Copyright (C) 2019 SCP-079 <https://scp-079.org>
+# Copyright (C) 2019-2020 SCP-079 <https://scp-079.org>
 #
 # This file is part of SCP-079-USER.
 #
@@ -22,10 +22,10 @@ from typing import Union
 from pyrogram import ChatPermissions, Client, Message, User
 
 from .. import glovar
-from .channel import forward_evidence, send_debug
+from .channel import forward_evidence, send_debug, share_bad_user
 from .etc import code, general_link, lang, thread
 from .file import save
-from .filters import is_declared_message
+from .filters import is_class_d_user, is_declared_message
 from .group import delete_message
 from .ids import init_group_id, init_user_id
 from .telegram import delete_all_messages, get_common_chats, get_group_info, kick_chat_member
@@ -33,6 +33,23 @@ from .telegram import restrict_chat_member, send_message, unban_chat_member
 
 # Enable logging
 logger = logging.getLogger(__name__)
+
+
+def add_bad_user(client: Client, uid: int) -> bool:
+    # Add a bad user, share it
+    try:
+        if uid in glovar.bad_ids["users"]:
+            return True
+
+        glovar.bad_ids["users"].add(uid)
+        save("bad_ids")
+        share_bad_user(client, uid)
+
+        return True
+    except Exception as e:
+        logger.warning(f"Add bad user error: {e}", exc_info=True)
+
+    return False
 
 
 def ban_user(client: Client, gid: int, uid: Union[int, str]) -> bool:
@@ -137,6 +154,11 @@ def terminate_user(client: Client, message: Message, user: User, the_type: str) 
         uid = user.id
         mid = message.message_id
 
+        if not is_class_d_user(user):
+            bad = True
+        else:
+            bad = False
+
         # Init user status
         if not init_user_id(uid):
             return True
@@ -151,7 +173,9 @@ def terminate_user(client: Client, message: Message, user: User, the_type: str) 
                     level=lang("auto_ban"),
                     rule=lang(the_type)
                 )
+
                 if result:
+                    bad and add_bad_user(client, uid)
                     glovar.user_ids[uid]["ban"].add(gid)
                     save("user_ids")
                     ban_user(client, gid, uid)
@@ -177,7 +201,9 @@ def terminate_user(client: Client, message: Message, user: User, the_type: str) 
                     level=lang("auto_ban"),
                     rule=lang(the_type)
                 )
+
                 if result:
+                    bad and add_bad_user(client, uid)
                     glovar.user_ids[uid]["restrict"].add(gid)
                     save("user_ids")
                     restrict_user(client, gid, uid)
@@ -203,7 +229,9 @@ def terminate_user(client: Client, message: Message, user: User, the_type: str) 
                     level=lang("auto_delete"),
                     rule=lang(the_type)
                 )
+
                 if result:
+                    bad and add_bad_user(client, uid)
                     glovar.recorded_ids[gid].add(uid)
                     delete_message(client, gid, mid)
                     send_debug(

@@ -1,5 +1,5 @@
 # SCP-079-USER - Invite and help other bots
-# Copyright (C) 2019 SCP-079 <https://scp-079.org>
+# Copyright (C) 2019-2020 SCP-079 <https://scp-079.org>
 #
 # This file is part of SCP-079-USER.
 #
@@ -43,6 +43,7 @@ def is_authorized_group(_, update: Union[CallbackQuery, Message]) -> bool:
             return False
 
         cid = message.chat.id
+
         if init_group_id(cid):
             return True
     except Exception as e:
@@ -63,6 +64,7 @@ def is_captcha_group(_, update: Union[CallbackQuery, Message]) -> bool:
             return False
 
         cid = message.chat.id
+
         if cid == glovar.captcha_group_id:
             return True
     except Exception as e:
@@ -99,11 +101,13 @@ def is_class_d(_, message: Message) -> bool:
 
         if message.forward_from:
             fid = message.forward_from.id
+
             if fid in glovar.bad_ids["users"]:
                 return True
 
         if message.forward_from_chat:
             cid = message.forward_from_chat.id
+
             if cid in glovar.bad_ids["channels"]:
                 return True
     except Exception as e:
@@ -117,6 +121,7 @@ def is_class_e(_, message: Message, test: bool = False) -> bool:
             # The group's temp exception
             gid = message.chat.id
             uid = message.from_user.id
+
             if gid in glovar.except_ids["temp"].get(uid, set()):
                 return True
     except Exception as e:
@@ -133,6 +138,7 @@ def is_declared_message(_, message: Message) -> bool:
 
         gid = message.chat.id
         mid = message.message_id
+
         return is_declared_message_id(gid, mid)
     except Exception as e:
         logger.warning(f"Is declared message error: {e}", exc_info=True)
@@ -147,6 +153,7 @@ def is_exchange_channel(_, message: Message) -> bool:
             return False
 
         cid = message.chat.id
+
         if glovar.should_hide:
             return cid == glovar.hide_channel_id
         else:
@@ -175,6 +182,7 @@ def is_hide_channel(_, message: Message) -> bool:
             return False
 
         cid = message.chat.id
+
         if cid == glovar.hide_channel_id:
             return True
     except Exception as e:
@@ -187,6 +195,7 @@ def is_new_group(_, message: Message) -> bool:
     # Check if the bot joined a new group
     try:
         new_users = message.new_chat_members
+
         if new_users:
             return any(user.is_self for user in new_users)
         elif message.group_chat_created or message.supergroup_chat_created:
@@ -209,6 +218,7 @@ def is_test_group(_, update: Union[CallbackQuery, Message]) -> bool:
             return False
 
         cid = message.chat.id
+
         if cid == glovar.test_group_id:
             return True
     except Exception as e:
@@ -300,9 +310,10 @@ def is_class_e_user(user: Union[int, User]) -> bool:
         if uid in glovar.bot_ids:
             return True
 
-        group_list = list(glovar.admin_ids)
+        group_list = list(glovar.trust_ids)
+
         for gid in group_list:
-            if uid in glovar.admin_ids.get(gid, set()):
+            if uid in glovar.trust_ids.get(gid, set()):
                 return True
     except Exception as e:
         logger.warning(f"Is class e user error: {e}", exc_info=True)
@@ -325,6 +336,7 @@ def is_friend_username(client: Client, gid: int, username: str, friend: bool, fr
     # Check if it is a friend username
     try:
         username = username.strip()
+
         if not username:
             return False
 
@@ -335,6 +347,7 @@ def is_friend_username(client: Client, gid: int, username: str, friend: bool, fr
             return False
 
         peer_type, peer_id = resolve_username(client, username)
+
         if peer_type == "channel":
             if friend or glovar.configs[gid].get("friend"):
                 if peer_id in glovar.except_ids["channels"] or glovar.admin_ids.get(peer_id, {}):
@@ -349,6 +362,7 @@ def is_friend_username(client: Client, gid: int, username: str, friend: bool, fr
                     return True
 
             member = get_member(client, gid, peer_id)
+
             if member and member.status in {"creator", "administrator", "member"}:
                 return True
     except Exception as e:
@@ -370,6 +384,7 @@ def is_high_score_user(user: User) -> float:
             return 0.0
 
         score = sum(user_status["score"].values())
+
         if score >= 3.0:
             return score
     except Exception as e:
@@ -409,6 +424,7 @@ def is_watch_user(user: User, the_type: str, now: int) -> bool:
 
         uid = user.id
         until = glovar.watch_ids[the_type].get(uid, 0)
+
         if now < until:
             return True
     except Exception as e:

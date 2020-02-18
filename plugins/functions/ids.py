@@ -1,5 +1,5 @@
 # SCP-079-USER - Invite and help other bots
-# Copyright (C) 2019 SCP-079 <https://scp-079.org>
+# Copyright (C) 2019-2020 SCP-079 <https://scp-079.org>
 #
 # This file is part of SCP-079-USER.
 #
@@ -48,6 +48,9 @@ def init_group_id(gid: int) -> bool:
 
         if glovar.declared_message_ids.get(gid) is None:
             glovar.declared_message_ids[gid] = set()
+
+        if glovar.members.get(gid) is None:
+            glovar.members[gid] = {}
 
         if glovar.recorded_ids.get(gid) is None:
             glovar.recorded_ids[gid] = set()

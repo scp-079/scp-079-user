@@ -1,5 +1,5 @@
 # SCP-079-USER - Invite and help other bots
-# Copyright (C) 2019 SCP-079 <https://scp-079.org>
+# Copyright (C) 2019-2020 SCP-079 <https://scp-079.org>
 #
 # This file is part of SCP-079-USER.
 #
@@ -57,6 +57,7 @@ def config(client: Client, message: Message) -> bool:
 
         # Check command format
         command_type = get_command_type(message)
+
         if not command_type or not re.search(f"^{glovar.sender}$", command_type, re.I):
             return True
 
@@ -134,6 +135,7 @@ def config_directly(client: Client, message: Message) -> bool:
 
         # Check command format
         command_type, command_context = get_command_context(message)
+
         if command_type:
             if command_type == "show":
                 text += f"{lang('action')}{lang('colon')}{code(lang('config_show'))}\n"
@@ -159,14 +161,18 @@ def config_directly(client: Client, message: Message) -> bool:
                                 reason = lang("command_para")
 
                             config_list = ["gb", "gr", "gd"]
+
                             if command_type in config_list and new_config[command_type]:
                                 config_list.remove(command_type)
+
                                 for other in config_list:
                                     new_config[other] = False
 
                             config_list = ["sb", "sr", "sd"]
+
                             if command_type in config_list and new_config[command_type]:
                                 config_list.remove(command_type)
+
                                 for other in config_list:
                                     new_config[other] = False
                         else:
@@ -248,6 +254,7 @@ def mention(client: Client, message: Message) -> bool:
 
                     if the_gid and the_mid:
                         the_message = get_message(client, the_gid, the_mid)
+
                         if the_message and the_message.from_user:
                             uid = the_message.from_user.id
 
@@ -258,12 +265,14 @@ def mention(client: Client, message: Message) -> bool:
 
                 if not uid:
                     the_type, the_id = resolve_username(client, id_text)
+
                     if the_type == "user":
                         uid = the_id
 
         # Try to read the replied message
         elif message.reply_to_message:
             r_message = message.reply_to_message
+
             if r_message.forward_from:
                 uid = r_message.forward_from.id
 
@@ -367,6 +376,7 @@ def white(client: Client, message: Message) -> bool:
 
         # Proceed
         r_message = message.reply_to_message
+
         if r_message and r_message.from_user:
             if r_message.from_user.is_self:
                 return True
@@ -378,11 +388,13 @@ def white(client: Client, message: Message) -> bool:
         else:
             uid = 0
             id_text, _ = get_command_context(message)
+
             if id_text:
                 uid = get_int(id_text)
 
             if not uid and id_text:
                 peer_id, peer_type = resolve_username(client, id_text)
+
                 if peer_type == "user":
                     uid = peer_id
 

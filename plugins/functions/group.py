@@ -1,5 +1,5 @@
 # SCP-079-USER - Invite and help other bots
-# Copyright (C) 2019 SCP-079 <https://scp-079.org>
+# Copyright (C) 2019-2020 SCP-079 <https://scp-079.org>
 #
 # This file is part of SCP-079-USER.
 #
@@ -103,6 +103,7 @@ def get_description(client: Client, gid: int) -> str:
     result = ""
     try:
         group = get_group(client, gid)
+
         if group and group.description:
             result = t2t(group.description, False, False)
     except Exception as e:
@@ -158,6 +159,7 @@ def get_message(client: Client, gid: int, mid: int) -> Optional[Message]:
     try:
         mids = [mid]
         result = get_messages(client, gid, mids)
+
         if result:
             result = result[0]
     except Exception as e:
@@ -171,6 +173,7 @@ def get_pinned(client: Client, gid: int) -> Optional[Message]:
     result = None
     try:
         group = get_group(client, gid)
+
         if group and group.pinned_message:
             result = group.pinned_message
     except Exception as e:
@@ -189,8 +192,15 @@ def leave_group(client: Client, gid: int) -> bool:
         glovar.admin_ids.pop(gid, set())
         save("admin_ids")
 
+        glovar.trust_ids.pop(gid, set())
+        save("trust_ids")
+
         glovar.configs.pop(gid, {})
         save("configs")
+
+        glovar.declared_message_ids.pop(gid, set())
+        glovar.members.pop(gid, {})
+        glovar.recorded_ids.pop(gid, set())
 
         return True
     except Exception as e:
