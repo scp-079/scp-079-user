@@ -136,6 +136,7 @@ def update_admins(client: Client) -> bool:
                             and admin.can_promote_members):
                         should_leave = False
 
+                    # TODO
                     # if (admin.user.is_self
                     #         and admin.can_delete_messages
                     #         and admin.can_restrict_members
