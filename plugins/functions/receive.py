@@ -332,24 +332,35 @@ def receive_help_log(client: Client, data: dict) -> bool:
         if not glovar.admin_ids.get(gid):
             return True
 
-        event_filter = ChannelAdminLogEventsFilter(
-            join=True
-        )
-
-        log = get_admin_log(
+        event_filter = ChannelAdminLogEventsFilter(join=True)
+        log_list = get_admin_log(
             client=client,
             cid=gid,
             event_filter=event_filter
         )
 
-        logger.warning(len(log))
+        if not log_list:
+            return True
 
-        for ll in log:
-            logger.warning(len(ll.events))
+        users = set()
 
-        for ll in log:
-            logger.warning(ll.events)
-            logger.warning("\n\n")
+        for log in log_list:
+            for event in log.events:
+                if not begin <= event.date <= end:
+                    continue
+
+                users.add(event.user_id)
+
+        # Share the users
+        file = data_to_file(users)
+        share_data(
+            client=client,
+            receivers=["CAPTCHA"],
+            action="help",
+            action_type="log",
+            data=gid,
+            file=file
+        )
 
         return True
     except Exception as e:

@@ -46,10 +46,6 @@ scheduler.add_job(reset_data, "cron", [app], day=glovar.date_reset, hour=22)
 scheduler.add_job(update_admins, "cron", [app], hour=22, minute=30)
 scheduler.start()
 
-# TEMP
-from plugins.functions.receive import receive_help_log
-receive_help_log(app, {"group_id": -1001086661876, "begin": 0, "end": 0})
-
 # Hold
 app.idle()
 
