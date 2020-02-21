@@ -23,6 +23,7 @@ from json import loads
 from typing import Any
 
 from pyrogram import Client, Message
+from pyrogram.api.types import ChannelAdminLogEventsFilter
 
 from .. import glovar
 from .channel import get_debug_text, share_data
@@ -30,7 +31,7 @@ from .etc import code, crypt_str, general_link, get_int, get_text, lang, mention
 from .file import crypt_file, data_to_file, delete_file, get_new_path, get_downloaded_path, save
 from .group import delete_messages_globally, get_config_text, leave_group
 from .ids import init_group_id, init_user_id
-from .telegram import delete_all_messages, send_message, send_report_message
+from .telegram import delete_all_messages, get_admin_log, send_message, send_report_message
 from .timers import update_admins
 from .user import ban_user_globally, unban_user_globally
 
@@ -327,6 +328,21 @@ def receive_help_log(client: Client, data: dict) -> bool:
         gid = data["group_id"]
         begin = data["begin"]
         end = data["end"]
+
+        if not glovar.admin_ids.get(gid):
+            return True
+
+        event_filter = ChannelAdminLogEventsFilter(
+            join=True
+        )
+
+        log = get_admin_log(
+            client=client,
+            cid=gid,
+            event_filter=event_filter
+        )
+
+        logger.warning(log)
 
         return True
     except Exception as e:
