@@ -342,6 +342,11 @@ def receive_help_log(client: Client, data: dict) -> bool:
             event_filter=event_filter
         )
 
+        logger.warning(len(log))
+
+        for ll in log:
+            logger.warning(len(ll.events))
+
         logger.warning(log)
 
         return True

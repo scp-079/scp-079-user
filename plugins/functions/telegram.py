@@ -108,33 +108,43 @@ def download_media(client: Client, file_id: str, file_ref: str, file_path: str) 
 def get_admin_log(client: Client, cid: int,
                   query: str = "",
                   event_filter: ChannelAdminLogEventsFilter = None,
-                  admins: List[InputUser] = None) -> Optional[AdminLogResults]:
+                  admins: List[InputUser] = None) -> List[AdminLogResults]:
     # Get admin log
-    result = None
+    result = []
     try:
         peer = resolve_peer(client, cid)
+        max_id = 0
 
         if not peer:
-            return None
+            return []
 
-        flood_wait = True
-        while flood_wait:
-            flood_wait = False
-            try:
-                result = client.send(
-                    GetAdminLog(
-                        channel=peer,
-                        q=query,
-                        max_id=0,
-                        min_id=0,
-                        limit=0,
-                        events_filter=event_filter,
-                        admins=admins
+        while True:
+            r = None
+
+            flood_wait = True
+            while flood_wait:
+                flood_wait = False
+                try:
+                    r = client.send(
+                        GetAdminLog(
+                            channel=peer,
+                            q=query,
+                            max_id=max_id,
+                            min_id=0,
+                            limit=100,
+                            events_filter=event_filter,
+                            admins=admins
+                        )
                     )
-                )
-            except FloodWait as e:
-                flood_wait = True
-                wait_flood(e)
+                except FloodWait as e:
+                    flood_wait = True
+                    wait_flood(e)
+
+            if not r or not r.events:
+                return result
+
+            result.append(r)
+            max_id = r.events[-1].id
     except Exception as e:
         logger.warning(f"Get admin log error: {e}", exc_info=True)
 
