@@ -261,7 +261,7 @@ def receive_file_data(client: Client, message: Message, decrypt: bool = True) ->
 
 
 def receive_help_ban(client: Client, data: dict) -> bool:
-    # Receive help ban requests
+    # Receive help ban request
     glovar.locks["message"].acquire()
     try:
         # Basic data
@@ -295,7 +295,7 @@ def receive_help_ban(client: Client, data: dict) -> bool:
 
 
 def receive_help_delete(client: Client, data: dict) -> bool:
-    # Receive help delete requests
+    # Receive help delete request
     glovar.locks["message"].acquire()
     try:
         # Basic data
@@ -316,6 +316,21 @@ def receive_help_delete(client: Client, data: dict) -> bool:
         logger.warning(f"Receive help delete error: {e}", exc_info=True)
     finally:
         glovar.locks["message"].release()
+
+    return False
+
+
+def receive_help_log(client: Client, data: dict) -> bool:
+    # Receive check log request
+    try:
+        # Basic data
+        gid = data["group_id"]
+        begin = data["begin"]
+        end = data["end"]
+
+        return True
+    except Exception as e:
+        logger.warning(f"Receive help log error: {e}", exc_info=True)
 
     return False
 
