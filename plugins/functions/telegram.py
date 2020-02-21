@@ -20,9 +20,10 @@ import logging
 from typing import Iterable, List, Optional, Union
 
 from pyrogram import Chat, ChatMember, ChatPreview, ChatPermissions, Client, InlineKeyboardMarkup, Message
-from pyrogram.api.functions.channels import DeleteUserHistory
+from pyrogram.api.functions.channels import DeleteUserHistory, GetAdminLog
 from pyrogram.api.functions.messages import ReadMentions
-from pyrogram.api.types import InputPeerUser, InputPeerChannel
+from pyrogram.api.types import ChannelAdminLogEventsFilter, InputPeerUser, InputPeerChannel, InputUser
+from pyrogram.api.types.channels import AdminLogResults
 from pyrogram.errors import ChatAdminRequired, ButtonDataInvalid, ChannelInvalid, ChannelPrivate, FloodWait
 from pyrogram.errors import MessageDeleteForbidden, PeerIdInvalid
 from pyrogram.errors import UsernameInvalid, UsernameNotOccupied, UserNotParticipant
@@ -100,6 +101,42 @@ def download_media(client: Client, file_id: str, file_ref: str, file_path: str) 
                 wait_flood(e)
     except Exception as e:
         logger.warning(f"Download media {file_id} to {file_path} error: {e}", exc_info=True)
+
+    return result
+
+
+def get_admin_log(client: Client, cid: int,
+                  query: str = "",
+                  event_filter: ChannelAdminLogEventsFilter = None,
+                  admins: List[InputUser] = None) -> Optional[AdminLogResults]:
+    # Get admin log
+    result = None
+    try:
+        peer = resolve_peer(client, cid)
+
+        if not peer:
+            return None
+
+        flood_wait = True
+        while flood_wait:
+            flood_wait = False
+            try:
+                result = client.send(
+                    GetAdminLog(
+                        channel=peer,
+                        q=query,
+                        max_id=0,
+                        min_id=0,
+                        limit=0,
+                        events_filter=event_filter,
+                        admins=admins
+                    )
+                )
+            except FloodWait as e:
+                flood_wait = True
+                wait_flood(e)
+    except Exception as e:
+        logger.warning(f"Get admin log error: {e}", exc_info=True)
 
     return result
 
