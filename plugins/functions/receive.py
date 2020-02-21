@@ -348,7 +348,7 @@ def receive_help_log(client: Client, data: dict) -> bool:
             logger.warning(len(ll.events))
 
         for ll in log:
-            logger.warning(ll)
+            logger.warning(ll.events)
             logger.warning("\n\n")
 
         return True
