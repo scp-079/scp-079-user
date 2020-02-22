@@ -17,6 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
+from time import sleep
 from typing import Union
 
 from pyrogram import ChatPermissions, Client, Message, User
@@ -124,6 +125,32 @@ def ban_user_globally(client: Client, gid: int, uid: int) -> bool:
         return True
     except Exception as e:
         logger.warning(f"Ban user globally error: {e}", exc_info=True)
+
+    return False
+
+
+def kick_user(client: Client, gid: int, uid: Union[int, str]) -> bool:
+    # Kick a user
+    try:
+        thread(kick_user_thread, (client, gid, uid))
+
+        return True
+    except Exception as e:
+        logger.warning(f"Kick user error: {e}", exc_info=True)
+
+    return False
+
+
+def kick_user_thread(client: Client, gid: int, uid: Union[int, str]) -> bool:
+    # Kick a user thread
+    try:
+        kick_chat_member(client, gid, uid)
+        sleep(3)
+        unban_chat_member(client, gid, uid)
+
+        return True
+    except Exception as e:
+        logger.warning(f"Kick user thread error: {e}", exc_info=True)
 
     return False
 

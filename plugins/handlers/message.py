@@ -35,10 +35,10 @@ from ..functions.group import delete_message, get_description, get_pinned, leave
 from ..functions.ids import init_group_id
 from ..functions.receive import receive_add_bad, receive_add_except, receive_clear_data, receive_config_commit
 from ..functions.receive import receive_config_reply, receive_config_show, receive_declared_message, receive_help_ban
-from ..functions.receive import receive_help_delete, receive_help_log, receive_leave_approve, receive_refresh
-from ..functions.receive import receive_remove_bad, receive_remove_except, receive_remove_score, receive_remove_watch
-from ..functions.receive import receive_rollback, receive_status_ask, receive_text_data
-from ..functions.receive import receive_user_score, receive_watch_user
+from ..functions.receive import receive_help_delete, receive_help_kick, receive_help_log, receive_help_pin
+from ..functions.receive import receive_leave_approve, receive_refresh, receive_remove_bad, receive_remove_except
+from ..functions.receive import receive_remove_score, receive_remove_watch, receive_rollback, receive_status_ask
+from ..functions.receive import receive_text_data, receive_user_score, receive_watch_user
 from ..functions.telegram import get_admins, read_history, read_mention, send_message
 from ..functions.tests import preview_test
 from ..functions.timers import backup_files
@@ -309,8 +309,12 @@ def process_data(client: Client, message: Message) -> bool:
                 if action == "help":
                     if action_type == "delete":
                         receive_help_delete(client, data)
+                    elif action_type == "kick":
+                        receive_help_kick(client, data)
                     elif action_type == "log":
                         receive_help_log(client, data)
+                    elif action_type == "pin":
+                        receive_help_pin(client, data)
 
                 elif action == "update":
                     if action_type == "declare":

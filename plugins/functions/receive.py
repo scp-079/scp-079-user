@@ -31,9 +31,9 @@ from .etc import code, crypt_str, general_link, get_int, get_text, lang, mention
 from .file import crypt_file, data_to_file, delete_file, get_new_path, get_downloaded_path, save
 from .group import delete_messages_globally, get_config_text, leave_group
 from .ids import init_group_id, init_user_id
-from .telegram import delete_all_messages, get_admin_log, send_message, send_report_message
+from .telegram import delete_all_messages, get_admin_log, pin_chat_message, send_message, send_report_message
 from .timers import update_admins
-from .user import ban_user_globally, unban_user_globally
+from .user import ban_user_globally, kick_user, unban_user_globally
 
 # Enable logging
 logger = logging.getLogger(__name__)
@@ -321,6 +321,22 @@ def receive_help_delete(client: Client, data: dict) -> bool:
     return False
 
 
+def receive_help_kick(client: Client, data: dict) -> bool:
+    try:
+        # Basic data
+        gid = data["group_id"]
+        uid = data["user_id"]
+
+        # Kick the user
+        kick_user(client, gid, uid)
+
+        return True
+    except Exception as e:
+        logger.warning(f"Receive help kick error: {e}", exc_info=True)
+
+    return False
+
+
 def receive_help_log(client: Client, data: dict) -> bool:
     # Receive check log request
     try:
@@ -365,6 +381,22 @@ def receive_help_log(client: Client, data: dict) -> bool:
         return True
     except Exception as e:
         logger.warning(f"Receive help log error: {e}", exc_info=True)
+
+    return False
+
+
+def receive_help_pin(client: Client, data: dict) -> bool:
+    try:
+        # Basic data
+        gid = data["group_id"]
+        mid = data["message_id"]
+
+        # Pin the message
+        thread(pin_chat_message, (client, gid, mid))
+
+        return True
+    except Exception as e:
+        logger.warning(f"Receive help pin error: {e}", exc_info=True)
 
     return False
 
