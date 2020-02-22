@@ -362,7 +362,7 @@ def receive_help_log(client: Client, data: dict) -> bool:
 
         for log in log_list:
             for event in log.events:
-                if not begin <= event.date <= end:
+                if not begin - 60 <= event.date <= end:
                     continue
 
                 users.add(event.user_id)
