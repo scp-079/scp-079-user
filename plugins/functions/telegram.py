@@ -24,8 +24,8 @@ from pyrogram.api.functions.channels import DeleteUserHistory, GetAdminLog
 from pyrogram.api.functions.messages import ReadMentions
 from pyrogram.api.types import ChannelAdminLogEventsFilter, InputPeerUser, InputPeerChannel, InputUser
 from pyrogram.api.types.channels import AdminLogResults
-from pyrogram.errors import ChatAdminRequired, ButtonDataInvalid, ChannelInvalid, ChannelPrivate, FloodWait
-from pyrogram.errors import MessageDeleteForbidden, PeerIdInvalid
+from pyrogram.errors import ChatAdminRequired, ChatNotModified, ButtonDataInvalid, ChannelInvalid, ChannelPrivate
+from pyrogram.errors import FloodWait, MessageDeleteForbidden, PeerIdInvalid
 from pyrogram.errors import UsernameInvalid, UsernameNotOccupied, UserNotParticipant
 
 from .. import glovar
@@ -338,7 +338,7 @@ def pin_chat_message(client: Client, cid: int, mid: int) -> Optional[bool]:
             except FloodWait as e:
                 flood_wait = True
                 wait_flood(e)
-            except (ChatAdminRequired, PeerIdInvalid, ChannelInvalid, ChannelPrivate):
+            except (ChatAdminRequired, ChatNotModified, PeerIdInvalid, ChannelInvalid, ChannelPrivate):
                 return False
     except Exception as e:
         logger.warning(f"Pin chat message error: {e}", exc_info=True)
