@@ -28,9 +28,9 @@ from ..functions.etc import bold, code, delay, code_block, get_command_context, 
 from ..functions.etc import get_stripped_link, lang, mention_id, thread
 from ..functions.file import save
 from ..functions.filters import authorized_group, captcha_group, from_user, is_class_c, test_group
-from ..functions.group import delete_message, get_config_text, get_message
+from ..functions.group import delete_message, get_config_text
 from ..functions.ids import init_user_id
-from ..functions.telegram import get_group_info, resolve_username, send_message, send_report_message
+from ..functions.telegram import get_group_info, get_messages, resolve_username, send_message, send_report_message
 from ..functions.user import unban_user, unrestrict_user
 
 # Enable logging
@@ -253,7 +253,7 @@ def mention(client: Client, message: Message) -> bool:
                         the_mid = get_int(link_list[2])
 
                     if the_gid and the_mid:
-                        the_message = get_message(client, the_gid, the_mid)
+                        the_message = get_messages(client, the_gid, the_mid)
 
                         if the_message and the_message.from_user:
                             uid = the_message.from_user.id

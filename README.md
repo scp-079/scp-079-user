@@ -9,13 +9,6 @@ This bot is used to invite and help other bots.
 - [README](https://github.com/scp-079/scp-079-readme) of the SCP-079 Project
 - Discuss [group](https://t.me/SCP_079_CHAT)
 
-## To Do List
-
-- [x] Help to delete messages or ban user
-- [x] Print message function
-- [x] Mark message and mention as read
-- [x] Share message preview
-
 ## Requirements
 
 - Python 3.6 or higher.

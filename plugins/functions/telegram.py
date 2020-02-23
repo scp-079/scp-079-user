@@ -24,7 +24,7 @@ from pyrogram.api.functions.channels import DeleteUserHistory, GetAdminLog
 from pyrogram.api.functions.messages import ReadMentions
 from pyrogram.api.types import ChannelAdminLogEventsFilter, InputPeerUser, InputPeerChannel, InputUser
 from pyrogram.api.types.channels import AdminLogResults
-from pyrogram.errors import ChatAdminRequired, ChatNotModified, ButtonDataInvalid, ChannelInvalid, ChannelPrivate
+from pyrogram.errors import ChatAdminRequired, ButtonDataInvalid, ChannelInvalid, ChannelPrivate
 from pyrogram.errors import FloodWait, MessageDeleteForbidden, PeerIdInvalid
 from pyrogram.errors import UsernameInvalid, UsernameNotOccupied, UserNotParticipant
 
@@ -263,7 +263,7 @@ def get_group_info(client: Client, chat: Union[int, Chat], cache: bool = True) -
     return group_name, group_link
 
 
-def get_messages(client: Client, cid: int, mids: Iterable[int]) -> Optional[List[Message]]:
+def get_messages(client: Client, cid: int, mids: Union[int, Iterable[int]]) -> Union[Message, List[Message], None]:
     # Get some messages
     result = None
     try:
@@ -320,30 +320,6 @@ def leave_chat(client: Client, cid: int, delete: bool = False) -> bool:
         logger.warning(f"Leave chat {cid} error: {e}", exc_info=True)
 
     return False
-
-
-def pin_chat_message(client: Client, cid: int, mid: int) -> Optional[bool]:
-    # Pin a message in a group, channel or your own chat
-    result = None
-    try:
-        flood_wait = True
-        while flood_wait:
-            flood_wait = False
-            try:
-                result = client.pin_chat_message(
-                    chat_id=cid,
-                    message_id=mid,
-                    disable_notification=True
-                )
-            except FloodWait as e:
-                flood_wait = True
-                wait_flood(e)
-            except (ChatAdminRequired, ChatNotModified, PeerIdInvalid, ChannelInvalid, ChannelPrivate):
-                return False
-    except Exception as e:
-        logger.warning(f"Pin chat message error: {e}", exc_info=True)
-
-    return result
 
 
 def read_history(client: Client, cid: int) -> bool:
