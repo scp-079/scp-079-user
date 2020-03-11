@@ -407,6 +407,13 @@ def receive_leave_approve(client: Client, data: dict) -> bool:
         if reason:
             text += f"{lang('reason')}{lang('colon')}{code(reason)}\n"
 
+        info_text = f"{lang('action')}{lang('colon')}{code(lang('leave_group'))}\n"
+
+        if reason:
+            info_text += f"{lang('reason')}{lang('colon')}{code(reason)}\n"
+
+        send_message(client, the_id, info_text)
+
         leave_group(client, the_id)
         thread(send_message, (client, glovar.debug_channel_id, text))
 

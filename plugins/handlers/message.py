@@ -263,7 +263,7 @@ def mark_mention(client: Client, message: Message) -> bool:
     return False
 
 
-@Client.on_message(Filters.incoming & ~Filters.private, group=2)
+@Client.on_message(Filters.incoming & ~Filters.private & Filters.channel, group=2)
 def mark_message(client: Client, message: Message) -> bool:
     # Mark messages as read
     try:
