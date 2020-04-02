@@ -262,6 +262,7 @@ lang: Dict[str, str] = {
     "action_undo_white": (zh_cn and "撤销白名单") or "Remove from Whitelist",
     "action_white": (zh_cn and "临时白名单") or "Add to Whitelist",
     "group_count": (zh_cn and "群组数量") or "Total Groups",
+    "leave_group": (zh_cn and "退出群组") or "Leave the Group",
     "message_print": (zh_cn and "消息结构") or "Print the Message",
     # Terminate
     "auto_ban": (zh_cn and "自动封禁") or "Auto Ban",
