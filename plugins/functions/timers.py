@@ -146,7 +146,15 @@ def update_admins(client: Client) -> bool:
                     #     should_leave = False
 
                 if not should_leave:
+                    glovar.lack_group_ids.discard(gid)
+                    save("lack_group_ids")
                     continue
+
+                if gid in glovar.lack_group_ids:
+                    continue
+
+                glovar.lack_group_ids.add(gid)
+                save("lack_group_ids")
 
                 group_name, group_link = get_group_info(client, gid)
                 share_data(
