@@ -23,6 +23,7 @@ from pyrogram import Client
 
 from .. import glovar
 from .channel import share_data
+from .decorators import threaded
 from .etc import code, general_link, lang, thread
 from .file import save
 from .group import leave_group
@@ -32,8 +33,11 @@ from .telegram import get_admins, get_group_info, send_message
 logger = logging.getLogger(__name__)
 
 
+@threaded()
 def backup_files(client: Client) -> bool:
     # Backup data files to BACKUP
+    result = False
+
     try:
         for file in glovar.file_list:
             # Check
@@ -51,11 +55,11 @@ def backup_files(client: Client) -> bool:
             )
             sleep(5)
 
-        return True
+        result = True
     except Exception as e:
         logger.warning(f"Backup error: {e}", exc_info=True)
 
-    return False
+    return result
 
 
 def interval_min_10(client: Client) -> bool:

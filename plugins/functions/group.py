@@ -17,11 +17,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
-from typing import Optional
+from typing import List, Optional
 
 from pyrogram import Chat, ChatMember, Client, Message
 
 from .. import glovar
+from .decorators import threaded
 from .etc import code, lang, t2t, thread
 from .file import save
 from .ids import init_group_id
@@ -31,24 +32,28 @@ from .telegram import delete_messages, delete_all_messages, get_chat, get_chat_m
 logger = logging.getLogger(__name__)
 
 
+@threaded()
 def delete_message(client: Client, gid: int, mid: int) -> bool:
     # Delete a single message
+    result = False
+
     try:
         if not gid or not mid:
             return True
 
         mids = [mid]
-        thread(delete_messages, (client, gid, mids))
-
-        return True
+        result = delete_messages(client, gid, mids)
     except Exception as e:
         logger.warning(f"Delete message error: {e}", exc_info=True)
 
-    return False
+    return result
 
 
+@threaded()
 def delete_messages_globally(client: Client, uid: int, no_id: int = 0) -> bool:
     # Delete all messages from a user globally
+    result = False
+
     try:
         chats = get_common_chats(client, uid)
 
@@ -64,22 +69,24 @@ def delete_messages_globally(client: Client, uid: int, no_id: int = 0) -> bool:
             if not init_group_id(gid):
                 continue
 
-            if (glovar.configs[gid].get("delete")
-                    and (glovar.configs[gid].get("gb")
-                         or glovar.configs[gid].get("gr")
-                         or glovar.configs[gid].get("gd"))):
-                thread(delete_all_messages, (client, gid, uid))
+            should_delete = any(glovar.configs[gid].get(g) for g in ["gb", "gr", "gd"])
 
-        return True
+            if not glovar.configs[gid].get("delete", True) or not should_delete:
+                continue
+
+            delete_all_messages(client, gid, uid)
+
+        result = True
     except Exception as e:
         logger.warning(f"Delete messages globally error: {e}", exc_info=True)
 
-    return False
+    return result
 
 
 def get_config_text(config: dict) -> str:
     # Get config text
     result = ""
+
     try:
         # Basic
         default_text = (lambda x: lang("default") if x else lang("custom"))(config.get("default"))
@@ -114,16 +121,19 @@ def get_description(client: Client, gid: int, cache: bool = True) -> str:
 def get_group(client: Client, gid: int, cache: bool = True) -> Optional[Chat]:
     # Get the group
     result = None
+
     try:
         the_cache = glovar.chats.get(gid)
 
         if cache and the_cache:
-            result = the_cache
-        else:
-            result = get_chat(client, gid)
+            return the_cache
 
-        if cache and result:
-            glovar.chats[gid] = result
+        result = get_chat(client, gid)
+
+        if not result:
+            return result
+
+        glovar.chats[gid] = result
     except Exception as e:
         logger.warning(f"Get group error: {e}", exc_info=True)
 
@@ -133,19 +143,22 @@ def get_group(client: Client, gid: int, cache: bool = True) -> Optional[Chat]:
 def get_member(client: Client, gid: int, uid: int, cache: bool = True) -> Optional[ChatMember]:
     # Get a member in the group
     result = None
+
     try:
         if not init_group_id(gid):
             return None
 
         the_cache = glovar.members[gid].get(uid)
 
-        if the_cache:
-            result = the_cache
-        else:
-            result = get_chat_member(client, gid, uid)
+        if cache and the_cache:
+            return the_cache
 
-        if cache and result:
-            glovar.members[gid][uid] = result
+        result = get_chat_member(client, gid, uid)
+
+        if not result:
+            return result
+
+        glovar.members[gid][uid] = result
     except Exception as e:
         logger.warning(f"Get member error: {e}", exc_info=True)
 
@@ -155,11 +168,14 @@ def get_member(client: Client, gid: int, uid: int, cache: bool = True) -> Option
 def get_pinned(client: Client, gid: int, cache: bool = True) -> Optional[Message]:
     # Get group's pinned message
     result = None
+
     try:
         group = get_group(client, gid, cache)
 
-        if group and group.pinned_message:
-            result = group.pinned_message
+        if not group or not group.pinned_message:
+            return None
+
+        result = group.pinned_message
     except Exception as e:
         logger.warning(f"Get pinned error: {e}", exc_info=True)
 
@@ -168,6 +184,8 @@ def get_pinned(client: Client, gid: int, cache: bool = True) -> Optional[Message
 
 def leave_group(client: Client, gid: int) -> bool:
     # Leave a group, clear it's data
+    result = False
+
     try:
         glovar.left_group_ids.add(gid)
         save("left_group_ids")
@@ -189,8 +207,35 @@ def leave_group(client: Client, gid: int) -> bool:
         glovar.members.pop(gid, {})
         glovar.recorded_ids.pop(gid, set())
 
-        return True
+        result = True
     except Exception as e:
         logger.warning(f"Leave group error: {e}", exc_info=True)
 
-    return False
+    return result
+
+
+def save_admins(gid: int, admin_members: List[ChatMember]) -> bool:
+    # Save the group's admin list
+    result = False
+
+    try:
+        # Admin list
+        glovar.admin_ids[gid] = {admin.user.id for admin in admin_members
+                                 if (((not admin.user.is_bot and not admin.user.is_deleted)
+                                      and admin.can_delete_messages
+                                      and admin.can_restrict_members)
+                                     or admin.status == "creator"
+                                     or admin.user.id in glovar.bot_ids)}
+        save("admin_ids")
+
+        # Trust list
+        glovar.trust_ids[gid] = {admin.user.id for admin in admin_members
+                                 if ((not admin.user.is_bot and not admin.user.is_deleted)
+                                     or admin.user.id in glovar.bot_ids)}
+        save("trust_ids")
+
+        result = True
+    except Exception as e:
+        logger.warning(f"Save admins error: {e}", exc_info=True)
+
+    return result

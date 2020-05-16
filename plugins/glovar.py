@@ -449,7 +449,6 @@ user_ids: Dict[int, Dict[str, Union[Set[int], Dict[str, float]]]] = {}
 #             "noflood": 0.0,
 #             "noporn": 0.0,
 #             "nospam": 0.0,
-#             "recheck": 0.0,
 #             "warn": 0.0
 #         }
 #     }

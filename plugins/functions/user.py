@@ -24,6 +24,7 @@ from pyrogram import ChatPermissions, Client, Message, User
 
 from .. import glovar
 from .channel import forward_evidence, send_debug, share_bad_user
+from .decorators import threaded
 from .etc import code, general_link, lang, thread
 from .file import save
 from .filters import is_class_d_user, is_declared_message
@@ -129,45 +130,36 @@ def ban_user_globally(client: Client, gid: int, uid: int) -> bool:
     return False
 
 
+@threaded()
 def kick_user(client: Client, gid: int, uid: Union[int, str]) -> bool:
     # Kick a user
-    try:
-        thread(kick_user_thread, (client, gid, uid))
+    result = False
 
-        return True
-    except Exception as e:
-        logger.warning(f"Kick user error: {e}", exc_info=True)
-
-    return False
-
-
-def kick_user_thread(client: Client, gid: int, uid: Union[int, str]) -> bool:
-    # Kick a user thread
     try:
         kick_chat_member(client, gid, uid)
         sleep(3)
         unban_chat_member(client, gid, uid)
-
-        return True
+        result = True
     except Exception as e:
-        logger.warning(f"Kick user thread error: {e}", exc_info=True)
+        logger.warning(f"Kick user error: {e}", exc_info=True)
 
-    return False
+    return result
 
 
+@threaded()
 def restrict_user(client: Client, gid: int, uid: Union[int, str]) -> bool:
     # Restrict a user
+    result = False
+
     try:
         if uid in glovar.bad_ids["users"]:
             return True
 
-        thread(restrict_chat_member, (client, gid, uid, ChatPermissions()))
-
-        return True
+        result = restrict_chat_member(client, gid, uid, ChatPermissions())
     except Exception as e:
         logger.warning(f"Restrict user error: {e}", exc_info=True)
 
-    return False
+    return result
 
 
 def terminate_user(client: Client, message: Message, user: User, the_type: str) -> bool:

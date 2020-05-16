@@ -37,8 +37,8 @@ from ..functions.receive import receive_add_bad, receive_add_except, receive_cle
 from ..functions.receive import receive_config_reply, receive_config_show, receive_declared_message, receive_help_ban
 from ..functions.receive import receive_help_delete, receive_help_kick, receive_help_log
 from ..functions.receive import receive_leave_approve, receive_refresh, receive_remove_bad, receive_remove_except
-from ..functions.receive import receive_remove_score, receive_remove_watch, receive_rollback, receive_status_ask
-from ..functions.receive import receive_text_data, receive_user_score, receive_watch_user
+from ..functions.receive import receive_remove_score, receive_remove_watch, receive_rollback, receive_special_delete
+from ..functions.receive import receive_status_ask, receive_text_data, receive_user_score, receive_watch_user
 from ..functions.telegram import get_admins, read_history, read_mention, send_message
 from ..functions.tests import preview_test
 from ..functions.timers import backup_files
@@ -285,12 +285,15 @@ def mark_message(client: Client, message: Message) -> bool:
                    & exchange_channel)
 def process_data(client: Client, message: Message) -> bool:
     # Process the data in exchange channel
+    result = False
+
     glovar.locks["receive"].acquire()
+
     try:
         data = receive_text_data(message)
 
         if not data:
-            return True
+            return False
 
         sender = data["from"]
         receivers = data["to"]
@@ -310,9 +313,13 @@ def process_data(client: Client, message: Message) -> bool:
                     if action_type == "delete":
                         receive_help_delete(client, data)
                     elif action_type == "kick":
-                        receive_help_kick(client, data)
+                        receive_help_kick(client, message, data)
                     elif action_type == "log":
                         receive_help_log(client, data)
+
+                elif action == "special":
+                    if action_type == "delete":
+                        receive_special_delete(client, message, data)
 
                 elif action == "update":
                     if action_type == "declare":
@@ -391,15 +398,14 @@ def process_data(client: Client, message: Message) -> bool:
             elif sender == "MANAGE":
 
                 if action == "add":
-                    if action == "add":
-                        if action_type == "bad":
-                            receive_add_bad(sender, data)
-                        elif action_type == "except":
-                            receive_add_except(data)
+                    if action_type == "bad":
+                        receive_add_bad(sender, data)
+                    elif action_type == "except":
+                        receive_add_except(data)
 
                 elif action == "backup":
                     if action_type == "now":
-                        thread(backup_files, (client,))
+                        backup_files(client)
                     elif action_type == "rollback":
                         receive_rollback(client, message, data)
 
@@ -490,39 +496,19 @@ def process_data(client: Client, message: Message) -> bool:
                     elif action_type == "score":
                         receive_user_score(sender, data)
 
-            elif sender == "RECHECK":
-
-                if action == "add":
-                    if action_type == "bad":
-                        receive_add_bad(sender, data)
-                    elif action_type == "watch":
-                        receive_watch_user(data)
-
-                elif action == "help":
-                    if action_type == "ban":
-                        receive_help_ban(client, data)
-                    elif action_type == "delete":
-                        receive_help_delete(client, data)
-
-                elif action == "update":
-                    if action_type == "declare":
-                        receive_declared_message(data)
-                    elif action_type == "score":
-                        receive_user_score(sender, data)
-
             elif sender == "WARN":
 
                 if action == "help":
                     if action_type == "delete":
                         receive_help_delete(client, data)
 
-        return True
+        result = True
     except Exception as e:
         logger.warning(f"Process data error: {e}", exc_info=True)
     finally:
         glovar.locks["receive"].release()
 
-    return False
+    return result
 
 
 @Client.on_message(Filters.incoming & Filters.group & ~Filters.service

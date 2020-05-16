@@ -321,33 +321,47 @@ def receive_help_delete(client: Client, data: dict) -> bool:
     return False
 
 
-def receive_help_kick(client: Client, data: dict) -> bool:
+def receive_help_kick(client: Client, message: Message, data: int) -> bool:
+    # Receive help kick
+    result = False
+
     try:
         # Basic data
-        gid = data["group_id"]
-        uid = data["user_id"]
+        gid = data
+
+        # Get the user list
+        user_list = receive_file_data(client, message)
+
+        if user_list is None:
+            return False
 
         # Kick the user
-        kick_user(client, gid, uid)
+        for uid in user_list:
+            kick_user(client, gid, uid)
+            delete_all_messages(client, gid, uid)
 
-        return True
+        result = True
     except Exception as e:
         logger.warning(f"Receive help kick error: {e}", exc_info=True)
 
-    return False
+    return result
 
 
 def receive_help_log(client: Client, data: dict) -> bool:
     # Receive check log request
+    result = False
+
     try:
         # Basic data
         gid = data["group_id"]
         begin = data["begin"]
         end = data["end"]
 
-        if not glovar.admin_ids.get(gid):
-            return True
+        # Check the group
+        if glovar.admin_ids.get(gid) is None:
+            return False
 
+        # Get the recent actions
         event_filter = ChannelAdminLogEventsFilter(join=True)
         log_list = get_admin_log(
             client=client,
@@ -356,20 +370,14 @@ def receive_help_log(client: Client, data: dict) -> bool:
         )
 
         if not log_list:
-            return True
+            return False
 
-        users = set()
-
-        for log in log_list:
-            for event in log.events:
-                if not begin - 60 <= event.date <= end:
-                    continue
-
-                users.add(event.user_id)
+        # Get the user list
+        user_list = {event.user_id for log in log_list for event in log.events if begin - 60 <= event.date <= end}
 
         # Share the users
-        file = data_to_file(users)
-        share_data(
+        file = data_to_file(user_list)
+        result = share_data(
             client=client,
             receivers=["CAPTCHA"],
             action="help",
@@ -377,12 +385,10 @@ def receive_help_log(client: Client, data: dict) -> bool:
             data=gid,
             file=file
         )
-
-        return True
     except Exception as e:
         logger.warning(f"Receive help log error: {e}", exc_info=True)
 
-    return False
+    return result
 
 
 def receive_leave_approve(client: Client, data: dict) -> bool:
@@ -555,6 +561,31 @@ def receive_rollback(client: Client, message: Message, data: dict) -> bool:
         logger.warning(f"Receive rollback error: {e}", exc_info=True)
 
     return False
+
+
+def receive_special_delete(client: Client, message: Message, data: int) -> bool:
+    # Receive special delete
+    result = False
+
+    try:
+        # Basic data
+        gid = data
+
+        # Get the user list
+        user_list = receive_file_data(client, message)
+
+        if user_list is None:
+            return False
+
+        # Clear messages
+        for uid in user_list:
+            delete_all_messages(client, gid, uid)
+
+        result = True
+    except Exception as e:
+        logger.warning(f"Receive special delete error: {e}", exc_info=True)
+
+    return result
 
 
 def receive_status_ask(client: Client, data: dict) -> bool:

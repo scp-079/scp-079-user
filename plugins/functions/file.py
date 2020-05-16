@@ -27,7 +27,8 @@ from pyAesCrypt import decryptFile, encryptFile
 from pyrogram import Client
 
 from .. import glovar
-from .etc import random_str, thread
+from .decorators import threaded
+from .etc import random_str
 from .telegram import download_media
 
 # Enable logging
@@ -113,31 +114,20 @@ def get_new_path(extension: str = "", prefix: str = "") -> str:
     return result
 
 
+@threaded(daemon=False)
 def save(file: str) -> bool:
     # Save a global variable to a file
-    try:
-        thread(save_thread, (file,))
+    result = False
 
-        return True
-    except Exception as e:
-        logger.warning(f"Save error: {e}", exc_info=True)
-
-    return False
-
-
-def save_thread(file: str) -> bool:
-    # Save thread
     try:
         if not glovar:
-            return True
+            return False
 
         with open(f"data/.{file}", "wb") as f:
             dump(eval(f"glovar.{file}"), f)
 
-        copyfile(f"data/.{file}", f"data/{file}")
-
-        return True
+        result = copyfile(f"data/.{file}", f"data/{file}") or True
     except Exception as e:
-        logger.error(f"Save thread error: {e}", exc_info=True)
+        logger.warning(f"Save error: {e}", exc_info=True)
 
-    return False
+    return result
