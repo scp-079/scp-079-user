@@ -138,7 +138,6 @@ if (prefix == []
         or noflood_id == 0
         or noporn_id == 0
         or nospam_id == 0
-        or recheck_id == 0
         or tip_id == 0
         or user_id == 0
         or warn_id == 0
