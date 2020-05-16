@@ -261,6 +261,57 @@ def receive_file_data(client: Client, message: Message, decrypt: bool = True) ->
     return data
 
 
+def receive_flood_delete(client: Client, message: Message, data: int) -> bool:
+    # Receive flood delete
+    result = False
+
+    try:
+        # Basic data
+        gid = data
+
+        # Get the user list
+        user_list = receive_file_data(client, message)
+
+        if user_list is None:
+            return False
+
+        # Clear messages
+        for uid in user_list:
+            delete_all_messages(client, gid, uid)
+
+        result = True
+    except Exception as e:
+        logger.warning(f"Receive flood delete error: {e}", exc_info=True)
+
+    return result
+
+
+def receive_flood_score(client: Client, message: Message) -> bool:
+    # Receive flood users' score
+    result = False
+
+    glovar.locks["message"].acquire()
+
+    try:
+        users = receive_file_data(client, message)
+
+        if users is None:
+            return False
+
+        user_list = [uid for uid in list(users) if init_user_id(uid)]
+
+        for uid in user_list:
+            glovar.user_ids[uid]["score"]["captcha"] = users[uid]
+
+        save("user_ids")
+    except Exception as e:
+        logger.warning(f"Receive flood score error: {e}", exc_info=True)
+    finally:
+        glovar.locks["message"].release()
+
+    return result
+
+
 def receive_help_ban(client: Client, data: dict) -> bool:
     # Receive help ban request
     glovar.locks["message"].acquire()
@@ -561,31 +612,6 @@ def receive_rollback(client: Client, message: Message, data: dict) -> bool:
         logger.warning(f"Receive rollback error: {e}", exc_info=True)
 
     return False
-
-
-def receive_special_delete(client: Client, message: Message, data: int) -> bool:
-    # Receive special delete
-    result = False
-
-    try:
-        # Basic data
-        gid = data
-
-        # Get the user list
-        user_list = receive_file_data(client, message)
-
-        if user_list is None:
-            return False
-
-        # Clear messages
-        for uid in user_list:
-            delete_all_messages(client, gid, uid)
-
-        result = True
-    except Exception as e:
-        logger.warning(f"Receive special delete error: {e}", exc_info=True)
-
-    return result
 
 
 def receive_status_ask(client: Client, data: dict) -> bool:
