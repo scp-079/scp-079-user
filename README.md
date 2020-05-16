@@ -12,7 +12,8 @@ This bot is used to invite and help other bots.
 ## Requirements
 
 - Python 3.6 or higher.
-- pip: `pip install -r requirements.txt` or `pip install -U APScheduler Pillow pyAesCrypt pyrogram[fast]`
+- pip: `pip install -r requirements.txt` 
+- or pip: `pip install -U APScheduler Pillow pyAesCrypt pyrogram pyyaml tgcrypto`
 
 ## Files
 
