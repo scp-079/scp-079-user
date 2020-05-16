@@ -248,9 +248,9 @@ def get_group_info(client: Client, chat: Union[int, Chat], cache: bool = True) -
             the_cache = glovar.chats.get(chat)
 
             if cache and the_cache:
-                return the_cache
-
-            result = get_chat(client, chat)
+                result = the_cache
+            else:
+                result = get_chat(client, chat)
 
             if result:
                 glovar.chats[chat] = result
@@ -266,7 +266,7 @@ def get_group_info(client: Client, chat: Union[int, Chat], cache: bool = True) -
         if chat.username:
             group_link = "https://t.me/" + chat.username
     except Exception as e:
-        logger.info(f"Get group {chat} info error: {e}", exc_info=True)
+        logger.warning(f"Get group {chat} info error: {e}", exc_info=True)
 
     return group_name, group_link
 
