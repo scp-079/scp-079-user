@@ -68,8 +68,8 @@ def interval_hour_01(client: Client) -> bool:
 
     try:
         # Ignore groups
-        group_list = [gid for gid in list(glovar.configs)
-                      if not any(glovar.configs[gid].get(s) for s in ["sb", "sr", "sd"])]
+        group_list = {gid for gid in list(glovar.configs)
+                      if not any(glovar.configs[gid].get(s) for s in ["sb", "sr", "sd"])}
         file = data_to_file(group_list)
         share_data(
             client=client,
