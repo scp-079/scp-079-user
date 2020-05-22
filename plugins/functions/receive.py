@@ -28,6 +28,7 @@ from pyrogram.api.types import ChannelAdminLogEventsFilter
 from .. import glovar
 from .channel import get_debug_text, share_data
 from .etc import code, crypt_str, general_link, get_int, get_text, lang, mention_id, thread
+from .decorators import threaded
 from .file import crypt_file, data_to_file, delete_file, get_new_path, get_downloaded_path, save
 from .group import delete_messages_globally, get_config_text, leave_group
 from .ids import init_group_id, init_user_id
@@ -372,6 +373,7 @@ def receive_help_delete(client: Client, data: dict) -> bool:
     return False
 
 
+@threaded()
 def receive_help_kick(client: Client, message: Message, data: int) -> bool:
     # Receive help kick
     result = False
