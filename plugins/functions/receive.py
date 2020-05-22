@@ -387,7 +387,10 @@ def receive_help_kick(client: Client, message: Message, data: int) -> bool:
             return False
 
         # Kick the user
+        i = 0
         for uid in user_list:
+            i += 1
+            logger.warning(i)
             kick_chat_member(client, gid, uid)
             # kick_user(client, gid, uid)
             # thread(delete_all_messages, (client, gid, uid))
