@@ -30,7 +30,7 @@ from pyrogram.errors import FloodWait, MessageDeleteForbidden, PeerIdInvalid
 from pyrogram.errors import UsernameInvalid, UsernameNotOccupied, UserNotParticipant
 
 from .. import glovar
-from .decorators import retry, threaded
+from .decorators import retry
 from .etc import delay, get_int
 
 # Enable logging
@@ -73,7 +73,6 @@ def delete_messages_100(client: Client, cid: int, mids: Iterable[int]) -> Option
     return result
 
 
-@threaded()
 @retry
 def delete_all_messages(client: Client, gid: int, uid: int) -> bool:
     # Delete a user's all messages in a group
@@ -320,7 +319,6 @@ def leave_chat(client: Client, cid: int, delete: bool = False) -> bool:
     return result
 
 
-@threaded()
 @retry
 def read_history(client: Client, cid: int) -> bool:
     # Mark messages in a chat as read
@@ -336,7 +334,6 @@ def read_history(client: Client, cid: int) -> bool:
     return result
 
 
-@threaded()
 @retry
 def read_mention(client: Client, cid: int) -> bool:
     # Mark a mention as read
@@ -526,7 +523,6 @@ def send_photo(client: Client, cid: int, photo: str, file_ref: str = None, capti
     return result
 
 
-@threaded()
 @retry
 def send_report_message(secs: int, client: Client, cid: int, text: str, mid: int = None,
                         markup: InlineKeyboardMarkup = None) -> Optional[bool]:

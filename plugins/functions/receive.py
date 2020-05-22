@@ -277,7 +277,7 @@ def receive_flood_delete(client: Client, message: Message, data: int) -> bool:
 
         # Clear messages
         for uid in user_list:
-            delete_all_messages(client, gid, uid)
+            thread(delete_all_messages, (client, gid, uid))
 
         result = True
     except Exception as e:
@@ -389,7 +389,7 @@ def receive_help_kick(client: Client, message: Message, data: int) -> bool:
         # Kick the user
         for uid in user_list:
             kick_user(client, gid, uid)
-            delete_all_messages(client, gid, uid)
+            thread(delete_all_messages, (client, gid, uid))
 
         result = True
     except Exception as e:

@@ -74,7 +74,7 @@ def delete_messages_globally(client: Client, uid: int, no_id: int = 0) -> bool:
             if not glovar.configs[gid].get("delete", True) or not should_delete:
                 continue
 
-            delete_all_messages(client, gid, uid)
+            thread(delete_all_messages, (client, gid, uid))
 
         result = True
     except Exception as e:
