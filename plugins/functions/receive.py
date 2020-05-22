@@ -398,7 +398,7 @@ def receive_help_kick(client: Client, message: Message, data: int) -> bool:
     return result
 
 
-def receive_help_log(client: Client, data: dict) -> bool:
+def receive_help_log(client: Client, data: dict, manual: bool = False) -> bool:
     # Receive check log request
     result = False
 
@@ -433,7 +433,10 @@ def receive_help_log(client: Client, data: dict) -> bool:
             receivers=["CAPTCHA"],
             action="help",
             action_type="log",
-            data=gid,
+            data={
+                "group_id": gid,
+                "manual": manual
+            },
             file=file
         )
     except Exception as e:

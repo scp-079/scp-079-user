@@ -419,6 +419,10 @@ def process_data(client: Client, message: Message) -> bool:
                     if action_type == "show":
                         receive_config_show(client, data)
 
+                elif action == "help":
+                    if action_type == "log":
+                        receive_help_log(client, data, True)
+
                 elif action == "leave":
                     if action_type == "approve":
                         receive_leave_approve(client, data)
