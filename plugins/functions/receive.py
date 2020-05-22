@@ -28,13 +28,12 @@ from pyrogram.api.types import ChannelAdminLogEventsFilter
 from .. import glovar
 from .channel import get_debug_text, share_data
 from .etc import code, crypt_str, general_link, get_int, get_text, lang, mention_id, thread
-from .decorators import threaded
 from .file import crypt_file, data_to_file, delete_file, get_new_path, get_downloaded_path, save
 from .group import delete_messages_globally, get_config_text, leave_group
 from .ids import init_group_id, init_user_id
-from .telegram import delete_all_messages, kick_chat_member, get_admin_log, send_message, send_report_message
+from .telegram import delete_all_messages, get_admin_log, send_message, send_report_message
 from .timers import update_admins
-from .user import ban_user, ban_user_globally, kick_user, unban_user_globally
+from .user import ban_user_globally, kick_user, unban_user_globally
 
 # Enable logging
 logger = logging.getLogger(__name__)
@@ -373,7 +372,6 @@ def receive_help_delete(client: Client, data: dict) -> bool:
     return False
 
 
-@threaded()
 def receive_help_kick(client: Client, message: Message, data: int) -> bool:
     # Receive help kick
     result = False
@@ -389,13 +387,9 @@ def receive_help_kick(client: Client, message: Message, data: int) -> bool:
             return False
 
         # Kick the user
-        i = 0
         for uid in user_list:
-            i += 1
-            logger.warning(i)
-            kick_chat_member(client, gid, uid)
-            # kick_user(client, gid, uid)
-            # thread(delete_all_messages, (client, gid, uid))
+            kick_user(client, gid, uid)
+            thread(delete_all_messages, (client, gid, uid))
 
         result = True
     except Exception as e:
