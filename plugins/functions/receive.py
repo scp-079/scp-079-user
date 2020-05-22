@@ -31,7 +31,7 @@ from .etc import code, crypt_str, general_link, get_int, get_text, lang, mention
 from .file import crypt_file, data_to_file, delete_file, get_new_path, get_downloaded_path, save
 from .group import delete_messages_globally, get_config_text, leave_group
 from .ids import init_group_id, init_user_id
-from .telegram import delete_all_messages, get_admin_log, send_message, send_report_message
+from .telegram import delete_all_messages, kick_chat_member, get_admin_log, send_message, send_report_message
 from .timers import update_admins
 from .user import ban_user, ban_user_globally, kick_user, unban_user_globally
 
@@ -388,7 +388,7 @@ def receive_help_kick(client: Client, message: Message, data: int) -> bool:
 
         # Kick the user
         for uid in user_list:
-            ban_user(client, gid, uid)
+            kick_chat_member(client, gid, uid)
             # kick_user(client, gid, uid)
             # thread(delete_all_messages, (client, gid, uid))
 

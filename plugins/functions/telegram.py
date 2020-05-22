@@ -295,6 +295,7 @@ def kick_chat_member(client: Client, cid: int, uid: Union[int, str]) -> Union[bo
     try:
         result = client.kick_chat_member(chat_id=cid, user_id=uid)
     except FloodWait as e:
+        logger.warning(f"Sleep for {e.x} second(s)")
         raise e
     except Exception as e:
         logger.warning(f"Kick chat member {uid} in {cid} error: {e}", exc_info=True)

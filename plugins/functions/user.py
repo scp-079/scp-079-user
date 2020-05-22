@@ -57,7 +57,7 @@ def add_bad_user(client: Client, uid: int) -> bool:
 def ban_user(client: Client, gid: int, uid: Union[int, str]) -> bool:
     # Ban a user
     try:
-        kick_chat_member(client, gid, uid)
+        thread(kick_chat_member, (client, gid, uid))
 
         return True
     except Exception as e:
