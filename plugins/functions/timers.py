@@ -27,7 +27,7 @@ from .decorators import threaded
 from .etc import code, general_link, lang, thread
 from .file import data_to_file, save
 from .group import leave_group, save_admins
-from .telegram import get_admins, get_group_info, send_message
+from .telegram import get_admins, get_group_info, send_message, send_report_message
 
 # Enable logging
 logger = logging.getLogger(__name__)
@@ -88,22 +88,25 @@ def interval_hour_01(client: Client) -> bool:
 
 def interval_min_10(client: Client) -> bool:
     # Execute every 10 minutes
+    result = False
+
     glovar.locks["message"].acquire()
+
     try:
         # Clear recorded users
         for gid in list(glovar.recorded_ids):
             glovar.recorded_ids[gid] = set()
 
-        # Send /long
-        thread(send_message, (client, glovar.captcha_group_id, "/long"))
+        # Send /long to LONG
+        thread(send_report_message, (10, client, glovar.captcha_group_id, "/long"))
 
-        return True
+        result = True
     except Exception as e:
         logger.warning(f"Interval min 10 error: {e}", exc_info=True)
     finally:
         glovar.locks["message"].release()
 
-    return False
+    return result
 
 
 def reset_data(client: Client) -> bool:
