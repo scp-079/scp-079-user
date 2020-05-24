@@ -27,7 +27,7 @@ from ..functions.channel import get_debug_text, share_data
 from ..functions.etc import code, delay, general_link, get_channel_link, get_stripped_link, get_text, get_now, lang
 from ..functions.etc import mention_id, thread
 from ..functions.file import data_to_file, delete_file, get_downloaded_path, save
-from ..functions.filters import authorized_group, captcha_group, class_c, class_d, class_e, declared_message
+from ..functions.filters import aio, authorized_group, captcha_group, class_c, class_d, class_e, declared_message
 from ..functions.filters import exchange_channel, from_user, hide_channel, is_class_d_user, is_declared_message
 from ..functions.filters import is_friend_username, is_high_score_user, is_not_allowed, is_watch_user
 from ..functions.filters import new_group, test_group
@@ -281,7 +281,7 @@ def mark_message(client: Client, message: Message) -> bool:
     return False
 
 
-@Client.on_message((Filters.incoming or glovar.aio) & Filters.channel
+@Client.on_message((Filters.incoming | aio) & Filters.channel
                    & ~Filters.command(glovar.all_commands, glovar.prefix)
                    & exchange_channel)
 def process_data(client: Client, message: Message) -> bool:
