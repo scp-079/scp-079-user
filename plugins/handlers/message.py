@@ -548,7 +548,7 @@ def share_preview(client: Client, message: Message) -> bool:
             return True
 
         # Bypass prepare
-        link = web_page.display_url
+        link = web_page.display_url.lower()
         description = get_description(client, gid).lower()
         pinned_message = get_pinned(client, gid)
         pinned_text = get_text(pinned_message).lower()
