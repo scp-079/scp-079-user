@@ -17,7 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
-from typing import List, Optional
+from typing import Iterable, List, Optional
 
 from pyrogram import Chat, ChatMember, Client, Message
 
@@ -74,11 +74,30 @@ def delete_messages_globally(client: Client, uid: int, no_id: int = 0) -> bool:
             if not glovar.configs[gid].get("delete", True) or not should_delete:
                 continue
 
-            thread(delete_all_messages, (client, gid, uid))
+            delete_all_messages(client, gid, uid)
 
         result = True
     except Exception as e:
         logger.warning(f"Delete messages globally error: {e}", exc_info=True)
+
+    return result
+
+
+@threaded()
+def delete_messages_from_users(client: Client, gid: int, uids: Iterable[int]) -> bool:
+    # Delete messages from users
+    result = False
+
+    try:
+        if not uids:
+            return False
+
+        for uid in uids:
+            delete_all_messages(client, gid, uid)
+
+        result = True
+    except Exception as e:
+        logger.warning(f"Delete messages from users error: {e}", exc_info=True)
 
     return result
 

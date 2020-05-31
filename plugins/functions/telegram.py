@@ -31,7 +31,7 @@ from pyrogram.errors import UsernameInvalid, UsernameNotOccupied, UserNotPartici
 
 from .. import glovar
 from .decorators import retry
-from .etc import delay, get_int
+from .etc import delay, get_int, wait_flood
 
 # Enable logging
 logger = logging.getLogger(__name__)
@@ -287,16 +287,26 @@ def get_messages(client: Client, cid: int, mids: Union[int, Iterable[int]]) -> U
     return result
 
 
-@retry
-def kick_chat_member(client: Client, cid: int, uid: Union[int, str], log: bool = False) -> Union[bool, Message, None]:
+def kick_chat_member(client: Client, cid: int, uid: Union[int, str],
+                     until_date: int = 0) -> Union[bool, Message, None]:
     # Kick a chat member in a group
     result = None
 
     try:
-        result = client.kick_chat_member(chat_id=cid, user_id=uid)
+        result = client.kick_chat_member(chat_id=cid, user_id=uid, until_date=until_date)
     except FloodWait as e:
-        log and logger.warning(f"Kick chat member {uid} in {cid} - Sleep for {e.x} second(s)")
-        raise e
+        logger.warning(f"Kick chat member {uid} in {cid} - Sleep for {e.x} second(s)")
+
+        if until_date:
+            new_date = until_date + e.x
+        else:
+            new_date = 0
+
+        wait_flood(e)
+
+        return kick_chat_member(client, cid, uid, new_date)
+    except PeerIdInvalid:
+        return False
     except Exception as e:
         logger.warning(f"Kick chat member {uid} in {cid} error: {e}", exc_info=True)
 

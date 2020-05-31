@@ -18,14 +18,14 @@
 
 import logging
 from time import sleep
-from typing import Union
+from typing import Iterable, Union
 
 from pyrogram import ChatPermissions, Client, Message, User
 
 from .. import glovar
 from .channel import forward_evidence, send_debug, share_bad_user
 from .decorators import threaded
-from .etc import code, general_link, lang, thread
+from .etc import code, general_link, get_now, lang, thread
 from .file import save
 from .filters import is_class_d_user, is_declared_message
 from .group import delete_message
@@ -54,16 +54,21 @@ def add_bad_user(client: Client, uid: int) -> bool:
     return False
 
 
-def ban_user(client: Client, gid: int, uid: Union[int, str]) -> bool:
+@threaded()
+def ban_user(client: Client, gid: int, uid: Union[int, str], lock: bool = False) -> bool:
     # Ban a user
-    try:
-        thread(kick_chat_member, (client, gid, uid))
+    result = False
 
-        return True
+    lock and glovar.locks["ban"].acquire()
+
+    try:
+        result = kick_chat_member(client, gid, uid)
     except Exception as e:
         logger.warning(f"Ban user error: {e}", exc_info=True)
+    finally:
+        lock and glovar.locks["ban"].release()
 
-    return False
+    return result
 
 
 def ban_user_globally(client: Client, gid: int, uid: int) -> bool:
@@ -99,7 +104,7 @@ def ban_user_globally(client: Client, gid: int, uid: int) -> bool:
             # Global ban
             if glovar.configs[group_id].get("gb"):
                 glovar.user_ids[uid]["ban"].add(group_id)
-                ban_user(client, group_id, uid)
+                ban_user(client, group_id, uid, True)
                 glovar.configs[group_id].get("delete") and thread(delete_all_messages, (client, group_id, uid))
                 text += f"{lang('action')}{lang('colon')}{code(lang('gb'))}\n"
 
@@ -142,6 +147,26 @@ def kick_user(client: Client, gid: int, uid: Union[int, str]) -> bool:
         result = True
     except Exception as e:
         logger.warning(f"Kick user error: {e}", exc_info=True)
+
+    return result
+
+
+@threaded()
+def kick_users(client: Client, gid: int, uids: Iterable[int]) -> bool:
+    # Kick users
+    result = False
+
+    try:
+        if not uids:
+            return False
+
+        for uid in uids:
+            now = get_now()
+            kick_chat_member(client, gid, uid, now + 600)
+
+        result = True
+    except Exception as e:
+        logger.warning(f"Kick users error: {e}", exc_info=True)
 
     return result
 

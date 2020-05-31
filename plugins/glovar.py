@@ -342,6 +342,7 @@ default_user_status: Dict[str, Union[Set[int], Dict[str, float]]] = {
 
 locks: Dict[str, Lock] = {
     "admin": Lock(),
+    "ban": Lock(),
     "message": Lock(),
     "preview": Lock(),
     "receive": Lock(),

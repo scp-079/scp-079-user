@@ -30,11 +30,11 @@ from .channel import get_debug_text, share_data
 from .decorators import threaded
 from .etc import code, crypt_str, general_link, get_int, get_text, lang, mention_id, thread
 from .file import crypt_file, data_to_file, delete_file, get_new_path, get_downloaded_path, save
-from .group import delete_messages_globally, get_config_text, leave_group
+from .group import delete_messages_globally, delete_messages_from_users, get_config_text, leave_group
 from .ids import init_group_id, init_user_id
-from .telegram import delete_all_messages, kick_chat_member, get_admin_log, send_message, send_report_message
+from .telegram import delete_all_messages, get_admin_log, send_message, send_report_message
 from .timers import update_admins
-from .user import ban_user_globally, kick_user, unban_user_globally
+from .user import ban_user_globally, kick_users, unban_user_globally
 
 # Enable logging
 logger = logging.getLogger(__name__)
@@ -277,8 +277,7 @@ def receive_flood_delete(client: Client, message: Message, data: int) -> bool:
             return False
 
         # Clear messages
-        for uid in user_list:
-            thread(delete_all_messages, (client, gid, uid))
+        delete_messages_from_users(client, gid, user_list)
 
         result = True
     except Exception as e:
@@ -347,6 +346,68 @@ def receive_help_ban(client: Client, data: dict) -> bool:
     return False
 
 
+def receive_help_confirm(client: Client, data: dict) -> bool:
+    # Receive help confirm
+    result = False
+
+    try:
+        # Basic data
+        gid = data["group_id"]
+        begin = data["begin"]
+        end = data["end"]
+        limit = data["limit"]
+
+        # Check the group
+        if glovar.admin_ids.get(gid) is None:
+            return False
+
+        # Get the recent actions
+        event_filter = ChannelAdminLogEventsFilter(join=True)
+        log_list = get_admin_log(
+            client=client,
+            cid=gid,
+            event_filter=event_filter
+        )
+
+        # Check the log list
+        if not log_list:
+            return share_data(
+                client=client,
+                receivers=["CAPTCHA"],
+                action="help",
+                action_type="confirm",
+                data={
+                    "group_id": gid,
+                    "status": "end"
+                }
+            )
+
+        # Get the user list
+        user_list = {event.user_id for log in log_list for event in log.events if begin <= event.date <= end}
+
+        # Check the user list
+        if len(user_list) >= limit:
+            status = "ongoing"
+        else:
+            status = "end"
+
+        # Share the report
+        result = share_data(
+            client=client,
+            receivers=["CAPTCHA"],
+            action="help",
+            action_type="confirm",
+            data={
+                "group_id": gid,
+                "status": status
+            }
+        )
+    except Exception as e:
+        logger.warning(f"Receive help confirm error: {e}", exc_info=True)
+
+    return result
+
+
 def receive_help_delete(client: Client, data: dict) -> bool:
     # Receive help delete request
     glovar.locks["message"].acquire()
@@ -390,13 +451,9 @@ def receive_help_kick(client: Client, message: Message, data: dict) -> bool:
             return False
 
         # Kick the user
-        for uid in user_list:
-            if manual:
-                kick_chat_member(client, gid, uid)
-                logger.warning(f"Banned {uid} in {gid}")
-            else:
-                kick_user(client, gid, uid)
-                thread(delete_all_messages, (client, gid, uid))
+        kick_users(client, gid, user_list)
+        manual and logger.warning(f"Banned {user_list} in {gid}")
+        delete_messages_from_users(client, gid, user_list)
 
         result = True
     except Exception as e:
