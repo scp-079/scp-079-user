@@ -31,7 +31,7 @@ from ..functions.filters import aio, authorized_group, captcha_group, class_c, c
 from ..functions.filters import exchange_channel, from_user, hide_channel, is_class_d_user, is_declared_message
 from ..functions.filters import is_friend_username, is_high_score_user, is_not_allowed, is_watch_user
 from ..functions.filters import new_group, test_group
-from ..functions.group import delete_message, get_description, get_pinned, leave_group
+from ..functions.group import delete_message, get_description, get_pinned, leave_group, save_admins
 from ..functions.ids import init_group_id
 from ..functions.receive import receive_add_bad, receive_add_except, receive_clear_data, receive_config_commit
 from ..functions.receive import receive_config_reply, receive_config_show, receive_declared_message
@@ -40,7 +40,7 @@ from ..functions.receive import receive_help_delete, receive_help_kick, receive_
 from ..functions.receive import receive_refresh, receive_remove_bad, receive_remove_except, receive_remove_score
 from ..functions.receive import receive_remove_watch, receive_rollback, receive_status_ask, receive_text_data
 from ..functions.receive import receive_user_score, receive_watch_user
-from ..functions.telegram import get_admins, read_history, read_mention, send_message
+from ..functions.telegram import get_admins, get_group_info, read_history, read_mention, send_message
 from ..functions.tests import preview_test
 from ..functions.timers import backup_files
 from ..functions.user import terminate_user
@@ -174,6 +174,10 @@ def exchange_emergency(client: Client, message: Message) -> bool:
                    & from_user)
 def init_group(client: Client, message: Message) -> bool:
     # Initiate new groups
+    result = False
+
+    glovar.locks["admin"].acquire()
+
     try:
         # Basic data
         gid = message.chat.id
@@ -184,45 +188,12 @@ def init_group(client: Client, message: Message) -> bool:
         text = get_debug_text(client, message.chat)
 
         # Check permission
-        if ((not is_class_d_user(inviter)
-                and not is_watch_user(inviter, "ban", now)
-                and not is_watch_user(inviter, "delete", now)
-                and not is_high_score_user(inviter))
-                or inviter.is_self) and message.chat.type == "supergroup":
-            # Remove the left status
-            if gid in glovar.left_group_ids:
-                glovar.left_group_ids.discard(gid)
-                save("left_group_ids")
-
-            # Update group's admin list
-            if not init_group_id(gid):
-                return True
-
-            admin_members = get_admins(client, gid)
-
-            if admin_members:
-                # Admin list
-                glovar.admin_ids[gid] = {admin.user.id for admin in admin_members
-                                         if (((not admin.user.is_bot and not admin.user.is_deleted)
-                                              and admin.can_delete_messages
-                                              and admin.can_restrict_members)
-                                             or admin.status == "creator"
-                                             or admin.user.id in glovar.bot_ids)}
-                save("admin_ids")
-
-                # Trust list
-                glovar.trust_ids[gid] = {admin.user.id for admin in admin_members
-                                         if ((not admin.user.is_bot and not admin.user.is_deleted)
-                                             or admin.user.id in glovar.bot_ids)}
-                save("trust_ids")
-
-                # Text
-                text += f"{lang('status')}{lang('colon')}{code(lang('status_joined'))}\n"
-            else:
-                thread(leave_group, (client, gid))
-                text += (f"{lang('status')}{lang('colon')}{code(lang('status_left'))}\n"
-                         f"{lang('reason')}{lang('colon')}{code(lang('reason_admin'))}\n")
-        else:
+        if (message.chat.type != "supergroup"
+                or ((is_class_d_user(inviter)
+                     or is_watch_user(inviter, "ban", now)
+                     or is_watch_user(inviter, "delete", now)
+                     or is_high_score_user(inviter))
+                    and not inviter.is_self)):
             if gid in glovar.left_group_ids:
                 return leave_group(client, gid)
 
@@ -230,6 +201,44 @@ def init_group(client: Client, message: Message) -> bool:
 
             text += (f"{lang('status')}{lang('colon')}{code(lang('status_left'))}\n"
                      f"{lang('reason')}{lang('colon')}{code(lang('reason_unauthorized'))}\n")
+
+            if message.from_user.username:
+                text += f"{lang('inviter')}{lang('colon')}{mention_id(inviter.id)}\n"
+            else:
+                text += f"{lang('inviter')}{lang('colon')}{code(inviter.id)}\n"
+
+            return thread(send_message, (client, glovar.debug_channel_id, text))
+
+        # Remove the left status
+        if gid in glovar.left_group_ids:
+            glovar.left_group_ids.discard(gid)
+            save("left_group_ids")
+
+        # Update group's admin list
+        if not init_group_id(gid):
+            return True
+
+        admin_members = get_admins(client, gid)
+
+        if admin_members:
+            save_admins(gid, admin_members)
+            text += f"{lang('status')}{lang('colon')}{code(lang('status_joined'))}\n"
+            group_name, group_link = get_group_info(client, gid)
+            share_data(
+                client=client,
+                receivers=["MANAGE"],
+                action="join",
+                action_type="info",
+                data={
+                    "group_id": gid,
+                    "group_name": group_name,
+                    "group_link": group_link
+                }
+            )
+        else:
+            thread(leave_group, (client, gid))
+            text += (f"{lang('status')}{lang('colon')}{code(lang('status_left'))}\n"
+                     f"{lang('reason')}{lang('colon')}{code(lang('reason_admin'))}\n")
 
         # Add inviter info
         if message.from_user.username:
@@ -240,11 +249,13 @@ def init_group(client: Client, message: Message) -> bool:
         # Send debug message
         thread(send_message, (client, glovar.debug_channel_id, text))
 
-        return True
+        result = True
     except Exception as e:
         logger.warning(f"Init group error: {e}", exc_info=True)
+    finally:
+        glovar.locks["admin"].release()
 
-    return False
+    return result
 
 
 @Client.on_message(Filters.incoming & ~Filters.private & Filters.mentioned, group=1)
