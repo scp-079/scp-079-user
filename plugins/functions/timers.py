@@ -188,9 +188,6 @@ def update_admins(client: Client) -> bool:
             elif any(admin.user.is_self
                      and admin.can_delete_messages
                      and admin.can_restrict_members
-                     and admin.can_invite_users
-                     and admin.can_pin_messages
-                     and admin.can_promote_members
                      for admin in admin_members):
                 glovar.lack_group_ids.discard(gid)
                 save("lack_group_ids")
