@@ -500,8 +500,6 @@ def receive_help_log(client: Client, data: dict, manual: bool = False) -> bool:
             action_type="log",
             data={
                 "group_id": gid,
-                "begin": begin,
-                "end": end,
                 "manual": manual
             },
             file=file
