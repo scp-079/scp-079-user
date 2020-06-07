@@ -32,7 +32,8 @@ from .etc import code, crypt_str, general_link, get_int, get_text, lang, mention
 from .file import crypt_file, data_to_file, delete_file, get_new_path, get_downloaded_path, save
 from .group import delete_messages_globally, delete_messages_from_users, get_config_text, leave_group
 from .ids import init_group_id, init_user_id
-from .telegram import delete_all_messages, get_admin_log, send_message, send_report_message
+from .telegram import delete_all_messages, get_admin_log, get_chat_member, promote_chat_member, send_message
+from .telegram import send_report_message
 from .timers import update_admins
 from .user import ban_user_globally, kick_users, unban_user_globally
 
@@ -507,6 +508,113 @@ def receive_help_log(client: Client, data: dict, manual: bool = False) -> bool:
         )
     except Exception as e:
         logger.warning(f"Receive help log error: {e}", exc_info=True)
+
+    return result
+
+
+@threaded()
+def receive_invite_try(client: Client, data: dict) -> bool:
+    # Receive invite try
+    result = False
+
+    try:
+        # Basic data
+        aid = data["admin_id"]
+        mid = data["message_id"]
+        gid = data["group_id"]
+        bots = data["bots"]
+
+        # Check the group status
+        if glovar.admin_ids.get(gid) is None:
+            return share_data(
+                client=client,
+                receivers=["MANAGE"],
+                action="invite",
+                action_type="result",
+                data={
+                    "admin_id": aid,
+                    "message_id": mid,
+                    "group_id": gid,
+                    "status": False,
+                    "reason": lang("USER 尚未加入该群组")
+                }
+            )
+
+        # Check USER's permissions
+        chat_member = get_chat_member(client, gid, glovar.user_id)
+
+        if (not chat_member
+                or not chat_member.can_delete_messages
+                or not chat_member.can_restrict_members
+                or not chat_member.can_invite_users
+                or not chat_member.can_pin_messages
+                or not chat_member.can_promote_members):
+            return share_data(
+                client=client,
+                receivers=["MANAGE"],
+                action="invite",
+                action_type="result",
+                data={
+                    "admin_id": aid,
+                    "message_id": mid,
+                    "group_id": gid,
+                    "status": False,
+                    "reason": lang("USER 权限缺失")
+                }
+            )
+
+        # Promote bots
+        for bot in bots:
+            bot_id = eval(f"glovar.{bot.lower()}_id")
+
+            if not bot_id:
+                continue
+
+            if bot in {"CLEAN", "LANG", "LONG", "NOFLOOD", "NOPORN", "NOSPAM", "WARN"}:
+                promote_chat_member(
+                    client=client,
+                    cid=gid,
+                    uid=bot_id,
+                    can_delete_messages=True,
+                    can_restrict_members=True
+                )
+            elif bot == "CAPTCHA":
+                promote_chat_member(
+                    client=client,
+                    cid=gid,
+                    uid=bot_id,
+                    can_delete_messages=True,
+                    can_restrict_members=True,
+                    can_pin_messages=True
+                )
+            elif bot == "TIP":
+                promote_chat_member(
+                    client=client,
+                    cid=gid,
+                    uid=bot_id,
+                    can_delete_messages=True,
+                    can_invite_users=True,
+                    can_pin_messages=True
+                )
+
+        # Share data
+        share_data(
+            client=client,
+            receivers=["MANAGE"],
+            action="invite",
+            action_type="result",
+            data={
+                    "admin_id": aid,
+                    "message_id": mid,
+                    "group_id": gid,
+                    "status": True,
+                    "reason": lang("USER 权限缺失")
+            }
+        )
+
+        result = True
+    except Exception as e:
+        logger.warning(f"Receive invite try error: {e}", exc_info=True)
 
     return result
 

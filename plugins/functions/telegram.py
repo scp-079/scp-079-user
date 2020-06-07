@@ -336,6 +336,40 @@ def leave_chat(client: Client, cid: int, delete: bool = False) -> bool:
 
 
 @retry
+def promote_chat_member(client: Client, cid: int, uid: Union[int, str],
+                        can_change_info: bool = False,
+                        can_post_messages: bool = False,
+                        can_edit_messages: bool = False,
+                        can_delete_messages: bool = False,
+                        can_restrict_members: bool = False,
+                        can_invite_users: bool = False,
+                        can_pin_messages: bool = False,
+                        can_promote_members: bool = False) -> Union[bool, None]:
+    # Promote or demote a user in a supergroup or a channel
+    result = None
+
+    try:
+        result = client.promote_chat_member(
+            chat_id=cid,
+            user_id=uid,
+            can_change_info=can_change_info,
+            can_post_messages=can_post_messages,
+            can_edit_messages=can_edit_messages,
+            can_delete_messages=can_delete_messages,
+            can_restrict_members=can_restrict_members,
+            can_invite_users=can_invite_users,
+            can_pin_messages=can_pin_messages,
+            can_promote_members=can_promote_members
+        )
+    except FloodWait as e:
+        raise e
+    except Exception as e:
+        logger.warning(f"Promote chat member {uid} in {cid} error: {e}", exc_info=True)
+
+    return result
+
+
+@retry
 def read_history(client: Client, cid: int) -> bool:
     # Mark messages in a chat as read
     result = False
