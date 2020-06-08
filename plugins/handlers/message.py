@@ -432,10 +432,6 @@ def process_data(client: Client, message: Message) -> bool:
                     if action_type == "show":
                         receive_config_show(client, data)
 
-                elif action == "help":
-                    if action_type == "log":
-                        receive_help_log(client, data, True)
-
                 elif action == "invite":
                     if action_type == "try":
                         receive_invite_try(client, data)

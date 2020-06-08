@@ -463,7 +463,7 @@ def receive_help_kick(client: Client, message: Message, data: dict) -> bool:
     return result
 
 
-def receive_help_log(client: Client, data: dict, manual: bool = False) -> bool:
+def receive_help_log(client: Client, data: dict) -> bool:
     # Receive check log request
     result = False
 
@@ -472,6 +472,7 @@ def receive_help_log(client: Client, data: dict, manual: bool = False) -> bool:
         gid = data["group_id"]
         begin = data["begin"]
         end = data["end"]
+        manual = data["manual"]
 
         # Check the group
         if glovar.admin_ids.get(gid) is None:
