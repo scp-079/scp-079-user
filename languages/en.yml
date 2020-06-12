@@ -1,0 +1,108 @@
+action: Action
+action_mention: Mention User
+action_undo_white: Remove from Whitelist
+action_white: Add to Whitelist
+admin: Admin
+admin_group: Group Admin
+admin_project: Project Admin
+auto_ban: Auto Ban
+auto_delete: Auto Delete
+auto_fix: Auto Fix
+cannot_forward: The Message Cannot be Forwarded to Channel
+clear: Clear Data
+colon: ': '
+command_lack: Lack of Parameter
+command_para: Incorrect Command Parameter
+command_type: Incorrect Command Type
+command_usage: Incorrect Usage
+config: Settings
+config_button: Press the Button to Config
+config_change: Change Config
+config_create: Create Config Session
+config_go: Go to Config
+config_link: Click Here to Config
+config_locked: Config is Locked
+config_show: Show Config
+config_updated: Updated
+contact: Contact
+custom: Custom
+default: Default
+delete: Help Delete
+description: Description
+disabled: Disabled
+emergency_channel: Emergency Channel
+enabled: Enabled
+error: Error
+exchange_invalid: Exchange Channel Invalid
+from_name: Forward Name
+gam: Game
+gb: Global Ban
+gd: Global Delete
+global_delete: Global Delete
+gr: Global Restrict
+group_count: Total Groups
+group_id: Group ID
+group_name: Group Name
+inviter: Inviter
+issue: Issue
+joined: Joined Time
+leave_approve: Approve to Leave the Group
+leave_auto: Leave automatically
+leave_group: Leave the Group
+level: Level
+members: member(s)
+message_freq: Message Frequency
+message_game: Game Short Name
+message_lang: Message Language
+message_len: Message Length
+message_print: Print the Message
+message_type: Message Type
+messages: message(s)
+more: Extra Info
+name_ban: Ban by Name
+name_examine: Name Examination
+name_recheck: Name Recheck
+op_downgrade: Operation Downgrade
+op_upgrade: Operation Upgrade
+preview_content: Preview Content
+preview_link: Preview Link
+preview_message: Preview Message
+privacy: Not Forwarded Due to Privacy Reason
+project: Project
+project_origin: Original Project
+protocol_1: Initiate Protocol 1
+reason: Reason
+reason_admin: Failed to Fetch Admin List
+reason_leave: Not Admin in Group
+reason_none: No Data
+reason_permissions: Missing Permissions
+reason_unauthorized: Unauthorized
+reason_user: Missing USER
+refresh: Refresh Admin Lists
+reset: Reset Data
+result: Result
+rollback: Rollback
+rule: Rule
+rule_custom: Custom Rule
+rule_global: Global Rule
+sb: Subscribe Ban
+score_ban: Ban by Score
+score_user: High Score
+sd: Subscribe Delete
+ser: Service
+sr: Subscribe Restrict
+status: Status
+status_failed: Failed
+status_joined: Joined the Group
+status_left: Left the Group
+status_succeeded: Succeeded
+transfer_channel: Transfer Channel
+triggered_by: Triggered By
+user_bio: User Bio
+user_id: User ID
+user_name: User Name
+user_score: User Score
+version: Version
+watch_ban: Watch Ban
+watch_delete: Watch Delete
+watch_user: Watched User
