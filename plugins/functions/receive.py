@@ -18,6 +18,7 @@
 
 import logging
 import pickle
+from collections import Counter
 from copy import deepcopy
 from json import loads
 from typing import Any
@@ -534,6 +535,7 @@ def receive_invite_try(client: Client, data: dict) -> bool:
                     "admin_id": aid,
                     "message_id": mid,
                     "group_id": gid,
+                    "bots": bots,
                     "status": False,
                     "reason": lang("USER 尚未加入该群组")
                 }
@@ -557,6 +559,7 @@ def receive_invite_try(client: Client, data: dict) -> bool:
                     "admin_id": aid,
                     "message_id": mid,
                     "group_id": gid,
+                    "bots": bots,
                     "status": False,
                     "reason": lang("USER 权限缺失")
                 }
@@ -564,12 +567,29 @@ def receive_invite_try(client: Client, data: dict) -> bool:
 
         # Promote bots
         for bot in bots:
-            bot_id = eval(f"glovar.{bot.lower()}_id")
+            if bot == "AIO":
+                bot_list = [glovar.captcha_id, glovar.clean_id, glovar.lang_id, glovar.long_id, glovar.noflood_id,
+                            glovar.noporn_id, glovar.nospam_id, glovar.tip_id, glovar.warn_id]
+                bot_count = Counter(bot_list)
+                bot_id = bot_count.most_common()[0][0]
+            else:
+                bot_id = eval(f"glovar.{bot.lower()}_id")
 
             if not bot_id:
                 continue
 
-            if bot in {"CLEAN", "LANG", "LONG", "NOFLOOD", "NOPORN", "NOSPAM", "WARN"}:
+            if bot == "AIO":
+                promote_chat_member(
+                    client=client,
+                    cid=gid,
+                    uid=bot_id,
+                    can_delete_messages=True,
+                    can_restrict_members=True,
+                    can_invite_users=True,
+                    can_pin_messages=True
+                )
+                break
+            elif bot in {"CLEAN", "LANG", "LONG", "NOFLOOD", "NOPORN", "NOSPAM", "WARN"}:
                 promote_chat_member(
                     client=client,
                     cid=gid,
