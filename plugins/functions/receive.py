@@ -559,7 +559,6 @@ def receive_invite_try(client: Client, data: dict) -> bool:
                     "admin_id": aid,
                     "message_id": mid,
                     "group_id": gid,
-                    "bots": bots,
                     "status": False,
                     "reason": lang("USER 权限缺失")
                 }
