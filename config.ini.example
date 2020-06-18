@@ -25,7 +25,7 @@ long_id = [DATA EXPUNGED]
 noflood_id = [DATA EXPUNGED]
 noporn_id = [DATA EXPUNGED]
 nospam_id = [DATA EXPUNGED]
-recheck_id = [DATA EXPUNGED]
+recheck_id = 1
 tip_id = [DATA EXPUNGED]
 user_id = [DATA EXPUNGED]
 warn_id = [DATA EXPUNGED]
@@ -44,10 +44,10 @@ aio = False
 backup = False
 date_reset = 1st mon
 default_group_link = https://t.me/SCP_079_DEBUG
-image_size = [DATA EXPUNGED]
+image_size = 2097152
 project_link = https://scp-079.org/user/
 project_name = SCP-079-USER
-zh_cn = [DATA EXPUNGED]
+zh_cn = True
 
 [encrypt]
 key = [DATA EXPUNGED]
