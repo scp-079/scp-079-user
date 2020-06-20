@@ -186,8 +186,8 @@ def update_admins(client: Client) -> bool:
             if glovar.user_id not in glovar.admin_ids[gid]:
                 reason = "user"
             elif any(admin.user.is_self
-                     and admin.can_delete_messages
-                     and admin.can_restrict_members
+                     and ((admin.can_delete_messages and admin.can_restrict_members)
+                          or admin.status == "creator")
                      for admin in admin_members):
                 glovar.lack_group_ids.discard(gid)
                 save("lack_group_ids")
