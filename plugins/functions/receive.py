@@ -24,7 +24,7 @@ from json import loads
 from typing import Any
 
 from pyrogram import Client, Message
-from pyrogram.api.types import ChannelAdminLogEventsFilter
+from pyrogram.api.types import ChannelAdminLogEventsFilter, ChannelAdminLogEventActionParticipantJoin
 
 from .. import glovar
 from .channel import get_debug_text, share_data
@@ -364,7 +364,7 @@ def receive_help_confirm(client: Client, data: dict) -> bool:
             return False
 
         # Get the recent actions
-        event_filter = ChannelAdminLogEventsFilter(join=True)
+        event_filter = ChannelAdminLogEventsFilter(join=True, invite=True)
         log_list = get_admin_log(
             client=client,
             cid=gid,
@@ -385,7 +385,9 @@ def receive_help_confirm(client: Client, data: dict) -> bool:
             )
 
         # Get the user list
-        user_list = {event.user_id for log in log_list for event in log.events if begin <= event.date <= end}
+        user_list = {event.user_id if isinstance(event.action, ChannelAdminLogEventActionParticipantJoin)
+                     else event.participant.user_id
+                     for log in log_list for event in log.events if begin <= event.date <= end}
 
         # Check the user list
         if len(user_list) >= limit:
@@ -480,7 +482,7 @@ def receive_help_log(client: Client, data: dict) -> bool:
             return False
 
         # Get the recent actions
-        event_filter = ChannelAdminLogEventsFilter(join=True)
+        event_filter = ChannelAdminLogEventsFilter(join=True, invite=True)
         log_list = get_admin_log(
             client=client,
             cid=gid,
@@ -491,7 +493,9 @@ def receive_help_log(client: Client, data: dict) -> bool:
             return False
 
         # Get the user list
-        user_list = {event.user_id for log in log_list for event in log.events if begin - 60 <= event.date <= end}
+        user_list = {event.user_id if isinstance(event.action, ChannelAdminLogEventActionParticipantJoin)
+                     else event.participant.user_id
+                     for log in log_list for event in log.events if begin <= event.date <= end}
 
         # Share the users
         file = data_to_file(user_list)
