@@ -386,7 +386,7 @@ def receive_help_confirm(client: Client, data: dict) -> bool:
 
         # Get the user list
         user_list = {event.user_id if isinstance(event.action, ChannelAdminLogEventActionParticipantJoin)
-                     else event.participant.user_id
+                     else event.action.participant.user_id
                      for log in log_list for event in log.events if begin <= event.date <= end}
 
         # Check the user list
@@ -494,7 +494,7 @@ def receive_help_log(client: Client, data: dict) -> bool:
 
         # Get the user list
         user_list = {event.user_id if isinstance(event.action, ChannelAdminLogEventActionParticipantJoin)
-                     else event.participant.user_id
+                     else event.action.participant.user_id
                      for log in log_list for event in log.events if begin <= event.date <= end}
 
         # Share the users
