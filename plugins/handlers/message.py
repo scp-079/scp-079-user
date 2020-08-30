@@ -99,6 +99,27 @@ def check_join(client: Client, message: Message) -> bool:
     return False
 
 
+# Temp
+@Client.on_message(Filters.incoming & Filters.group
+                   & ~captcha_group & ~test_group & ~new_group & authorized_group
+                   & from_user & ~class_c & ~class_e
+                   & ~declared_message)
+def check_scam(client: Client, message: Message) -> bool:
+    # Check new joined user
+    glovar.locks["message"].acquire()
+    try:
+        if message.from_user.is_scam:
+            terminate_user(client, message, message.from_user, "scam")
+
+        return True
+    except Exception as e:
+        logger.warning(f"Check scam error: {e}", exc_info=True)
+    finally:
+        glovar.locks["message"].release()
+
+    return False
+
+
 @Client.on_message(Filters.group & Filters.service
                    & ~test_group & ~new_group
                    & from_user)
@@ -188,12 +209,27 @@ def init_group(client: Client, message: Message) -> bool:
         text = get_debug_text(client, message.chat)
 
         # Check permission
-        if (message.chat.type != "supergroup"
-                or ((is_class_d_user(inviter)
-                     or is_watch_user(inviter, "ban", now)
-                     or is_watch_user(inviter, "delete", now)
-                     or is_high_score_user(inviter))
-                    and not inviter.is_self)):
+        if message.chat.type != "supergroup":
+            if gid in glovar.left_group_ids:
+                return leave_group(client, gid)
+
+            leave_group(client, gid)
+
+            text += (f"{lang('status')}{lang('colon')}{code(lang('status_left'))}\n"
+                     f"{lang('reason')}{lang('colon')}{code(lang('非 supergroup'))}\n")
+
+            if message.from_user.username:
+                text += f"{lang('inviter')}{lang('colon')}{mention_id(inviter.id)}\n"
+            else:
+                text += f"{lang('inviter')}{lang('colon')}{code(inviter.id)}\n"
+
+            return thread(send_message, (client, glovar.debug_channel_id, text))
+
+        if ((is_class_d_user(inviter)
+             or is_watch_user(inviter, "ban", now)
+             or is_watch_user(inviter, "delete", now)
+             or is_high_score_user(inviter))
+                and not inviter.is_self):
             if gid in glovar.left_group_ids:
                 return leave_group(client, gid)
 
