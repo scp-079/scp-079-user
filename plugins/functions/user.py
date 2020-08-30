@@ -291,7 +291,7 @@ def terminate_user(client: Client, message: Message, user: User, the_type: str) 
 
         # Scam
         elif the_type == "scam":
-            if message.forward_from and message.forward_from.id != user.id:
+            if not user.is_scam and (message.forward_from or message.forward_from_chat):
                 result = forward_evidence(
                     client=client,
                     message=message,
