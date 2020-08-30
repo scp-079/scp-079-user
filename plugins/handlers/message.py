@@ -99,25 +99,35 @@ def check_join(client: Client, message: Message) -> bool:
     return False
 
 
-# Temp
 @Client.on_message(Filters.incoming & Filters.group
                    & ~captcha_group & ~test_group & ~new_group & authorized_group
                    & from_user & ~class_c & ~class_e
                    & ~declared_message)
 def check_scam(client: Client, message: Message) -> bool:
-    # Check new joined user
-    glovar.locks["message"].acquire()
-    try:
-        if message.from_user.is_scam:
-            terminate_user(client, message, message.from_user, "scam")
+    # Check scam user
+    result = False
 
-        return True
+    glovar.locks["message"].acquire()
+
+    try:
+        # Basic data
+        gid = message.chat.id
+
+        # Check group config
+        if not glovar.configs[gid].get("scam", True):
+            return False
+
+        # Check scam flag
+        if not message.from_user.is_scam:
+            return False
+
+        result = terminate_user(client, message, message.from_user, "scam")
     except Exception as e:
         logger.warning(f"Check scam error: {e}", exc_info=True)
     finally:
         glovar.locks["message"].release()
 
-    return False
+    return result
 
 
 @Client.on_message(Filters.group & Filters.service
