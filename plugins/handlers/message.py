@@ -118,7 +118,7 @@ def check_scam(client: Client, message: Message) -> bool:
             return False
 
         # Check scam flag
-        if not message.from_user.is_scam:
+        if not message.from_user.is_scam or not (message.forward_from and message.forward_from.is_scam):
             return False
 
         result = terminate_user(client, message, message.from_user, "scam")

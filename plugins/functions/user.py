@@ -291,7 +291,28 @@ def terminate_user(client: Client, message: Message, user: User, the_type: str) 
 
         # Scam
         elif the_type == "scam":
-            if gid not in glovar.user_ids[uid]["ban"]:
+            if message.forward_from and message.forward_from.id != user.id:
+                result = forward_evidence(
+                    client=client,
+                    message=message,
+                    user=user,
+                    level=lang("auto_delete"),
+                    rule=lang(the_type)
+                )
+
+                if result:
+                    bad and add_bad_user(client, uid)
+                    glovar.recorded_ids[gid].add(uid)
+                    delete_message(client, gid, mid)
+                    send_debug(
+                        client=client,
+                        chat=message.chat,
+                        action=lang("auto_delete"),
+                        uid=uid,
+                        mid=mid,
+                        em=result
+                    )
+            elif gid not in glovar.user_ids[uid]["ban"]:
                 result = forward_evidence(
                     client=client,
                     message=message,
