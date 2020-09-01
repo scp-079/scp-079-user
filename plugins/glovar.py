@@ -361,6 +361,7 @@ receivers: Dict[str, List[str]] = {
             "NOFLOOD", "NOPORN", "NOSPAM", "RECHECK", "TICKET", "TIP", "USER", "WARN", "WATCH"],
     "declare": ["ANALYZE", "AVATAR", "CAPTCHA", "CLEAN", "LANG", "LONG",
                 "NOFLOOD", "NOPORN", "NOSPAM", "RECHECK", "TIP", "USER", "WARN", "WATCH"],
+    "ignore": ["CAPTCHA", "TIP"],
     "preview": ["CLEAN", "LANG", "NOPORN", "NOSPAM", "RECHECK"]
 }
 
