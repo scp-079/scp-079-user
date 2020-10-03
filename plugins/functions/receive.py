@@ -616,6 +616,7 @@ def receive_invite_try(client: Client, data: dict) -> bool:
                     cid=gid,
                     uid=bot_id,
                     can_delete_messages=True,
+                    can_restrict_members=True,
                     can_invite_users=True,
                     can_pin_messages=True
                 )
