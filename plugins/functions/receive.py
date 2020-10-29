@@ -670,6 +670,10 @@ def receive_leave_approve(client: Client, data: dict) -> bool:
         if reason:
             info_text += f"{lang('reason')}{lang('colon')}{code(reason)}\n"
 
+        info_text += "\n"
+        info_text += ("由于贵群的使用申请因内部评审意见未予以通过，建议您选择\n"
+                      "https://scp-079.org/list 中其他的实例予以使用。\n")
+
         send_message(client, the_id, info_text)
 
         leave_group(client, the_id)
