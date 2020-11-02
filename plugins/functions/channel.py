@@ -156,7 +156,7 @@ def forward_evidence(client: Client, message: Message, user: User, level: str, r
                 flood_wait = True
                 wait_flood(e)
             except Exception as e:
-                logger.info(f"Forward evidence message error: {e}", exc_info=True)
+                logger.warning(f"Forward evidence message error: {e}", exc_info=True)
                 return False
 
         result = result.message_id
