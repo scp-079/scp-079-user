@@ -266,14 +266,13 @@ def terminate_user(client: Client, message: Message, user: User, the_type: str) 
         # Subscribe delete
         elif the_type == "sd":
             if uid not in glovar.recorded_ids[gid]:
-                logger.warning(not bad)
                 result = forward_evidence(
                     client=client,
                     message=message,
                     user=user,
                     level=lang("auto_delete"),
                     rule=lang(the_type),
-                    general=not bad
+                    general=bad
                 )
 
                 if result:
