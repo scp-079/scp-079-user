@@ -107,6 +107,7 @@ def forward_evidence(client: Client, message: Message, user: User, level: str, r
                      more: str = None, general: bool = True) -> Optional[Union[bool, Message]]:
     # Forward the message to the logging channel as evidence
     result = None
+
     try:
         # Basic information
         uid = user.id
@@ -128,15 +129,12 @@ def forward_evidence(client: Client, message: Message, user: User, level: str, r
             text += f"{lang('more')}{lang('colon')}{code(more)}\n"
 
         # TODO
-        if message.service and glovar.user_channel_id:
+        if message.service or not general:
             channel_id = glovar.user_channel_id
         else:
             channel_id = glovar.logging_channel_id
 
-        if not general:
-            channel_id = glovar.user_channel_id
-
-        if not channel_id:
+        if not glovar.user_channel_id:
             channel_id = glovar.logging_channel_id
 
         # DO NOT try to forward these types of message
