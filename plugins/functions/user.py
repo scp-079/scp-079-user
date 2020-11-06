@@ -271,7 +271,8 @@ def terminate_user(client: Client, message: Message, user: User, the_type: str) 
                     message=message,
                     user=user,
                     level=lang("auto_delete"),
-                    rule=lang(the_type)
+                    rule=lang(the_type),
+                    general=not bad
                 )
 
                 if result:

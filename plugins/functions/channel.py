@@ -104,7 +104,7 @@ def format_data(sender: str, receivers: List[str], action: str, action_type: str
 
 
 def forward_evidence(client: Client, message: Message, user: User, level: str, rule: str,
-                     more: str = None) -> Optional[Union[bool, Message]]:
+                     more: str = None, general: bool = True) -> Optional[Union[bool, Message]]:
     # Forward the message to the logging channel as evidence
     result = None
     try:
@@ -131,6 +131,12 @@ def forward_evidence(client: Client, message: Message, user: User, level: str, r
         if message.service and glovar.user_channel_id:
             channel_id = glovar.user_channel_id
         else:
+            channel_id = glovar.logging_channel_id
+
+        if not general:
+            channel_id = glovar.user_channel_id
+
+        if not channel_id:
             channel_id = glovar.logging_channel_id
 
         # DO NOT try to forward these types of message
