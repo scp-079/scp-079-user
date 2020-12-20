@@ -87,6 +87,7 @@ def delete_all_messages(client: Client, gid: int, uid: int) -> bool:
 
         result = bool(client.send(DeleteUserHistory(channel=group_id, user_id=user_id))) or True
     except FloodWait as e:
+        logger.warning(f"Sleep for {e.x} seconds in {gid}")
         raise e
     except Exception as e:
         logger.warning(f"Delete all messages from {uid} in {gid} error: {e}", exc_info=True)
