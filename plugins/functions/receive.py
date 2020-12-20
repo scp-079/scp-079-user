@@ -416,6 +416,8 @@ def receive_help_delete(client: Client, data: dict) -> bool:
     # Receive help delete request
     glovar.locks["message"].acquire()
     try:
+        logger.warning(data)
+
         # Basic data
         group_id = data["group_id"]
         user_id = data["user_id"]
