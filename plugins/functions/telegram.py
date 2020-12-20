@@ -92,7 +92,6 @@ def delete_all_messages(client: Client, gid: int, uid: int) -> bool:
     except Exception as e:
         logger.warning(f"Delete all messages from {uid} in {gid} error: {e}", exc_info=True)
 
-    logger.warning(result)
     return result
 
 
