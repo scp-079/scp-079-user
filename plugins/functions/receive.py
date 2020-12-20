@@ -416,8 +416,6 @@ def receive_help_delete(client: Client, data: dict) -> bool:
     # Receive help delete request
     glovar.locks["message"].acquire()
     try:
-        logger.warning(data)
-
         # Basic data
         group_id = data["group_id"]
         user_id = data["user_id"]
@@ -429,6 +427,7 @@ def receive_help_delete(client: Client, data: dict) -> bool:
             thread(delete_messages_globally, (client, user_id, int(not should_delete) and group_id))
         elif action_type == "single":
             if glovar.configs[group_id].get("delete") and should_delete:
+                logger.warning(data)
                 thread(delete_all_messages, (client, group_id, user_id))
 
         return True
