@@ -8,7 +8,7 @@ pycparser==2.20
 Pyrogram==0.17.1
 PySocks==1.7.1
 pytz==2020.1
-PyYAML==5.3.1
+PyYAML==5.4
 six==1.14.0
 TgCrypto==1.2.1
 tzlocal==2.1
