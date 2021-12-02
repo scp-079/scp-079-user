@@ -26,6 +26,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from pyrogram import Client, idle
 
 from plugins import glovar
+from plugins.functions.etc import delay
 from plugins.functions.timers import backup_files, interval_hour_01, interval_min_10, reset_data, update_admins
 from plugins.functions.timers import update_status
 
@@ -37,7 +38,7 @@ app = Client(session_name="account")
 app.start()
 
 # Send online status
-update_status(app, "online")
+delay(3, update_status, [app, "online"])
 
 # Timer
 scheduler = BackgroundScheduler(job_defaults={"misfire_grace_time": 60})
