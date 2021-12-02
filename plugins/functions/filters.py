@@ -32,7 +32,7 @@ from .telegram import resolve_username
 logger = logging.getLogger(__name__)
 
 
-def is_aio(_, __) -> bool:
+def is_aio(_, __, ___) -> bool:
     # Check if the program is under all-in-one mode
     result = False
 
@@ -44,7 +44,7 @@ def is_aio(_, __) -> bool:
     return result
 
 
-def is_authorized_group(_, update: Union[CallbackQuery, Message]) -> bool:
+def is_authorized_group(_, __, update: Union[CallbackQuery, Message]) -> bool:
     # Check if the message is send from the authorized group
     try:
         if isinstance(update, CallbackQuery):
@@ -65,7 +65,7 @@ def is_authorized_group(_, update: Union[CallbackQuery, Message]) -> bool:
     return False
 
 
-def is_captcha_group(_, update: Union[CallbackQuery, Message]) -> bool:
+def is_captcha_group(_, __,  update: Union[CallbackQuery, Message]) -> bool:
     # Check if the message is sent from the captcha group
     try:
         if isinstance(update, CallbackQuery):
@@ -86,7 +86,7 @@ def is_captcha_group(_, update: Union[CallbackQuery, Message]) -> bool:
     return False
 
 
-def is_class_c(_, message: Message) -> bool:
+def is_class_c(_, __,  message: Message) -> bool:
     # Check if the message is Class C personnel
     try:
         if not message.from_user:
@@ -105,7 +105,7 @@ def is_class_c(_, message: Message) -> bool:
     return False
 
 
-def is_class_d(_, message: Message) -> bool:
+def is_class_d(_, __,  message: Message) -> bool:
     # Check if the message is Class D object
     try:
         if message.from_user:
@@ -127,7 +127,7 @@ def is_class_d(_, message: Message) -> bool:
         logger.warning(f"Is class d error: {e}", exc_info=True)
 
 
-def is_class_e(_, message: Message, test: bool = False) -> bool:
+def is_class_e(_, __, message: Message, test: bool = False) -> bool:
     # Check if the message is Class E object
     try:
         if message.from_user and not test:
@@ -143,7 +143,7 @@ def is_class_e(_, message: Message, test: bool = False) -> bool:
     return False
 
 
-def is_declared_message(_, message: Message) -> bool:
+def is_declared_message(_, __, message: Message) -> bool:
     # Check if the message is declared by other bots
     try:
         if not message.chat:
@@ -159,7 +159,7 @@ def is_declared_message(_, message: Message) -> bool:
     return False
 
 
-def is_exchange_channel(_, message: Message) -> bool:
+def is_exchange_channel(_, __, message: Message) -> bool:
     # Check if the message is sent from the exchange channel
     try:
         if not message.chat:
@@ -177,7 +177,7 @@ def is_exchange_channel(_, message: Message) -> bool:
     return False
 
 
-def is_from_user(_, message: Message) -> bool:
+def is_from_user(_, __, message: Message) -> bool:
     # Check if the message is sent from a user
     try:
         if message.from_user and message.from_user.id != 777000:
@@ -188,7 +188,7 @@ def is_from_user(_, message: Message) -> bool:
     return False
 
 
-def is_hide_channel(_, message: Message) -> bool:
+def is_hide_channel(_, __, message: Message) -> bool:
     # Check if the message is sent from the hide channel
     try:
         if not message.chat:
@@ -204,7 +204,7 @@ def is_hide_channel(_, message: Message) -> bool:
     return False
 
 
-def is_new_group(_, message: Message) -> bool:
+def is_new_group(_, __, message: Message) -> bool:
     # Check if the bot joined a new group
     try:
         new_users = message.new_chat_members
@@ -219,7 +219,7 @@ def is_new_group(_, message: Message) -> bool:
     return False
 
 
-def is_test_group(_, update: Union[CallbackQuery, Message]) -> bool:
+def is_test_group(_, __, update: Union[CallbackQuery, Message]) -> bool:
     # Check if the message is sent from the test group
     try:
         if isinstance(update, CallbackQuery):
