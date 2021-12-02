@@ -54,7 +54,7 @@ def config(client: Client, message: Message) -> bool:
 
     try:
         # Check permission
-        if not is_class_c(None, message):
+        if not is_class_c(None, None, message):
             return True
 
         # Check command format
@@ -102,7 +102,7 @@ def config(client: Client, message: Message) -> bool:
     except Exception as e:
         logger.warning(f"Config error: {e}", exc_info=True)
     finally:
-        if is_class_c(None, message):
+        if is_class_c(None, None, message):
             delay(3, delete_message, [client, gid, mid])
         else:
             delete_message(client, gid, mid)
@@ -126,7 +126,7 @@ def config_directly(client: Client, message: Message) -> bool:
 
     try:
         # Check permission
-        if not is_class_c(None, message):
+        if not is_class_c(None, None, message):
             return True
 
         aid = message.from_user.id
@@ -389,7 +389,7 @@ def white(client: Client, message: Message) -> bool:
 
     try:
         # Check permission
-        if not is_class_c(None, message):
+        if not is_class_c(None, None, message):
             return True
 
         # Generate the report message's text

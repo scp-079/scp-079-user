@@ -643,7 +643,7 @@ def share_preview(client: Client, message: Message) -> bool:
             file_id = web_page.photo.file_id
             image_path = get_downloaded_path(client, file_id)
 
-            if is_declared_message(None, message):
+            if is_declared_message(None, None, message):
                 return True
             elif image_path:
                 preview["image"] = Image.open(image_path)

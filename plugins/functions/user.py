@@ -192,7 +192,7 @@ def terminate_user(client: Client, message: Message, user: User, the_type: str) 
     # Delete user's message
     try:
         # Check if it is necessary
-        if is_declared_message(None, message):
+        if is_declared_message(None, None, message):
             return True
 
         gid = message.chat.id
