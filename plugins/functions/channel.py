@@ -20,8 +20,9 @@ import logging
 from json import dumps
 from typing import List, Optional, Union
 
-from pyrogram import Chat, Client, Message, User
+from pyrogram import Client
 from pyrogram.errors import FloodWait
+from pyrogram.types import Chat, Message, User
 
 from .. import glovar
 from .decorators import threaded
@@ -291,7 +292,7 @@ def share_data(client: Client, receivers: List[str], action: str, action_type: s
             # Send directly
             file_path = file
 
-        result = send_document(client, channel_id, file_path, None, text)
+        result = send_document(client, channel_id, file_path, text)
 
         if not result:
             return ((result is False and not glovar.should_hide)

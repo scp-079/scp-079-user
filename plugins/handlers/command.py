@@ -21,7 +21,8 @@ import re
 from copy import deepcopy
 from subprocess import run, PIPE
 
-from pyrogram import Client, Filters, Message
+from pyrogram import Client, filters
+from pyrogram.types import Message
 
 from .. import glovar
 from ..functions.channel import get_debug_text, share_data
@@ -38,7 +39,7 @@ from ..functions.user import unban_user, unrestrict_user
 logger = logging.getLogger(__name__)
 
 
-@Client.on_message(Filters.group & Filters.command(["config"], glovar.prefix)
+@Client.on_message(filters.group & filters.command(["config"], glovar.prefix)
                    & ~captcha_group & ~test_group & authorized_group
                    & from_user)
 def config(client: Client, message: Message) -> bool:
@@ -109,8 +110,8 @@ def config(client: Client, message: Message) -> bool:
     return False
 
 
-@Client.on_message(Filters.group
-                   & Filters.command([f"config_{glovar.sender.lower()}"], glovar.prefix)
+@Client.on_message(filters.group
+                   & filters.command([f"config_{glovar.sender.lower()}"], glovar.prefix)
                    & ~captcha_group & ~test_group & authorized_group
                    & from_user)
 def config_directly(client: Client, message: Message) -> bool:
@@ -217,7 +218,7 @@ def config_directly(client: Client, message: Message) -> bool:
     return False
 
 
-@Client.on_message(Filters.incoming & Filters.group & Filters.command(["id", "mention"], glovar.prefix)
+@Client.on_message(filters.incoming & filters.group & filters.command(["id", "mention"], glovar.prefix)
                    & test_group
                    & from_user)
 def mention(client: Client, message: Message) -> bool:
@@ -297,7 +298,7 @@ def mention(client: Client, message: Message) -> bool:
     return False
 
 
-@Client.on_message(Filters.incoming & Filters.group & Filters.command(["print"], glovar.prefix)
+@Client.on_message(filters.incoming & filters.group & filters.command(["print"], glovar.prefix)
                    & test_group
                    & from_user)
 def print_message(client: Client, message: Message) -> bool:
@@ -328,7 +329,7 @@ def print_message(client: Client, message: Message) -> bool:
     return False
 
 
-@Client.on_message(Filters.incoming & Filters.group & Filters.command(["version"], glovar.prefix)
+@Client.on_message(filters.incoming & filters.group & filters.command(["version"], glovar.prefix)
                    & test_group
                    & from_user)
 def version(client: Client, message: Message) -> bool:
@@ -373,7 +374,7 @@ def version(client: Client, message: Message) -> bool:
     return result
 
 
-@Client.on_message(Filters.group & Filters.command(["white"], glovar.prefix)
+@Client.on_message(filters.group & filters.command(["white"], glovar.prefix)
                    & ~captcha_group & ~test_group & authorized_group
                    & from_user)
 def white(client: Client, message: Message) -> bool:

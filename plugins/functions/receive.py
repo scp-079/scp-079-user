@@ -23,8 +23,9 @@ from copy import deepcopy
 from json import loads
 from typing import Any
 
-from pyrogram import Client, Message
-from pyrogram.api.types import ChannelAdminLogEventsFilter, ChannelAdminLogEventActionParticipantJoin
+from pyrogram import Client
+from pyrogram.raw.types import ChannelAdminLogEventsFilter, ChannelAdminLogEventActionParticipantJoin
+from pyrogram.types import Message
 
 from .. import glovar
 from .channel import get_debug_text, share_data
@@ -237,8 +238,7 @@ def receive_file_data(client: Client, message: Message, decrypt: bool = True) ->
             return None
 
         file_id = message.document.file_id
-        file_ref = message.document.file_ref
-        path = get_downloaded_path(client, file_id, file_ref)
+        path = get_downloaded_path(client, file_id)
 
         if not path:
             return None

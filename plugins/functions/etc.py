@@ -26,7 +26,7 @@ from time import localtime, sleep, strftime, time
 from typing import Any, Callable, Optional, Union
 
 from cryptography.fernet import Fernet
-from pyrogram import Message, User
+from pyrogram.types import Message, User
 from pyrogram.errors import FloodWait
 
 from .. import glovar

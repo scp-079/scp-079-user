@@ -20,7 +20,8 @@ import logging
 import re
 from typing import Union
 
-from pyrogram import CallbackQuery, Client, Filters, Message, User
+from pyrogram import Client, filters
+from pyrogram.types import CallbackQuery, Message, User
 
 from .. import glovar
 from .group import get_member
@@ -239,62 +240,62 @@ def is_test_group(_, update: Union[CallbackQuery, Message]) -> bool:
     return False
 
 
-aio = Filters.create(
+aio = filters.create(
     func=is_aio,
     name="AIO"
 )
 
-authorized_group = Filters.create(
+authorized_group = filters.create(
     func=is_authorized_group,
     name="Authorized Group"
 )
 
-captcha_group = Filters.create(
+captcha_group = filters.create(
     func=is_captcha_group,
     name="CAPTCHA Group"
 )
 
-class_c = Filters.create(
+class_c = filters.create(
     func=is_class_c,
     name="Class C"
 )
 
-class_d = Filters.create(
+class_d = filters.create(
     func=is_class_d,
     name="Class D"
 )
 
-class_e = Filters.create(
+class_e = filters.create(
     func=is_class_e,
     name="Class E"
 )
 
-declared_message = Filters.create(
+declared_message = filters.create(
     func=is_declared_message,
     name="Declared message"
 )
 
-exchange_channel = Filters.create(
+exchange_channel = filters.create(
     func=is_exchange_channel,
     name="Exchange Channel"
 )
 
-from_user = Filters.create(
+from_user = filters.create(
     func=is_from_user,
     name="From User"
 )
 
-hide_channel = Filters.create(
+hide_channel = filters.create(
     func=is_hide_channel,
     name="Hide Channel"
 )
 
-new_group = Filters.create(
+new_group = filters.create(
     func=is_new_group,
     name="New Group"
 )
 
-test_group = Filters.create(
+test_group = filters.create(
     func=is_test_group,
     name="Test Group"
 )

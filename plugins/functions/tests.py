@@ -18,7 +18,8 @@
 
 import logging
 
-from pyrogram import Client, Message, WebPage
+from pyrogram import Client
+from pyrogram.types import Message, WebPage
 
 from .etc import code, code_block, get_text, lang, mention_id, thread
 from .telegram import send_message, send_photo
@@ -61,8 +62,7 @@ def preview_test(client: Client, message: Message) -> bool:
 
         if web_page.photo:
             file_id = web_page.photo.file_id
-            file_ref = web_page.photo.file_ref
-            thread(send_photo, (client, cid, file_id, file_ref, text, mid))
+            thread(send_photo, (client, cid, file_id, text, mid))
         else:
             thread(send_message, (client, cid, text, mid))
 

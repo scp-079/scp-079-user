@@ -20,7 +20,8 @@ import logging
 from time import sleep
 from typing import Iterable, Union
 
-from pyrogram import ChatPermissions, Client, Message, User
+from pyrogram import Client
+from pyrogram.types import ChatPermissions, Message, User
 
 from .. import glovar
 from .channel import forward_evidence, send_debug, share_bad_user

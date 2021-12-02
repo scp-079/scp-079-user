@@ -19,7 +19,8 @@
 import logging
 from typing import Iterable, List, Optional
 
-from pyrogram import Chat, ChatMember, Client, Message
+from pyrogram import Client
+from pyrogram.types import Chat, ChatMember, Message
 
 from .. import glovar
 from .decorators import threaded

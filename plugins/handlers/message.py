@@ -20,7 +20,8 @@ import logging
 import re
 
 from PIL import Image
-from pyrogram import Client, Filters, Message, WebPage
+from pyrogram import Client, filters
+from pyrogram.types import Message, WebPage
 
 from .. import glovar
 from ..functions.channel import get_debug_text, share_data
@@ -49,7 +50,7 @@ from ..functions.user import terminate_user
 logger = logging.getLogger(__name__)
 
 
-@Client.on_message(Filters.incoming & Filters.group & ~Filters.new_chat_members
+@Client.on_message(filters.incoming & filters.group & ~filters.new_chat_members
                    & ~captcha_group & ~test_group & authorized_group
                    & from_user & ~class_c & class_d & ~class_e
                    & ~declared_message)
@@ -72,7 +73,7 @@ def check(client: Client, message: Message) -> bool:
     return False
 
 
-@Client.on_message(Filters.incoming & Filters.group & Filters.new_chat_members
+@Client.on_message(filters.incoming & filters.group & filters.new_chat_members
                    & ~captcha_group & ~test_group & ~new_group & authorized_group
                    & from_user & ~class_c & ~class_e
                    & ~declared_message)
@@ -99,7 +100,7 @@ def check_join(client: Client, message: Message) -> bool:
     return False
 
 
-@Client.on_message(Filters.incoming & Filters.group
+@Client.on_message(filters.incoming & filters.group
                    & ~captcha_group & ~test_group & ~new_group & authorized_group
                    & from_user & ~class_c & ~class_e
                    & ~declared_message)
@@ -132,7 +133,7 @@ def check_scam(client: Client, message: Message) -> bool:
     return result
 
 
-@Client.on_message(Filters.group & Filters.service
+@Client.on_message(filters.group & filters.service
                    & ~test_group & ~new_group
                    & from_user)
 def delete_service(client: Client, message: Message) -> bool:
@@ -156,7 +157,7 @@ def delete_service(client: Client, message: Message) -> bool:
     return False
 
 
-@Client.on_message(Filters.incoming & Filters.channel & ~Filters.command(glovar.all_commands, glovar.prefix)
+@Client.on_message(filters.incoming & filters.channel & ~filters.command(glovar.all_commands, glovar.prefix)
                    & hide_channel, group=-1)
 def exchange_emergency(client: Client, message: Message) -> bool:
     # Sent emergency channel transfer request
@@ -201,8 +202,8 @@ def exchange_emergency(client: Client, message: Message) -> bool:
     return False
 
 
-@Client.on_message(Filters.group
-                   & (Filters.new_chat_members | Filters.group_chat_created | Filters.supergroup_chat_created)
+@Client.on_message(filters.group
+                   & (filters.new_chat_members | filters.group_chat_created | filters.supergroup_chat_created)
                    & ~captcha_group & ~test_group & new_group
                    & from_user)
 def init_group(client: Client, message: Message) -> bool:
@@ -306,7 +307,7 @@ def init_group(client: Client, message: Message) -> bool:
     return result
 
 
-@Client.on_message(Filters.incoming & ~Filters.private & Filters.mentioned, group=1)
+@Client.on_message(filters.incoming & ~filters.private & filters.mentioned, group=1)
 def mark_mention(client: Client, message: Message) -> bool:
     # Mark mention as read
     try:
@@ -323,7 +324,7 @@ def mark_mention(client: Client, message: Message) -> bool:
     return False
 
 
-@Client.on_message(Filters.incoming & ~Filters.private & Filters.channel, group=2)
+@Client.on_message(filters.incoming & ~filters.private & filters.channel, group=2)
 def mark_message(client: Client, message: Message) -> bool:
     # Mark messages as read
     try:
@@ -340,8 +341,8 @@ def mark_message(client: Client, message: Message) -> bool:
     return False
 
 
-@Client.on_message((Filters.incoming | aio) & Filters.channel
-                   & ~Filters.command(glovar.all_commands, glovar.prefix)
+@Client.on_message((filters.incoming | aio) & filters.channel
+                   & ~filters.command(glovar.all_commands, glovar.prefix)
                    & exchange_channel)
 def process_data(client: Client, message: Message) -> bool:
     # Process the data in exchange channel
@@ -579,7 +580,7 @@ def process_data(client: Client, message: Message) -> bool:
     return result
 
 
-@Client.on_message(Filters.incoming & Filters.group & ~Filters.service
+@Client.on_message(filters.incoming & filters.group & ~filters.service
                    & ~captcha_group & ~test_group & authorized_group
                    & from_user & ~class_c & ~class_d & ~class_e
                    & ~declared_message)
@@ -640,8 +641,7 @@ def share_preview(client: Client, message: Message) -> bool:
         # Store image
         if web_page.photo and web_page.photo.file_size <= glovar.image_size:
             file_id = web_page.photo.file_id
-            file_ref = web_page.photo.file_ref
-            image_path = get_downloaded_path(client, file_id, file_ref)
+            image_path = get_downloaded_path(client, file_id)
 
             if is_declared_message(None, message):
                 return True
@@ -702,8 +702,8 @@ def share_preview(client: Client, message: Message) -> bool:
     return False
 
 
-@Client.on_message(Filters.incoming & Filters.group & ~Filters.bot & ~Filters.service
-                   & ~Filters.command(glovar.all_commands, glovar.prefix)
+@Client.on_message(filters.incoming & filters.group & ~filters.bot & ~filters.service
+                   & ~filters.command(glovar.all_commands, glovar.prefix)
                    & test_group
                    & from_user)
 def test(client: Client, message: Message) -> bool:

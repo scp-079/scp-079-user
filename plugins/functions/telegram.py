@@ -19,12 +19,17 @@
 import logging
 from typing import Iterable, List, Optional, Union
 
-from pyrogram import Chat, ChatMember, ChatPreview, ChatPermissions, Client, InlineKeyboardMarkup, Message
-from pyrogram import ReplyKeyboardMarkup
-from pyrogram.api.functions.channels import DeleteUserHistory, GetAdminLog
-from pyrogram.api.functions.messages import ReadMentions
-from pyrogram.api.types import ChannelAdminLogEventsFilter, InputPeerUser, InputPeerChannel, InputUser
-from pyrogram.api.types.channels import AdminLogResults
+from pyrogram import Client
+from pyrogram.types import (Chat, ChatMember, ChatPreview, ChatPermissions, InlineKeyboardMarkup, Message,
+                            ReplyKeyboardMarkup)
+from pyrogram.raw.functions.channels import DeleteUserHistory, GetAdminLog
+from pyrogram.raw.functions.messages import ReadMentions
+from pyrogram.raw.types import ChannelAdminLogEventsFilter
+from pyrogram.raw.types.channels import AdminLogResults
+
+from pyrogram.raw.base import InputChannel, InputUser, InputPeer
+from pyrogram.raw.types import InputPeerUser, InputPeerChannel
+
 from pyrogram.errors import ChatAdminRequired, ButtonDataInvalid, ChannelInvalid, ChannelPrivate
 from pyrogram.errors import FloodWait, MessageDeleteForbidden, PeerIdInvalid
 from pyrogram.errors import UsernameInvalid, UsernameNotOccupied, UserNotParticipant
@@ -96,12 +101,12 @@ def delete_all_messages(client: Client, gid: int, uid: int) -> bool:
 
 
 @retry
-def download_media(client: Client, file_id: str, file_ref: str, file_path: str) -> Optional[str]:
+def download_media(client: Client, file_id: str, file_path: str) -> Optional[str]:
     # Download a media file
     result = None
 
     try:
-        result = client.download_media(message=file_id, file_ref=file_ref, file_name=file_path)
+        result = client.download_media(message=file_id, file_name=file_path)
     except FloodWait as e:
         raise e
     except Exception as e:
@@ -145,7 +150,7 @@ def get_admin_log(client: Client, cid: int,
 
 
 @retry
-def get_admin_log_100(client: Client, peer: InputPeerChannel, query: str, max_id: int,
+def get_admin_log_100(client: Client, peer: InputChannel, query: str, max_id: int,
                       event_filter: ChannelAdminLogEventsFilter, admins: List[InputUser]) -> AdminLogResults:
     result = None
 
@@ -406,13 +411,14 @@ def read_mention(client: Client, cid: int) -> bool:
 
 
 @retry
-def resolve_peer(client: Client, pid: Union[int, str]) -> Union[bool, InputPeerChannel, InputPeerUser, None]:
+def resolve_peer(client: Client, pid: Union[int, str]) -> Union[bool, InputChannel, InputPeer, InputUser, None]:
     # Get an input peer by id
     result = None
 
     try:
         result = client.resolve_peer(pid)
     except FloodWait as e:
+        logger.warning(f"Resolve peer {pid} - Sleep for {e.x} second(s)")
         raise e
     except (PeerIdInvalid, UsernameInvalid, UsernameNotOccupied):
         return False
@@ -486,7 +492,7 @@ def restrict_chat_member(client: Client, cid: int, uid: int, permissions: ChatPe
 
 
 @retry
-def send_document(client: Client, cid: int, document: str, file_ref: str = None, caption: str = "", mid: int = None,
+def send_document(client: Client, cid: int, document: str, caption: str = "", mid: int = None,
                   markup: Union[InlineKeyboardMarkup, ReplyKeyboardMarkup] = None) -> Union[bool, Message, None]:
     # Send a document to a chat
     result = None
@@ -495,7 +501,6 @@ def send_document(client: Client, cid: int, document: str, file_ref: str = None,
         result = client.send_document(
             chat_id=cid,
             document=document,
-            file_ref=file_ref,
             caption=caption,
             parse_mode="html",
             reply_to_message_id=mid,
@@ -544,7 +549,7 @@ def send_message(client: Client, cid: int, text: str, mid: int = None,
 
 
 @retry
-def send_photo(client: Client, cid: int, photo: str, file_ref: str = None, caption: str = "", mid: int = None,
+def send_photo(client: Client, cid: int, photo: str, caption: str = "", mid: int = None,
                markup: Union[InlineKeyboardMarkup, ReplyKeyboardMarkup] = None) -> Union[bool, Message, None]:
     # Send a photo to a chat
     result = None
@@ -556,7 +561,6 @@ def send_photo(client: Client, cid: int, photo: str, file_ref: str = None, capti
         result = client.send_photo(
             chat_id=cid,
             photo=photo,
-            file_ref=file_ref,
             caption=caption,
             parse_mode="html",
             reply_to_message_id=mid,
