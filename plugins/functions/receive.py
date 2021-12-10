@@ -34,7 +34,7 @@ from .etc import code, crypt_str, general_link, get_int, get_text, lang, mention
 from .file import crypt_file, data_to_file, delete_file, get_new_path, get_downloaded_path, save
 from .group import delete_messages_globally, delete_messages_from_users, get_config_text, leave_group
 from .ids import init_group_id, init_user_id
-from .telegram import delete_all_messages, get_admin_log, get_chat_member, promote_chat_member, send_message
+from .telegram import delete_all_messages, get_admin_log, get_chat, get_chat_member, promote_chat_member, send_message
 from .telegram import send_report_message
 from .timers import update_admins
 from .user import ban_user_globally, kick_users, unban_user_globally
@@ -547,12 +547,14 @@ def receive_invite_try(client: Client, data: dict) -> bool:
             )
 
         # Check USER's permissions
+        chat = get_chat(client, gid)
+        can_invite_users = chat.permissions.can_invite_users
         chat_member = get_chat_member(client, gid, glovar.user_id)
 
         if (not chat_member
                 or not chat_member.can_delete_messages
                 or not chat_member.can_restrict_members
-                or not chat_member.can_invite_users
+                or not (chat_member.can_invite_users or can_invite_users)
                 or not chat_member.can_pin_messages
                 or not chat_member.can_promote_members):
             return share_data(
