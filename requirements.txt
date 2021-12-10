@@ -6,7 +6,7 @@ Pillow==8.4.0
 pyaes==1.6.1
 pyAesCrypt==6.0.0
 pycparser==2.21
-Pyrogram==1.2.11
+Pyrogram==1.2.20
 PySocks==1.7.1
 pytz==2021.3
 pytz-deprecation-shim==0.1.0.post0

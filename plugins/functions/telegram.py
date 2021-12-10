@@ -22,7 +22,7 @@ from typing import Iterable, List, Optional, Union
 from pyrogram import Client
 from pyrogram.types import (Chat, ChatMember, ChatPreview, ChatPermissions, InlineKeyboardMarkup, Message,
                             ReplyKeyboardMarkup)
-from pyrogram.raw.functions.channels import DeleteUserHistory, GetAdminLog
+from pyrogram.raw.functions.channels import DeleteParticipantHistory, GetAdminLog
 from pyrogram.raw.functions.messages import ReadMentions
 from pyrogram.raw.types import ChannelAdminLogEventsFilter
 from pyrogram.raw.types.channels import AdminLogResults
@@ -90,7 +90,7 @@ def delete_all_messages(client: Client, gid: int, uid: int) -> bool:
         if not group_id or not user_id:
             return False
 
-        result = bool(client.send(DeleteUserHistory(channel=group_id, user_id=user_id))) or True
+        result = bool(client.send(DeleteParticipantHistory(channel=group_id, participant=user_id))) or True
     except FloodWait as e:
         logger.warning(f"Sleep for {e.x} seconds in {gid}")
         raise e
