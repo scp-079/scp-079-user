@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # SCP-079-USER - Invite and help other bots
-# Copyright (C) 2019 SCP-079 <https://scp-079.org>
+# Copyright (C) 2019-2023 SCP-079 <https://scp-079.org>
 #
 # This file is part of SCP-079-USER.
 #
@@ -34,7 +34,22 @@ from plugins.functions.timers import update_status
 logger = logging.getLogger(__name__)
 
 # Config session
-app = Client(session_name="account")
+app = Client(
+    name="account",
+    api_id=glovar.api_id,
+    api_hash=glovar.api_hash,
+    ipv6=glovar.ipv6,
+    plugins={
+        "root": "plugins",
+        "include": [
+            "handlers.command",
+            "handlers.message"
+        ]
+    },
+    proxy=glovar.proxy,
+    workdir=glovar.SESSION_DIR_PATH,
+    sleep_threshold=0
+)
 app.start()
 
 # Send online status

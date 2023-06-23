@@ -1,5 +1,5 @@
 # SCP-079-USER - Invite and help other bots
-# Copyright (C) 2019-2020 SCP-079 <https://scp-079.org>
+# Copyright (C) 2019-2023 SCP-079 <https://scp-079.org>
 #
 # This file is part of SCP-079-USER.
 #
@@ -20,6 +20,7 @@ import logging
 from typing import Iterable, List, Optional
 
 from pyrogram import Client
+from pyrogram.enums import ChatMemberStatus
 from pyrogram.types import Chat, ChatMember, Message
 
 from .. import glovar
@@ -242,9 +243,9 @@ def save_admins(gid: int, admin_members: List[ChatMember]) -> bool:
         # Admin list
         glovar.admin_ids[gid] = {admin.user.id for admin in admin_members
                                  if (((not admin.user.is_bot and not admin.user.is_deleted)
-                                      and admin.can_delete_messages
-                                      and admin.can_restrict_members)
-                                     or admin.status == "creator"
+                                      and admin.privileges.can_delete_messages
+                                      and admin.privileges.can_restrict_members)
+                                     or admin.status == ChatMemberStatus.OWNER
                                      or admin.user.id in glovar.bot_ids)}
         save("admin_ids")
 

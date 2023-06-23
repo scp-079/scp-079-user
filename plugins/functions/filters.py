@@ -1,5 +1,5 @@
 # SCP-079-USER - Invite and help other bots
-# Copyright (C) 2019-2020 SCP-079 <https://scp-079.org>
+# Copyright (C) 2019-2023 SCP-079 <https://scp-079.org>
 #
 # This file is part of SCP-079-USER.
 #
@@ -150,7 +150,7 @@ def is_declared_message(_, __, message: Message) -> bool:
             return False
 
         gid = message.chat.id
-        mid = message.message_id
+        mid = message.id
 
         return is_declared_message_id(gid, mid)
     except Exception as e:

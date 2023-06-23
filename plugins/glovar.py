@@ -1,5 +1,5 @@
 # SCP-079-USER - Invite and help other bots
-# Copyright (C) 2019-2020 SCP-079 <https://scp-079.org>
+# Copyright (C) 2019-2023 SCP-079 <https://scp-079.org>
 #
 # This file is part of SCP-079-USER.
 #
@@ -27,6 +27,8 @@ from typing import Dict, List, Set, Union
 
 from pyrogram.types import Chat, ChatMember
 
+SESSION_DIR_PATH = "data/session"
+
 # Enable logging
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -38,9 +40,19 @@ logger = logging.getLogger(__name__)
 
 # Read data from config.ini
 
+# [pyrogram]
+api_id: int = 0
+api_hash: str = "[DATA EXPUNGED]"
+
+# [proxy]
+enabled: Union[bool, str] = "False"
+hostname: str = "127.0.0.1"
+port: int = 1080
+
 # [basic]
 prefix: List[str] = []
 prefix_str: str = "/!"
+ipv6: Union[bool, str] = "False"
 
 # [bots]
 avatar_id: int = 0
@@ -84,8 +96,19 @@ try:
     config = RawConfigParser()
     config.read("config.ini")
 
+    # [pyrogram]
+    api_id = int(config.get("pyrogram", "api_id", fallback=api_id))
+    api_hash = config.get("pyrogram", "api_hash", fallback=api_hash)
+
+    # [proxy]
+    enabled = config.get("proxy", "enabled", fallback=enabled)
+    enabled = eval(enabled)
+    hostname = config.get("proxy", "hostname", fallback=hostname)
+    port = int(config.get("proxy", "port", fallback=port))
+
     # [basic]
     prefix = list(config["basic"].get("prefix", prefix_str))
+    ipv6 = config.get("basic", "ipv6", fallback=ipv6)
 
     # [bots]
     avatar_id = int(config["bots"].get("avatar_id", str(avatar_id)))
@@ -162,6 +185,16 @@ if (prefix == []
         or password in {"", "[DATA EXPUNGED]"}):
     logger.critical("No proper settings")
     raise SystemExit("No proper settings")
+
+# Postprocess - [proxy]
+if enabled:
+    proxy = {
+        "hostname": hostname,
+        "port": port,
+        "scheme": "socks5"
+    }
+else:
+    proxy = None
 
 # Languages
 lang: Dict[str, str] = {
@@ -505,6 +538,6 @@ for file in file_list:
         raise SystemExit("[DATA CORRUPTION]")
 
 # Start program
-copyright_text = (f"SCP-079-{sender} v{version}, Copyright (C) 2019-2020 SCP-079 <https://scp-079.org>\n"
+copyright_text = (f"SCP-079-{sender} v{version}, Copyright (C) 2019-2023 SCP-079 <https://scp-079.org>\n"
                   "Licensed under the terms of the GNU General Public License v3 or later (GPLv3+)\n")
 print(copyright_text)

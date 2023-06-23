@@ -1,5 +1,5 @@
 # SCP-079-USER - Invite and help other bots
-# Copyright (C) 2019-2020 SCP-079 <https://scp-079.org>
+# Copyright (C) 2019-2023 SCP-079 <https://scp-079.org>
 #
 # This file is part of SCP-079-USER.
 #
@@ -41,7 +41,7 @@ from ..functions.receive import receive_help_delete, receive_help_kick, receive_
 from ..functions.receive import receive_leave_approve, receive_refresh, receive_remove_bad, receive_remove_except
 from ..functions.receive import receive_remove_score, receive_remove_watch, receive_rollback, receive_status_ask
 from ..functions.receive import receive_text_data, receive_user_score, receive_watch_user
-from ..functions.telegram import get_admins, get_group_info, read_history, read_mention, send_message
+from ..functions.telegram import get_admins, get_group_info, send_message
 from ..functions.tests import preview_test
 from ..functions.timers import backup_files
 from ..functions.user import terminate_user
@@ -142,7 +142,7 @@ def delete_service(client: Client, message: Message) -> bool:
         # Basic data
         gid = message.chat.id
         uid = message.from_user.id
-        mid = message.message_id
+        mid = message.id
 
         # Check if the message is sent by SCP-079
         if uid == glovar.user_id:
@@ -305,40 +305,6 @@ def init_group(client: Client, message: Message) -> bool:
         glovar.locks["admin"].release()
 
     return result
-
-
-@Client.on_message(filters.incoming & ~filters.private & filters.mentioned, group=1)
-def mark_mention(client: Client, message: Message) -> bool:
-    # Mark mention as read
-    try:
-        if not message.chat:
-            return True
-
-        cid = message.chat.id
-        thread(read_mention, (client, cid))
-
-        return True
-    except Exception as e:
-        logger.warning(f"Mark mention error: {e}", exc_info=True)
-
-    return False
-
-
-@Client.on_message(filters.incoming & ~filters.private & filters.channel, group=2)
-def mark_message(client: Client, message: Message) -> bool:
-    # Mark messages as read
-    try:
-        if not message.chat:
-            return True
-
-        cid = message.chat.id
-        thread(read_history, (client, cid))
-
-        return True
-    except Exception as e:
-        logger.warning(f"Mark message error: {e}", exc_info=True)
-
-    return False
 
 
 @Client.on_message((filters.incoming | aio) & filters.channel
@@ -591,7 +557,7 @@ def share_preview(client: Client, message: Message) -> bool:
         # Basic data
         gid = message.chat.id
         uid = message.from_user.id
-        mid = message.message_id
+        mid = message.id
 
         if not message.web_page:
             return True
@@ -678,7 +644,7 @@ def share_preview(client: Client, message: Message) -> bool:
             preview["media"] = True
 
         # Save and share
-        file = data_to_file(preview)
+        file_ = data_to_file(preview)
         share_data(
             client=client,
             receivers=glovar.receivers["preview"],
@@ -689,7 +655,7 @@ def share_preview(client: Client, message: Message) -> bool:
                 "user_id": uid,
                 "message_id": mid
             },
-            file=file
+            file=file_
         )
         glovar.shared_url.add(url)
 

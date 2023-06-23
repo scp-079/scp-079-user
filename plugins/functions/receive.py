@@ -1,5 +1,5 @@
 # SCP-079-USER - Invite and help other bots
-# Copyright (C) 2019-2020 SCP-079 <https://scp-079.org>
+# Copyright (C) 2019-2023 SCP-079 <https://scp-079.org>
 #
 # This file is part of SCP-079-USER.
 #
@@ -189,7 +189,7 @@ def receive_config_show(client: Client, data: dict) -> bool:
                        f"{lang('reason')}{lang('colon')}{code(lang('reason_none'))}\n")
 
         # Send the text data
-        file = data_to_file(result)
+        file_ = data_to_file(result)
         share_data(
             client=client,
             receivers=["MANAGE"],
@@ -200,7 +200,7 @@ def receive_config_show(client: Client, data: dict) -> bool:
                 "message_id": mid,
                 "group_id": gid
             },
-            file=file
+            file=file_
         )
 
         return True
@@ -498,7 +498,7 @@ def receive_help_log(client: Client, data: dict) -> bool:
                      for log in log_list for event in log.events if begin <= event.date <= end}
 
         # Share the users
-        file = data_to_file(user_list)
+        file_ = data_to_file(user_list)
         result = share_data(
             client=client,
             receivers=["CAPTCHA"],
@@ -508,7 +508,7 @@ def receive_help_log(client: Client, data: dict) -> bool:
                 "group_id": gid,
                 "manual": manual
             },
-            file=file
+            file=file_
         )
     except Exception as e:
         logger.warning(f"Receive help log error: {e}", exc_info=True)
@@ -549,11 +549,11 @@ def receive_invite_try(client: Client, data: dict) -> bool:
         chat_member = get_chat_member(client, gid, glovar.user_id)
 
         if (not chat_member
-                or not chat_member.can_delete_messages
-                or not chat_member.can_restrict_members
-                or not chat_member.can_invite_users
-                or not chat_member.can_pin_messages
-                or not chat_member.can_promote_members):
+                or not chat_member.privileges.can_delete_messages
+                or not chat_member.privileges.can_restrict_members
+                or not chat_member.privileges.can_invite_users
+                or not chat_member.privileges.can_pin_messages
+                or not chat_member.privileges.can_promote_members):
             return share_data(
                 client=client,
                 receivers=["MANAGE"],
@@ -832,7 +832,7 @@ def receive_status_ask(client: Client, data: dict) -> bool:
         status = {
             lang("group_count"): f"{group_count}"
         }
-        file = data_to_file(status)
+        file_ = data_to_file(status)
         share_data(
             client=client,
             receivers=["MANAGE"],
@@ -842,7 +842,7 @@ def receive_status_ask(client: Client, data: dict) -> bool:
                 "admin_id": aid,
                 "message_id": mid
             },
-            file=file
+            file=file_
         )
 
         return True

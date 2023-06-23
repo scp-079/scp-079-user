@@ -1,5 +1,5 @@
 # SCP-079-USER - Invite and help other bots
-# Copyright (C) 2019-2020 SCP-079 <https://scp-079.org>
+# Copyright (C) 2019-2023 SCP-079 <https://scp-079.org>
 #
 # This file is part of SCP-079-USER.
 #
@@ -20,23 +20,23 @@ import logging
 from typing import Iterable, List, Optional, Union
 
 from pyrogram import Client
+from pyrogram.enums import ParseMode, ChatMembersFilter
 from pyrogram.types import (Chat, ChatMember, ChatPreview, ChatPermissions, InlineKeyboardMarkup, Message,
-                            ReplyKeyboardMarkup)
+                            ReplyKeyboardMarkup, ChatPrivileges)
 from pyrogram.raw.functions.channels import DeleteParticipantHistory, GetAdminLog
-from pyrogram.raw.functions.messages import ReadMentions
 from pyrogram.raw.types import ChannelAdminLogEventsFilter
 from pyrogram.raw.types.channels import AdminLogResults
 
 from pyrogram.raw.base import InputChannel, InputUser, InputPeer
 from pyrogram.raw.types import InputPeerUser, InputPeerChannel
 
-from pyrogram.errors import ChatAdminRequired, ButtonDataInvalid, ChannelInvalid, ChannelPrivate
+from pyrogram.errors import ChatAdminRequired, ButtonDataInvalid, ChannelInvalid, ChannelPrivate, ChatNotModified
 from pyrogram.errors import FloodWait, MessageDeleteForbidden, PeerIdInvalid
 from pyrogram.errors import UsernameInvalid, UsernameNotOccupied, UserNotParticipant
 
 from .. import glovar
-from .decorators import retry
-from .etc import delay, get_int, wait_flood
+from .decorators import retry, threaded
+from .etc import delay, get_int
 
 # Enable logging
 logger = logging.getLogger(__name__)
@@ -53,7 +53,7 @@ def delete_messages(client: Client, cid: int, mids: Iterable[int]) -> Optional[b
             return delete_messages_100(client, cid, mids)
 
         mids_list = [mids[i:i + 100] for i in range(0, len(mids), 100)]
-        result = bool([delete_messages_100(client, cid, mids) for mids in mids_list])
+        result = all([isinstance(delete_messages_100(client, cid, mids), int) for mids in mids_list])
     except Exception as e:
         logger.warning(f"Delete messages in {cid} error: {e}", exc_info=True)
 
@@ -69,6 +69,7 @@ def delete_messages_100(client: Client, cid: int, mids: Iterable[int]) -> Option
         mids = list(mids)
         result = client.delete_messages(chat_id=cid, message_ids=mids)
     except FloodWait as e:
+        logger.warning(f"Delete message in {cid} - Sleep for {e.value} second(s)")
         raise e
     except MessageDeleteForbidden:
         return False
@@ -90,9 +91,9 @@ def delete_all_messages(client: Client, gid: int, uid: int) -> bool:
         if not group_id or not user_id:
             return False
 
-        result = bool(client.send(DeleteParticipantHistory(channel=group_id, participant=user_id))) or True
+        result = bool(client.invoke(DeleteParticipantHistory(channel=group_id, participant=user_id))) or True
     except FloodWait as e:
-        logger.warning(f"Sleep for {e.x} seconds in {gid}")
+        logger.warning(f"Sleep for {e.value} seconds in {gid}")
         raise e
     except Exception as e:
         logger.warning(f"Delete all messages from {uid} in {gid} error: {e}", exc_info=True)
@@ -155,7 +156,7 @@ def get_admin_log_100(client: Client, peer: InputChannel, query: str, max_id: in
     result = None
 
     try:
-        result = client.send(
+        result = client.invoke(
             GetAdminLog(
                 channel=peer,
                 q=query,
@@ -185,8 +186,10 @@ def get_admins(client: Client, cid: int) -> Union[bool, List[ChatMember], None]:
         if isinstance(chat, Chat) and not chat.members_count:
             return False
 
-        result = client.get_chat_members(chat_id=cid, filter="administrators")
+        async_gen = client.get_chat_members(chat_id=cid, filter=ChatMembersFilter.ADMINISTRATORS)
+        result = list(async_gen)    # noqa
     except FloodWait as e:
+        logger.warning(f"Get admins in {cid} - Sleep for {e.value} second(s)")
         raise e
     except (ChannelInvalid, ChannelPrivate, PeerIdInvalid):
         return False
@@ -221,6 +224,7 @@ def get_chat_member(client: Client, cid: int, uid: int) -> Union[bool, ChatMembe
     try:
         result = client.get_chat_member(chat_id=cid, user_id=uid)
     except FloodWait as e:
+        logger.warning(f"Get chat member {uid} in {cid} - Sleep for {e.value} second(s)")
         raise e
     except (ChannelInvalid, ChannelPrivate, PeerIdInvalid, UserNotParticipant):
         result = False
@@ -304,18 +308,17 @@ def kick_chat_member(client: Client, cid: int, uid: Union[int, str],
     result = None
 
     try:
-        result = client.kick_chat_member(chat_id=cid, user_id=uid, until_date=until_date)
+        result = client.ban_chat_member(
+            chat_id=cid,
+            user_id=uid
+        )
     except FloodWait as e:
-        logger.warning(f"Kick chat member {uid} in {cid} - Sleep for {e.x} second(s)")
-
-        if until_date:
-            new_date = until_date + e.x
-        else:
-            new_date = 0
-
-        wait_flood(e)
-
-        return kick_chat_member(client, cid, uid, new_date)
+        logger.warning(f"Ban chat member {uid} in {cid} - Sleep for {e.value} second(s)")
+        raise e
+    except ChatAdminRequired:
+        return False
+    except ChatNotModified:
+        return True
     except PeerIdInvalid:
         return False
     except Exception as e:
@@ -343,6 +346,7 @@ def leave_chat(client: Client, cid: int, delete: bool = False) -> bool:
 
 @retry
 def promote_chat_member(client: Client, cid: int, uid: Union[int, str],
+                        can_manage_chat: bool = False,
                         can_change_info: bool = False,
                         can_post_messages: bool = False,
                         can_edit_messages: bool = False,
@@ -350,7 +354,8 @@ def promote_chat_member(client: Client, cid: int, uid: Union[int, str],
                         can_restrict_members: bool = False,
                         can_invite_users: bool = False,
                         can_pin_messages: bool = False,
-                        can_promote_members: bool = False) -> Union[bool, None]:
+                        can_promote_members: bool = False,
+                        can_manage_video_chats: bool = False) -> Union[bool, None]:
     # Promote or demote a user in a supergroup or a channel
     result = None
 
@@ -358,54 +363,24 @@ def promote_chat_member(client: Client, cid: int, uid: Union[int, str],
         result = client.promote_chat_member(
             chat_id=cid,
             user_id=uid,
-            can_change_info=can_change_info,
-            can_post_messages=can_post_messages,
-            can_edit_messages=can_edit_messages,
-            can_delete_messages=can_delete_messages,
-            can_restrict_members=can_restrict_members,
-            can_invite_users=can_invite_users,
-            can_pin_messages=can_pin_messages,
-            can_promote_members=can_promote_members
+            privileges=ChatPrivileges(
+                can_manage_chat=can_manage_chat,
+                can_change_info=can_change_info,
+                can_post_messages=can_post_messages,
+                can_edit_messages=can_edit_messages,
+                can_delete_messages=can_delete_messages,
+                can_restrict_members=can_restrict_members,
+                can_invite_users=can_invite_users,
+                can_pin_messages=can_pin_messages,
+                can_promote_members=can_promote_members,
+                can_manage_video_chats=can_manage_video_chats
+            )
         )
     except FloodWait as e:
+        logger.warning(f"Promote chat member {uid} in {cid} - Sleep for {e.value} second(s)")
         raise e
     except Exception as e:
         logger.warning(f"Promote chat member {uid} in {cid} error: {e}", exc_info=True)
-
-    return result
-
-
-@retry
-def read_history(client: Client, cid: int) -> bool:
-    # Mark messages in a chat as read
-    result = False
-
-    try:
-        result = client.read_history(chat_id=cid) or True
-    except FloodWait as e:
-        raise e
-    except Exception as e:
-        logger.warning(f"Read history in {cid} error: {e}", exc_info=True)
-
-    return result
-
-
-@retry
-def read_mention(client: Client, cid: int) -> bool:
-    # Mark a mention as read
-    result = False
-
-    try:
-        peer = resolve_peer(client, cid)
-
-        if not peer:
-            return True
-
-        result = client.send(ReadMentions(peer=peer)) or True
-    except FloodWait as e:
-        raise e
-    except Exception as e:
-        logger.warning(f"Read mention in {cid} error: {e}", exc_info=True)
 
     return result
 
@@ -418,7 +393,7 @@ def resolve_peer(client: Client, pid: Union[int, str]) -> Union[bool, InputChann
     try:
         result = client.resolve_peer(pid)
     except FloodWait as e:
-        logger.warning(f"Resolve peer {pid} - Sleep for {e.x} second(s)")
+        logger.warning(f"Resolve peer {pid} - Sleep for {e.value} second(s)")
         raise e
     except (PeerIdInvalid, UsernameInvalid, UsernameNotOccupied):
         return False
@@ -480,8 +455,7 @@ def restrict_chat_member(client: Client, cid: int, uid: int, permissions: ChatPe
         result = client.restrict_chat_member(
             chat_id=cid,
             user_id=uid,
-            permissions=permissions,
-            until_date=until_date
+            permissions=permissions
         )
     except FloodWait as e:
         raise e
@@ -502,7 +476,7 @@ def send_document(client: Client, cid: int, document: str, caption: str = "", mi
             chat_id=cid,
             document=document,
             caption=caption,
-            parse_mode="html",
+            parse_mode=ParseMode.HTML,
             reply_to_message_id=mid,
             reply_markup=markup
         )
@@ -531,7 +505,7 @@ def send_message(client: Client, cid: int, text: str, mid: int = None,
         result = client.send_message(
             chat_id=cid,
             text=text,
-            parse_mode="html",
+            parse_mode=ParseMode.HTML,
             disable_web_page_preview=True,
             reply_to_message_id=mid,
             reply_markup=markup
@@ -562,7 +536,7 @@ def send_photo(client: Client, cid: int, photo: str, caption: str = "", mid: int
             chat_id=cid,
             photo=photo,
             caption=caption,
-            parse_mode="html",
+            parse_mode=ParseMode.HTML,
             reply_to_message_id=mid,
             reply_markup=markup
         )
@@ -578,37 +552,27 @@ def send_photo(client: Client, cid: int, photo: str, caption: str = "", mid: int
     return result
 
 
-@retry
+@threaded()
 def send_report_message(secs: int, client: Client, cid: int, text: str, mid: int = None,
                         markup: InlineKeyboardMarkup = None) -> Optional[bool]:
     # Send a message that will be auto deleted to a chat
     result = None
 
     try:
-        if not text.strip():
-            return None
-
-        result = client.send_message(
-            chat_id=cid,
+        result = send_message(
+            client=client,
+            cid=cid,
             text=text,
-            parse_mode="html",
-            disable_web_page_preview=True,
-            reply_to_message_id=mid,
-            reply_markup=markup
+            mid=mid,
+            markup=markup
         )
 
         if not result:
             return None
 
-        mid = result.message_id
+        mid = result.id
         mids = [mid]
         result = delay(secs, delete_messages, [client, cid, mids])
-    except FloodWait as e:
-        raise e
-    except ButtonDataInvalid:
-        logger.warning(f"Send report message to {cid} - invalid markup: {markup}")
-    except (ChannelInvalid, ChannelPrivate, ChatAdminRequired, PeerIdInvalid):
-        return None
     except Exception as e:
         logger.warning(f"Send report message to {cid} error: {e}", exc_info=True)
 

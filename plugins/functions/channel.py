@@ -1,5 +1,5 @@
 # SCP-079-USER - Invite and help other bots
-# Copyright (C) 2019-2020 SCP-079 <https://scp-079.org>
+# Copyright (C) 2019-2023 SCP-079 <https://scp-079.org>
 #
 # This file is part of SCP-079-USER.
 #
@@ -164,7 +164,7 @@ def forward_evidence(client: Client, message: Message, user: User, level: str, r
                 logger.warning(f"Forward evidence message error: {e}", exc_info=True)
                 return False
 
-        result = result.message_id
+        result = result.id
         result = send_message(client, channel_id, text, result)
     except Exception as e:
         logger.warning(f"Forward evidence error: {e}", exc_info=True)

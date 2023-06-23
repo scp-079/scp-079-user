@@ -1,5 +1,5 @@
 # SCP-079-USER - Invite and help other bots
-# Copyright (C) 2019-2020 SCP-079 <https://scp-079.org>
+# Copyright (C) 2019-2023 SCP-079 <https://scp-079.org>
 #
 # This file is part of SCP-079-USER.
 #
@@ -297,7 +297,7 @@ def message_link(message: Message) -> str:
     # Get a message link in a channel
     text = ""
     try:
-        mid = message.message_id
+        mid = message.id
         text = f"{get_channel_link(message)}/{mid}"
     except Exception as e:
         logger.warning(f"Message link error: {e}", exc_info=True)
@@ -352,7 +352,7 @@ def wait_flood(e: FloodWait) -> bool:
     result = False
 
     try:
-        result = sleep(e.x + uniform(0.5, 1.0)) or True
+        result = sleep(e.value + uniform(0.5, 1.0)) or True
     except Exception as e:
         logger.warning(f"Wait flood error: {e}", exc_info=True)
 

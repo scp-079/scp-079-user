@@ -1,5 +1,5 @@
 # SCP-079-USER - Invite and help other bots
-# Copyright (C) 2019-2020 SCP-079 <https://scp-079.org>
+# Copyright (C) 2019-2023 SCP-079 <https://scp-079.org>
 #
 # This file is part of SCP-079-USER.
 #
@@ -70,13 +70,13 @@ def interval_hour_01(client: Client) -> bool:
         # Ignore groups
         group_list = {gid for gid in list(glovar.configs)
                       if not any(glovar.configs[gid].get(s) for s in ["sb", "sr", "sd"])}
-        file = data_to_file(group_list)
+        file_ = data_to_file(group_list)
         share_data(
             client=client,
             receivers=["CAPTCHA"],
             action="update",
             action_type="ignore",
-            file=file
+            file=file_
         )
 
         result = True

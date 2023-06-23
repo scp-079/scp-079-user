@@ -2,12 +2,6 @@
 api_id = [DATA EXPUNGED]
 api_hash = [DATA EXPUNGED]
 
-[plugins]
-root = plugins
-include =
-    handlers.command
-    handlers.message
-
 [proxy]
 enabled = False
 hostname = 127.0.0.1

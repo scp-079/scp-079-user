@@ -1,5 +1,5 @@
 # SCP-079-USER - Invite and help other bots
-# Copyright (C) 2019-2020 SCP-079 <https://scp-079.org>
+# Copyright (C) 2019-2023 SCP-079 <https://scp-079.org>
 #
 # This file is part of SCP-079-USER.
 #
@@ -197,7 +197,7 @@ def terminate_user(client: Client, message: Message, user: User, the_type: str) 
 
         gid = message.chat.id
         uid = user.id
-        mid = message.message_id
+        mid = message.id
 
         if not is_class_d_user(user):
             bad = True
@@ -388,12 +388,9 @@ def unrestrict_user(client: Client, gid: int, uid: Union[int, str]) -> bool:
         permissions = ChatPermissions(
             can_send_messages=True,
             can_send_media_messages=True,
-            can_send_stickers=True,
-            can_send_animations=True,
-            can_send_games=True,
-            can_use_inline_bots=True,
-            can_add_web_page_previews=True,
+            can_send_other_messages=True,
             can_send_polls=True,
+            can_add_web_page_previews=True,
             can_change_info=True,
             can_invite_users=True,
             can_pin_messages=True

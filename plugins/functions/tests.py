@@ -1,5 +1,5 @@
 # SCP-079-USER - Invite and help other bots
-# Copyright (C) 2019-2020 SCP-079 <https://scp-079.org>
+# Copyright (C) 2019-2023 SCP-079 <https://scp-079.org>
 #
 # This file is part of SCP-079-USER.
 #
@@ -39,7 +39,7 @@ def preview_test(client: Client, message: Message) -> bool:
         url = web_page.url
         cid = message.chat.id
         aid = message.from_user.id
-        mid = message.message_id
+        mid = message.id
 
         text = f"{lang('admin')}{lang('colon')}{mention_id(aid)}\n\n"
         text += f"{lang('preview_link')}{lang('colon')}" + "-" * 24 + "\n\n" + code(url) + "\n\n"
