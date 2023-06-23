@@ -47,7 +47,6 @@ app = Client(
         ]
     },
     proxy=glovar.proxy,
-    workdir=glovar.SESSION_DIR_PATH,
     sleep_threshold=0
 )
 app.start()
